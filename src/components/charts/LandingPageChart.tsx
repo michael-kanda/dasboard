@@ -191,7 +191,7 @@ export default function LandingPageChart({
   const formattedDateRange = getDateRangeString(dateRange);
 
   return (
-    <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col max-h-[65vh]">
+    <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col max-h-[75vh]">
       
       {/* Header Bereich */}
       <div className="mb-4 flex-shrink-0 border-b border-gray-50 pb-2">
