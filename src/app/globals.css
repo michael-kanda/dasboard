@@ -220,153 +220,465 @@ body {
   }
 }
 
-/* ── Smooth Theme Transition ── */
+/* ══════════════════════════════════════════════════════════
+   DATAPEAK DARK MODE – GLOBAL OVERRIDES
+   ══════════════════════════════════════════════════════════
+   
+   Zu globals.css hinzufügen (ERSETZE die alte dark-mode Version).
+   
+   Strategie: Statt jede Komponente einzeln zu editieren,
+   überschreiben wir unter html.dark ALLE gängigen Tailwind-
+   Patterns global. So funktioniert Dark Mode auf ALLEN Seiten
+   (Admin, Dashboard, Formulare, System, KI-Tool etc.) sofort.
+   
+   tailwind.config.ts → darkMode: 'class' ← bereits vorhanden ✓
+   
+   ══════════════════════════════════════════════════════════ */
+
+/* ── Smooth Transition ── */
 html {
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* ═══════════════ BASE ═══════════════ */
+/* ═══════════════════════════════════════════════════════════
+   1. BASE: Body, Min-h-screen Container
+   ═══════════════════════════════════════════════════════════ */
 
 html.dark body {
-  background-color: #030712;
-  color: #e2e8f0;
+  background-color: #030712; /* gray-950 */
+  color: #e2e8f0;           /* slate-200 */
 }
 
-/* ═══════════════ DASHBOARD GRADIENT ═══════════════ */
+/* Alle Seiten die min-h-screen bg-gray-50 nutzen (Admin, Edit, Redaktion etc.) */
+html.dark .bg-gray-50  { background-color: #030712 !important; }
+html.dark .bg-gray-100 { background-color: #0f172a !important; }
+html.dark .bg-gray-200 { background-color: #1e293b !important; }
+
+/* ═══════════════════════════════════════════════════════════
+   2. DASHBOARD GRADIENT
+   ═══════════════════════════════════════════════════════════ */
 
 html.dark .dashboard-gradient {
   background: linear-gradient(135deg, #030712 0%, #0f172a 50%, #030712 100%) !important;
 }
 
-/* ═══════════════ CARD-GLASS ═══════════════ */
+/* ═══════════════════════════════════════════════════════════
+   3. CARD-GLASS (Dashboard-Karten)
+   ═══════════════════════════════════════════════════════════ */
 
 html.dark .card-glass {
-  background: rgba(15, 23, 42, 0.8);
-  border-color: rgba(51, 65, 85, 0.5);
+  background: rgba(15, 23, 42, 0.8) !important;
+  border-color: rgba(51, 65, 85, 0.5) !important;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(51, 65, 85, 0.2);
   color: #e2e8f0;
 }
 
-html.dark .card-glass:hover {
-  border-color: rgba(71, 85, 105, 0.6);
+/* ═══════════════════════════════════════════════════════════
+   4. BG-WHITE → DARK (globale Karten, Formulare, Modals)
+   ═══════════════════════════════════════════════════════════ */
+
+html.dark .bg-white {
+  background-color: #111827 !important; /* gray-900 */
+  color: #e2e8f0 !important;
 }
 
-/* ═══════════════ BG-WHITE → DARK ═══════════════ */
-
-html.dark .dashboard-gradient .bg-white,
-html.dark .dashboard-gradient [class*="bg-white"] {
-  background-color: #111827 !important;
+/* Weiße Karten mit Border → dunkle Border */
+html.dark .bg-white.border,
+html.dark .bg-white[class*="border-gray"],
+html.dark .bg-white[class*="shadow"] {
   border-color: #1e293b !important;
 }
 
-/* ═══════════════ TEXT OVERRIDES ═══════════════ */
+/* ═══════════════════════════════════════════════════════════
+   5. TEXT OVERRIDES (global, nicht nur dashboard-gradient)
+   ═══════════════════════════════════════════════════════════ */
 
-html.dark .dashboard-gradient .text-gray-900 { color: #f1f5f9 !important; }
-html.dark .dashboard-gradient .text-gray-800 { color: #e2e8f0 !important; }
-html.dark .dashboard-gradient .text-gray-700 { color: #cbd5e1 !important; }
-html.dark .dashboard-gradient .text-gray-600 { color: #94a3b8 !important; }
-html.dark .dashboard-gradient .text-gray-500 { color: #64748b !important; }
+html.dark .text-gray-900 { color: #f1f5f9 !important; }
+html.dark .text-gray-800 { color: #e2e8f0 !important; }
+html.dark .text-gray-700 { color: #cbd5e1 !important; }
+html.dark .text-gray-600 { color: #94a3b8 !important; }
+html.dark .text-gray-500 { color: #64748b !important; }
+html.dark .text-gray-400 { color: #475569 !important; }
 
 /* Colored text – etwas heller im Dark */
-html.dark .dashboard-gradient .text-red-500 { color: #f87171 !important; }
-html.dark .dashboard-gradient .text-green-500,
-html.dark .dashboard-gradient .text-green-600 { color: #4ade80 !important; }
+html.dark .text-red-500   { color: #f87171 !important; }
+html.dark .text-red-600   { color: #f87171 !important; }
+html.dark .text-red-700   { color: #fca5a5 !important; }
+html.dark .text-red-800   { color: #fecaca !important; }
+html.dark .text-green-500 { color: #4ade80 !important; }
+html.dark .text-green-600 { color: #4ade80 !important; }
+html.dark .text-green-700 { color: #86efac !important; }
+html.dark .text-green-800 { color: #bbf7d0 !important; }
+html.dark .text-blue-700  { color: #93c5fd !important; }
+html.dark .text-blue-800  { color: #bfdbfe !important; }
+html.dark .text-amber-800 { color: #fcd34d !important; }
+html.dark .text-yellow-700 { color: #fcd34d !important; }
+html.dark .text-indigo-600 { color: #818cf8 !important; }
+html.dark .text-indigo-700 { color: #a5b4fc !important; }
+html.dark .text-indigo-800 { color: #c7d2fe !important; }
+html.dark .text-purple-600 { color: #a78bfa !important; }
+html.dark .text-sky-600   { color: #7dd3fc !important; }
+html.dark .text-sky-800   { color: #bae6fd !important; }
 
-/* ═══════════════ BORDER OVERRIDES ═══════════════ */
+/* ═══════════════════════════════════════════════════════════
+   6. BORDER OVERRIDES (global)
+   ═══════════════════════════════════════════════════════════ */
 
-html.dark .dashboard-gradient .border-gray-100,
-html.dark .dashboard-gradient .border-gray-200,
-html.dark .dashboard-gradient .border-gray-300 {
-  border-color: #1e293b !important;
-}
+html.dark .border-gray-100 { border-color: #1e293b !important; }
+html.dark .border-gray-200 { border-color: #1e293b !important; }
+html.dark .border-gray-300 { border-color: #334155 !important; }
 
-html.dark .dashboard-gradient [class*="divide-gray"] > * + * {
-  border-color: #1e293b !important;
-}
+html.dark .border-red-200  { border-color: rgba(239, 68, 68, 0.3) !important; }
+html.dark .border-green-200 { border-color: rgba(34, 197, 94, 0.3) !important; }
+html.dark .border-blue-200 { border-color: rgba(59, 130, 246, 0.3) !important; }
+html.dark .border-blue-100 { border-color: rgba(59, 130, 246, 0.2) !important; }
+html.dark .border-amber-200 { border-color: rgba(245, 158, 11, 0.3) !important; }
+html.dark .border-amber-300 { border-color: rgba(245, 158, 11, 0.4) !important; }
+html.dark .border-yellow-300 { border-color: rgba(234, 179, 8, 0.3) !important; }
+html.dark .border-indigo-100 { border-color: rgba(99, 102, 241, 0.2) !important; }
+html.dark .border-indigo-200 { border-color: rgba(99, 102, 241, 0.3) !important; }
+html.dark .border-purple-200 { border-color: rgba(147, 51, 234, 0.3) !important; }
+html.dark .border-sky-200 { border-color: rgba(14, 165, 233, 0.3) !important; }
 
-/* ═══════════════ BG-GRAY OVERRIDES ═══════════════ */
+/* Dividers */
+html.dark .divide-gray-200 > * + * { border-color: #1e293b !important; }
+html.dark .border-b { border-color: #1e293b; }
+html.dark .border-t { border-color: #1e293b; }
 
-html.dark .dashboard-gradient .bg-gray-50 { background-color: #0f172a !important; }
-html.dark .dashboard-gradient .bg-gray-100 { background-color: #1e293b !important; }
+/* Dashed borders */
+html.dark .border-dashed { border-color: #334155 !important; }
 
-/* ═══════════════ SHADOWS ═══════════════ */
+/* ═══════════════════════════════════════════════════════════
+   7. COLORED BACKGROUNDS (Badges, Alerts, Status-Boxen)
+   ═══════════════════════════════════════════════════════════ */
 
-html.dark .shadow-sm { box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4) !important; }
+/* Rot */
+html.dark .bg-red-50   { background-color: rgba(239, 68, 68, 0.1) !important; }
+html.dark .bg-red-100  { background-color: rgba(239, 68, 68, 0.15) !important; }
+
+/* Grün */
+html.dark .bg-green-50  { background-color: rgba(34, 197, 94, 0.1) !important; }
+html.dark .bg-green-100 { background-color: rgba(34, 197, 94, 0.15) !important; }
+html.dark .bg-emerald-50 { background-color: rgba(16, 185, 129, 0.1) !important; }
+html.dark .bg-emerald-100 { background-color: rgba(16, 185, 129, 0.15) !important; }
+
+/* Blau */
+html.dark .bg-blue-50  { background-color: rgba(59, 130, 246, 0.1) !important; }
+html.dark .bg-blue-100 { background-color: rgba(59, 130, 246, 0.15) !important; }
+
+/* Gelb / Amber */
+html.dark .bg-yellow-50  { background-color: rgba(234, 179, 8, 0.1) !important; }
+html.dark .bg-yellow-100 { background-color: rgba(234, 179, 8, 0.12) !important; }
+html.dark .bg-amber-50   { background-color: rgba(245, 158, 11, 0.1) !important; }
+html.dark .bg-amber-100  { background-color: rgba(245, 158, 11, 0.15) !important; }
+
+/* Indigo */
+html.dark .bg-indigo-50  { background-color: rgba(99, 102, 241, 0.1) !important; }
+html.dark .bg-indigo-100 { background-color: rgba(99, 102, 241, 0.15) !important; }
+
+/* Purple */
+html.dark .bg-purple-50  { background-color: rgba(147, 51, 234, 0.1) !important; }
+html.dark .bg-purple-100 { background-color: rgba(147, 51, 234, 0.15) !important; }
+
+/* Sky */
+html.dark .bg-sky-50  { background-color: rgba(14, 165, 233, 0.1) !important; }
+html.dark .bg-sky-100 { background-color: rgba(14, 165, 233, 0.15) !important; }
+
+/* Orange */
+html.dark .bg-orange-50 { background-color: rgba(249, 115, 22, 0.1) !important; }
+
+/* ═══════════════════════════════════════════════════════════
+   8. SHADOWS
+   ═══════════════════════════════════════════════════════════ */
+
+html.dark .shadow-sm    { box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4) !important; }
 html.dark .shadow-md,
-html.dark .shadow { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -2px rgba(0, 0, 0, 0.4) !important; }
-html.dark .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -4px rgba(0, 0, 0, 0.4) !important; }
-html.dark .shadow-xl,
-html.dark .shadow-2xl { box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.4) !important; }
+html.dark .shadow       { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -2px rgba(0, 0, 0, 0.4) !important; }
+html.dark .shadow-lg    { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -4px rgba(0, 0, 0, 0.4) !important; }
+html.dark .shadow-xl    { box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.4) !important; }
+html.dark .shadow-2xl   { box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6) !important; }
 html.dark .shadow-inner { box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.3) !important; }
 
-/* ═══════════════ RECHARTS ═══════════════ */
+/* ═══════════════════════════════════════════════════════════
+   9. INPUTS, SELECTS, TEXTAREAS (Formulare global)
+   ═══════════════════════════════════════════════════════════ */
+
+html.dark input[type="text"],
+html.dark input[type="email"],
+html.dark input[type="password"],
+html.dark input[type="url"],
+html.dark input[type="search"],
+html.dark input[type="date"],
+html.dark input[type="number"],
+html.dark select,
+html.dark textarea {
+  background-color: #1e293b !important; /* slate-800 */
+  border-color: #334155 !important;     /* slate-700 */
+  color: #e2e8f0 !important;            /* slate-200 */
+}
+
+html.dark input::placeholder,
+html.dark textarea::placeholder {
+  color: #475569 !important; /* slate-600 */
+}
+
+html.dark input:focus,
+html.dark select:focus,
+html.dark textarea:focus {
+  border-color: #6366f1 !important; /* indigo-500 */
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.3) !important;
+}
+
+html.dark input:disabled,
+html.dark select:disabled,
+html.dark textarea:disabled {
+  background-color: #0f172a !important; /* slate-900 */
+  color: #475569 !important;
+  cursor: not-allowed;
+}
+
+/* File inputs */
+html.dark input[type="file"] {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+  color: #94a3b8 !important;
+}
+
+/* Checkboxes – Keep brand colors, darker bg */
+html.dark input[type="checkbox"] {
+  background-color: #1e293b !important;
+  border-color: #475569 !important;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   10. TABLES (Admin, Redaktionsplan etc.)
+   ═══════════════════════════════════════════════════════════ */
+
+html.dark table {
+  color: #e2e8f0;
+}
+
+html.dark thead,
+html.dark thead th {
+  background-color: #0f172a !important;
+  color: #94a3b8 !important;
+  border-color: #1e293b !important;
+}
+
+html.dark tbody tr {
+  border-color: #1e293b !important;
+}
+
+html.dark tbody tr:hover {
+  background-color: rgba(15, 23, 42, 0.5) !important;
+}
+
+html.dark tbody td {
+  border-color: #1e293b !important;
+  color: #cbd5e1;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   11. BUTTONS (generische Overrides für nicht-farbige Buttons)
+   ═══════════════════════════════════════════════════════════ */
+
+/* Grau-Buttons */
+html.dark button.bg-gray-100,
+html.dark .bg-gray-100[role="button"],
+html.dark button[class*="bg-gray-100"] {
+  background-color: #1e293b !important;
+  color: #cbd5e1 !important;
+}
+
+html.dark button.bg-gray-100:hover,
+html.dark button[class*="bg-gray-100"]:hover {
+  background-color: #334155 !important;
+}
+
+/* White buttons with border */
+html.dark button.bg-white,
+html.dark button[class*="bg-white"] {
+  background-color: #111827 !important;
+  color: #e2e8f0 !important;
+  border-color: #334155 !important;
+}
+
+html.dark button.bg-white:hover,
+html.dark button[class*="bg-white"]:hover {
+  background-color: #1e293b !important;
+}
+
+/* Border buttons (filter, tabs etc.) */
+html.dark button[class*="border-gray-300"] {
+  border-color: #334155 !important;
+  color: #cbd5e1 !important;
+}
+
+html.dark button[class*="border-gray-300"]:hover {
+  background-color: #1e293b !important;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   12. RECHARTS (Charts global)
+   ═══════════════════════════════════════════════════════════ */
 
 html.dark .recharts-text { fill: #94a3b8 !important; }
 html.dark .recharts-cartesian-grid line { stroke: #1e293b !important; }
+
 html.dark .recharts-tooltip-wrapper .recharts-default-tooltip {
   background-color: #1e293b !important;
   border-color: #334155 !important;
   color: #e2e8f0 !important;
 }
 
-/* ═══════════════ TABELLEN ═══════════════ */
+/* ═══════════════════════════════════════════════════════════
+   13. KI-TOOL: AI OUTPUT DARK MODE
+   ═══════════════════════════════════════════════════════════ */
 
-html.dark .dashboard-gradient table { color: #e2e8f0; }
-html.dark .dashboard-gradient thead { background-color: #0f172a !important; }
-html.dark .dashboard-gradient thead th { color: #94a3b8 !important; border-color: #1e293b !important; }
-html.dark .dashboard-gradient tbody tr { border-color: #1e293b !important; }
-html.dark .dashboard-gradient tbody tr:hover { background-color: rgba(15, 23, 42, 0.5) !important; }
-html.dark .dashboard-gradient tbody td { border-color: #1e293b !important; }
+html.dark .ai-output {
+  color: #cbd5e1;
+}
 
-/* ═══════════════ INPUTS & SELECTS ═══════════════ */
+html.dark .ai-content p { color: #94a3b8 !important; }
+html.dark .ai-content h3 { color: #f1f5f9 !important; }
+html.dark .ai-content h4 { color: #94a3b8 !important; }
+html.dark .ai-content li { color: #cbd5e1 !important; border-color: #1e293b !important; }
+html.dark .ai-content strong, html.dark .ai-content b { color: #f1f5f9 !important; }
 
-html.dark .dashboard-gradient select,
-html.dark .dashboard-gradient input[type="text"],
-html.dark .dashboard-gradient input[type="search"] {
-  background-color: #1e293b !important;
+html.dark .ai-content [class*="bg-white"] {
+  background: #111827 !important;
+  border-color: #1e293b !important;
+}
+
+html.dark .ai-content [class*="bg-gray-50"] {
+  background: #0f172a !important;
+  border-color: #1e293b !important;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   14. BACKDROP/OVERLAY (Lightbox, Modals)
+   ═══════════════════════════════════════════════════════════ */
+
+html.dark .bg-white\/70 {
+  background-color: rgba(3, 7, 18, 0.8) !important; /* gray-950/80 */
+}
+
+/* ═══════════════════════════════════════════════════════════
+   15. HOVER STATES
+   ═══════════════════════════════════════════════════════════ */
+
+html.dark .hover\:bg-gray-50:hover  { background-color: #0f172a !important; }
+html.dark .hover\:bg-gray-100:hover { background-color: #1e293b !important; }
+html.dark .hover\:bg-gray-200:hover { background-color: #334155 !important; }
+html.dark .hover\:text-gray-700:hover { color: #e2e8f0 !important; }
+html.dark .hover\:text-gray-800:hover { color: #f1f5f9 !important; }
+html.dark .hover\:text-gray-900:hover { color: #f8fafc !important; }
+
+html.dark .hover\:bg-red-50:hover   { background-color: rgba(239, 68, 68, 0.15) !important; }
+html.dark .hover\:bg-red-100:hover  { background-color: rgba(239, 68, 68, 0.2) !important; }
+html.dark .hover\:bg-green-100:hover { background-color: rgba(34, 197, 94, 0.2) !important; }
+html.dark .hover\:bg-green-200:hover { background-color: rgba(34, 197, 94, 0.25) !important; }
+html.dark .hover\:bg-indigo-100:hover { background-color: rgba(99, 102, 241, 0.2) !important; }
+
+/* ═══════════════════════════════════════════════════════════
+   16. TABS & NAVIGATION (KI-Tool, Filters etc.)
+   ═══════════════════════════════════════════════════════════ */
+
+html.dark .border-b.border-gray-200 {
+  border-color: #1e293b !important;
+}
+
+/* Tab active states – keep brand colors */
+/* Tab inactive hover */
+html.dark button[class*="border-transparent"][class*="text-gray-500"]:hover {
+  color: #e2e8f0 !important;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   17. CODE BLOCKS (Schema Analyzer output etc.)
+   ═══════════════════════════════════════════════════════════ */
+
+html.dark code {
+  background-color: #0f172a !important;
   border-color: #334155 !important;
   color: #e2e8f0 !important;
 }
 
-html.dark .dashboard-gradient button[class*="border-gray"] {
-  border-color: #334155;
-  color: #cbd5e1;
+html.dark pre {
+  background-color: #0f172a !important;
+  border-color: #334155 !important;
+  color: #e2e8f0 !important;
 }
 
-html.dark .dashboard-gradient button[class*="border-gray"]:hover {
-  background-color: #1e293b;
-  border-color: #475569;
-}
-
-/* ═══════════════ COLORED BG-*-50 BADGES ═══════════════ */
-
-html.dark .dashboard-gradient .bg-indigo-50 { background-color: rgba(79, 70, 229, 0.15) !important; }
-html.dark .dashboard-gradient .bg-emerald-50,
-html.dark .dashboard-gradient .bg-green-50 { background-color: rgba(16, 185, 129, 0.15) !important; }
-html.dark .dashboard-gradient .bg-red-50 { background-color: rgba(239, 68, 68, 0.15) !important; }
-html.dark .dashboard-gradient .bg-yellow-50,
-html.dark .dashboard-gradient .bg-amber-50 { background-color: rgba(245, 158, 11, 0.15) !important; }
-html.dark .dashboard-gradient .bg-blue-50 { background-color: rgba(59, 130, 246, 0.15) !important; }
-
-/* ═══════════════ SCROLLBAR ═══════════════ */
+/* ═══════════════════════════════════════════════════════════
+   18. SCROLLBAR
+   ═══════════════════════════════════════════════════════════ */
 
 html.dark ::-webkit-scrollbar { width: 6px; height: 6px; }
 html.dark ::-webkit-scrollbar-track { background: #0f172a; }
 html.dark ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
 html.dark ::-webkit-scrollbar-thumb:hover { background: #475569; }
 
-/* ═══════════════ FOCUS RINGS ═══════════════ */
+/* ═══════════════════════════════════════════════════════════
+   19. FOCUS RINGS
+   ═══════════════════════════════════════════════════════════ */
 
-html.dark *:focus-visible { outline-color: #818cf8; }
+html.dark *:focus-visible {
+  outline-color: #818cf8 !important; /* indigo-400 */
+}
 
-/* ═══════════════ PRINT: IGNORE DARK ═══════════════ */
+/* ═══════════════════════════════════════════════════════════
+   20. SPECIFIC COMPONENT PATTERNS
+   ═══════════════════════════════════════════════════════════ */
+
+/* Status dots – keep their colors, just darken surroundings */
+html.dark .animate-pulse[class*="bg-red"] {
+  /* Keep red pulse visible */
+}
+
+/* Rounded pills/badges – ensure text contrast */
+html.dark .rounded-full[class*="bg-indigo-100"] { background-color: rgba(99, 102, 241, 0.2) !important; }
+html.dark .rounded-full[class*="bg-blue-100"]   { background-color: rgba(59, 130, 246, 0.2) !important; }
+html.dark .rounded-full[class*="bg-green-100"]  { background-color: rgba(34, 197, 94, 0.2) !important; }
+html.dark .rounded-full[class*="bg-red-100"]    { background-color: rgba(239, 68, 68, 0.2) !important; }
+html.dark .rounded-full[class*="bg-purple-100"] { background-color: rgba(147, 51, 234, 0.2) !important; }
+
+/* Gradient blurs (KI-Tool output decorations) */
+html.dark .mix-blend-multiply {
+  mix-blend-mode: screen !important;
+  opacity: 0.1 !important;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   21. LANDING PAGE CHART (specific to that component)
+   ═══════════════════════════════════════════════════════════ */
+
+html.dark .bg-gray-50.rounded-lg.hover\:bg-gray-100 {
+  background-color: #0f172a !important;
+}
+
+html.dark .bg-gray-50.rounded-lg.hover\:bg-gray-100:hover {
+  background-color: #1e293b !important;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   22. PRINT: DARK MODE IGNORIEREN
+   ═══════════════════════════════════════════════════════════ */
 
 @media print {
-  html.dark body { background-color: white !important; color: black !important; }
-  html.dark .card-glass { background: white !important; border-color: #e5e7eb !important; color: black !important; }
+  html.dark body                { background-color: white !important; color: black !important; }
+  html.dark .card-glass         { background: white !important; border-color: #e5e7eb !important; color: black !important; }
   html.dark .dashboard-gradient { background: white !important; }
-  html.dark .dashboard-gradient .bg-white { background-color: white !important; }
-  html.dark .shadow-sm, html.dark .shadow-md, html.dark .shadow, html.dark .shadow-lg { box-shadow: none !important; }
+  html.dark .bg-white           { background-color: white !important; color: black !important; }
+  html.dark .bg-gray-50         { background-color: #f9fafb !important; }
+  html.dark .text-gray-900      { color: #111827 !important; }
+  html.dark .text-gray-700      { color: #374151 !important; }
+  html.dark .text-gray-500      { color: #6b7280 !important; }
+  html.dark .shadow-sm,
+  html.dark .shadow-md,
+  html.dark .shadow,
+  html.dark .shadow-lg          { box-shadow: none !important; }
+  html.dark table, html.dark td, html.dark th { color: black !important; }
 }
