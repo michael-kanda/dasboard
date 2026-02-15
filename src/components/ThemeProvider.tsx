@@ -1,7 +1,7 @@
 // src/components/ThemeProvider.tsx
 'use client';
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 
 type Theme = 'light' | 'dark';
 
@@ -23,7 +23,6 @@ export function useTheme() {
 
 interface ThemeProviderProps {
   children: React.ReactNode;
-  /** Standard-Theme wenn nichts in localStorage steht */
   defaultTheme?: Theme;
 }
 
@@ -31,33 +30,45 @@ export default function ThemeProvider({ children, defaultTheme = 'light' }: Them
   const [theme, setThemeState] = useState<Theme>(defaultTheme);
   const [mounted, setMounted] = useState(false);
 
-  // Beim Mount: Theme aus localStorage lesen
+  // ── Theme auf <html> anwenden ──
+  const applyTheme = useCallback((t: Theme) => {
+    if (t === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, []);
+
+  // ── Mount: Theme aus localStorage lesen ──
   useEffect(() => {
     setMounted(true);
     try {
       const stored = localStorage.getItem('datapeak-theme') as Theme | null;
       if (stored === 'light' || stored === 'dark') {
         setThemeState(stored);
-        document.documentElement.classList.toggle('dark', stored === 'dark');
+        applyTheme(stored);
+      } else {
+        // Kein gespeichertes Theme → Light Mode, dark class ENTFERNEN
+        applyTheme('light');
       }
     } catch (e) {
-      // localStorage nicht verfügbar (SSR, Privacy-Mode etc.)
-      console.warn('Could not read theme from localStorage:', e);
+      // localStorage nicht verfügbar → sicherstellen dass dark class weg ist
+      applyTheme('light');
     }
-  }, []);
+  }, [applyTheme]);
 
-  // Theme-Änderungen anwenden
+  // ── Theme-Änderungen anwenden ──
   useEffect(() => {
     if (!mounted) return;
     
-    document.documentElement.classList.toggle('dark', theme === 'dark');
+    applyTheme(theme);
     
     try {
       localStorage.setItem('datapeak-theme', theme);
     } catch (e) {
       console.warn('Could not save theme to localStorage:', e);
     }
-  }, [theme, mounted]);
+  }, [theme, mounted, applyTheme]);
 
   const toggleTheme = () => {
     setThemeState(prev => prev === 'light' ? 'dark' : 'light');
@@ -67,9 +78,6 @@ export default function ThemeProvider({ children, defaultTheme = 'light' }: Them
     setThemeState(newTheme);
   };
 
-  // Hydration mismatch vermeiden: Erst nach Mount rendern
-  // (Kinder werden sofort gerendert, aber Theme-abhängige Klassen
-  //  flashen nicht, weil das html-Element die Klasse trägt)
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme, setTheme }}>
       {children}
