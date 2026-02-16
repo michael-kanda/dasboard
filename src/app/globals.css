@@ -695,9 +695,30 @@ html.dark .bg-gray-50.rounded-lg.hover\:bg-gray-100:hover {
 
 /* ═══════════════════════════════════════════════════════════
    DASHBOARD SECTION SCROLL OFFSET
-   Damit sticky header nicht die Sektion überdeckt beim Scroll
+
+/* ═══════════════════════════════════════════════════════════
+   FIX: Theme-sichere Textfarben
+   Diese Klassen überschreiben die globalen dark-mode Overrides
+   und stellen sicher dass Texte in beiden Modi korrekt sind.
    ═══════════════════════════════════════════════════════════ */
 
-[id^="section-"] {
-  scroll-margin-top: 24px;
+.text-theme-heading {
+  color: #111827 !important;  /* gray-900 - dunkel */
+}
+html.dark .text-theme-heading {
+  color: #f1f5f9 !important;  /* slate-100 - hell */
+}
+
+.text-theme-body {
+  color: #374151 !important;  /* gray-700 */
+}
+html.dark .text-theme-body {
+  color: #e2e8f0 !important;  /* slate-200 */
+}
+
+.text-theme-muted {
+  color: #6b7280 !important;  /* gray-500 */
+}
+html.dark .text-theme-muted {
+  color: #94a3b8 !important;  /* slate-400 */
 }
