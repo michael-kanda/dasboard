@@ -40,9 +40,16 @@ export default function Sidebar() {
   const isSuperAdmin = session?.user?.role === 'SUPERADMIN';
   const isUser = session?.user?.role === 'BENUTZER';
 
-  const defaultLogo = "/logo-data-peak.webp";
-  const logoSrc = session?.user?.logo_url || defaultLogo;
-  const priorityLoad = logoSrc === defaultLogo;
+  // Logo-Logik: Wählt das Logo basierend auf User-Einstellung oder Theme
+  const defaultLogoLight = "/logo-data-peak.webp"; // Pfad für Light Mode
+  const defaultLogoDark = "/logo-data-peak-dark.webp"; // Falls du ein spezielles Dark-Logo hast, sonst nimm den gleichen Pfad
+
+  // Falls du aktuell nur ein Logo hast, das im Dark Mode anders aussehen soll, 
+  // kannst du hier den Pfad anpassen. Wenn es immer "logo-data-peak.webp" sein soll:
+  const systemLogo = theme === 'dark' ? "/logo-data-peak.webp" : "/logo-data-peak.webp"; 
+  
+  const logoSrc = session?.user?.logo_url || systemLogo;
+  const priorityLoad = true;
 
   // ═══════════════════════════════════════════════════════
   // EFFEKTE – alle 1:1 aus Header.tsx
