@@ -293,7 +293,7 @@ export default function Sidebar() {
           </div>
           {!isCollapsed && (
             <div className="overflow-hidden">
-              <div className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+              <div className="text-sm font-semibold text-theme-heading truncate">
                 {session.user?.name ?? session.user?.email}
               </div>
               <div className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
