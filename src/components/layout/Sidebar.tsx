@@ -7,11 +7,13 @@ import { useSession, signOut } from 'next-auth/react';
 import { usePathname } from 'next/navigation';
 import NotificationBell from '@/components/NotificationBell';
 import { useTheme } from '@/components/ThemeProvider';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { 
   List, X, Briefcase, CalendarCheck, ShieldLock, Speedometer2, 
   BoxArrowRight, BoxArrowInRight, HddNetwork, Magic,
-  ChevronLeft, ChevronRight, SunFill, MoonStarsFill
+  ChevronLeft, ChevronRight, SunFill, MoonStarsFill,
+  ChevronDown, ChevronUp,
+  BarChartFill, GraphUpArrow, Robot, FileEarmarkText, PieChartFill, Search
 } from 'react-bootstrap-icons';
 
 interface NavItem {
@@ -29,12 +31,69 @@ export default function Sidebar() {
 
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [dashboardSubmenuOpen, setDashboardSubmenuOpen] = useState(true);
+  const [activeSection, setActiveSection] = useState<string>('');
 
   const [isInMaintenance, setIsInMaintenance] = useState(false);
   const [isCheckingMaintenance, setIsCheckingMaintenance] = useState(true);
   const [kiToolEnabled, setKiToolEnabled] = useState(true);
   const [hasLandingpages, setHasLandingpages] = useState(false);
   const [isCheckingLandingpages, setIsCheckingLandingpages] = useState(true);
+
+  // ═══════════════════════════════════════════════════════
+  // DASHBOARD SEKTIONEN – Untermenü für Projekt-Dashboard
+  // ═══════════════════════════════════════════════════════
+
+  const isDashboardPage = pathname.startsWith('/dashboard/') && pathname !== '/dashboard/freigabe';
+
+  const dashboardSections = [
+    { id: 'section-kpis',         label: 'Traffic & Reichweite',  icon: <BarChartFill size={13} /> },
+    { id: 'section-verlauf',      label: 'Verlauf & Analyse',     icon: <GraphUpArrow size={13} /> },
+    { id: 'section-ki-traffic',   label: 'KI-Traffic',            icon: <Robot size={13} /> },
+    { id: 'section-landingpages', label: 'Top Landingpages',      icon: <FileEarmarkText size={13} /> },
+    { id: 'section-zugriffe',     label: 'Zugriffe nach Quelle',  icon: <PieChartFill size={13} /> },
+    { id: 'section-semrush',      label: 'Semrush Keywords',      icon: <Search size={13} /> },
+  ];
+
+  // Scroll-Spy: Beobachte welche Sektion gerade sichtbar ist
+  useEffect(() => {
+    if (!isDashboardPage) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        // Finde die oberste sichtbare Sektion
+        const visible = entries
+          .filter(e => e.isIntersecting)
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+        if (visible.length > 0) {
+          setActiveSection(visible[0].target.id);
+        }
+      },
+      { rootMargin: '-80px 0px -50% 0px', threshold: 0.1 }
+    );
+
+    // Etwas verzögert starten damit die DOM-Elemente da sind
+    const timer = setTimeout(() => {
+      dashboardSections.forEach(({ id }) => {
+        const el = document.getElementById(id);
+        if (el) observer.observe(el);
+      });
+    }, 500);
+
+    return () => {
+      clearTimeout(timer);
+      observer.disconnect();
+    };
+  }, [isDashboardPage, pathname]);
+
+  // Smooth Scroll zu einer Sektion
+  const scrollToSection = useCallback((sectionId: string) => {
+    const el = document.getElementById(sectionId);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      setActiveSection(sectionId);
+    }
+  }, []);
 
   const isAdmin = session?.user?.role === 'ADMIN' || session?.user?.role === 'SUPERADMIN';
   const isSuperAdmin = session?.user?.role === 'SUPERADMIN';
@@ -243,6 +302,46 @@ export default function Sidebar() {
         {!isCollapsed && <div className="px-3 pt-2 pb-1.5 text-[10px] font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-600">Navigation</div>}
         {mainNavItems.map((item, i) => renderNavLink(item, i))}
         
+        {/* ── Dashboard Sektions-Untermenü ── */}
+        {isDashboardPage && !isCollapsed && (
+          <div className="ml-3 mt-1">
+            <button 
+              onClick={() => setDashboardSubmenuOpen(!dashboardSubmenuOpen)}
+              className="flex items-center gap-2 w-full px-3 py-1.5 text-[10px] font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400 transition-colors"
+            >
+              <span>Sektionen</span>
+              {dashboardSubmenuOpen ? <ChevronUp size={10} /> : <ChevronDown size={10} />}
+            </button>
+            {dashboardSubmenuOpen && (
+              <div className="space-y-0.5 mt-0.5">
+                {dashboardSections.map(({ id, label, icon }) => {
+                  const isActiveSection = activeSection === id;
+                  return (
+                    <button
+                      key={id}
+                      onClick={() => scrollToSection(id)}
+                      className={`
+                        flex items-center gap-2.5 w-full px-3 py-1.5 rounded-lg text-xs font-medium
+                        transition-all duration-150 text-left
+                        ${isActiveSection
+                          ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300'
+                          : 'text-gray-400 hover:bg-gray-50 hover:text-gray-700 dark:text-gray-500 dark:hover:bg-white/5 dark:hover:text-gray-300'
+                        }
+                      `}
+                    >
+                      <span className={`flex-shrink-0 ${isActiveSection ? 'text-indigo-500 dark:text-indigo-400' : ''}`}>{icon}</span>
+                      <span className="truncate">{label}</span>
+                      {isActiveSection && (
+                        <span className="ml-auto w-1.5 h-1.5 rounded-full bg-indigo-500 dark:bg-indigo-400 flex-shrink-0" />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+        
         {adminNavItems.some(item => item.visible !== false) && (
           <>
             {!isCollapsed && <div className="px-3 pt-5 pb-1.5 text-[10px] font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-600">Administration</div>}
@@ -314,6 +413,27 @@ export default function Sidebar() {
       {isMobileMenuOpen && status === 'authenticated' && (
         <div className="absolute top-full left-0 w-full sidebar-bg shadow-lg border-t border-gray-100 dark:border-gray-800 z-50 p-4 flex flex-col gap-2">
           {mainNavItems.map((item, i) => renderMobileNavLink(item, i))}
+          
+          {/* Mobile: Dashboard Sektionen */}
+          {isDashboardPage && (
+            <div className="space-y-1 ml-2 mt-1 mb-1">
+              <div className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500 px-2">Sektionen</div>
+              {dashboardSections.map(({ id, label, icon }) => (
+                <button
+                  key={id}
+                  onClick={() => { scrollToSection(id); setIsMobileMenuOpen(false); }}
+                  className={`flex items-center gap-2 w-full px-3 py-2 rounded-lg text-xs font-medium transition-all
+                    ${activeSection === id 
+                      ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300' 
+                      : 'text-gray-500 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-white/5'}`}
+                >
+                  {icon}
+                  <span>{label}</span>
+                </button>
+              ))}
+            </div>
+          )}
+          
           {adminNavItems.map((item, i) => renderMobileNavLink(item, i))}
           <hr className="my-2 border-gray-200 dark:border-gray-700" />
           <button className="w-full flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-700"
