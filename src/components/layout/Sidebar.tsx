@@ -44,7 +44,7 @@ export default function Sidebar() {
   // DASHBOARD SEKTIONEN – Untermenü für Projekt-Dashboard
   // ═══════════════════════════════════════════════════════
 
-  const isDashboardPage = pathname.startsWith('/dashboard/') && pathname !== '/dashboard/freigabe';
+  const isDashboardPage = pathname.startsWith('/projekt/') || (pathname.startsWith('/dashboard/') && pathname !== '/dashboard/freigabe');
 
   const dashboardSections = [
     { id: 'section-kpis',         label: 'Traffic & Reichweite',  icon: <BarChartFill size={13} /> },
