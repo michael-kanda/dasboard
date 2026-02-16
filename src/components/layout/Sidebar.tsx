@@ -236,7 +236,7 @@ export default function Sidebar() {
               className="object-contain" sizes="40px" />
           </div>
           {!isCollapsed && (
-            <span className="text-base font-bold text-gray-900 dark:text-white tracking-tight whitespace-nowrap">DataPeak</span>
+            <span className="text-base font-bold text-gray-900 dark:text-white tracking-tight whitespace-nowrap sr-only">DataPeak</span>
           )}
         </Link>
       </div>
