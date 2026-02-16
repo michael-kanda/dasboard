@@ -33,12 +33,14 @@ export default function Sidebar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [dashboardSubmenuOpen, setDashboardSubmenuOpen] = useState(true);
   const [activeSection, setActiveSection] = useState<string>('');
-
-  const [isInMaintenance, setIsInMaintenance] = useState(false);
   const [isCheckingMaintenance, setIsCheckingMaintenance] = useState(true);
   const [kiToolEnabled, setKiToolEnabled] = useState(true);
   const [hasLandingpages, setHasLandingpages] = useState(false);
   const [isCheckingLandingpages, setIsCheckingLandingpages] = useState(true);
+
+  const isAdmin = session?.user?.role === 'ADMIN' || session?.user?.role === 'SUPERADMIN';
+  const isSuperAdmin = session?.user?.role === 'SUPERADMIN';
+  const isUser = session?.user?.role === 'BENUTZER';
 
   // ═══════════════════════════════════════════════════════
   // DASHBOARD SEKTIONEN – Untermenü für Projekt-Dashboard
@@ -47,7 +49,7 @@ export default function Sidebar() {
   // Dashboard-Seite erkennen: Admin über /projekt/[id], User über / oder /dashboard/[id]
   const isDashboardPage = pathname.startsWith('/projekt/') || 
     (pathname.startsWith('/dashboard/') && pathname !== '/dashboard/freigabe') ||
-    (isUser && pathname === '/');
+    (session?.user?.role === 'BENUTZER' && pathname === '/');
 
   const dashboardSections = [
     { id: 'section-kpis',         label: 'Traffic & Reichweite',  icon: <BarChartFill size={13} /> },
@@ -102,10 +104,6 @@ export default function Sidebar() {
       setActiveSection(sectionId);
     }
   }, []);
-
-  const isAdmin = session?.user?.role === 'ADMIN' || session?.user?.role === 'SUPERADMIN';
-  const isSuperAdmin = session?.user?.role === 'SUPERADMIN';
-  const isUser = session?.user?.role === 'BENUTZER';
 
   // ═══════════════════════════════════════════════════════
   // LOGO-KONFIGURATION (DATEITAUSCH)
