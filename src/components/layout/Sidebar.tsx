@@ -14,7 +14,6 @@ import {
   ChevronLeft, ChevronRight, SunFill, MoonStarsFill
 } from 'react-bootstrap-icons';
 
-// ─── Typen ──────────────────────────────────────────────
 interface NavItem {
   href: string;
   label: string;
@@ -23,7 +22,6 @@ interface NavItem {
   className?: string;
 }
 
-// ─── Komponente ─────────────────────────────────────────
 export default function Sidebar() {
   const { data: session, status } = useSession();
   const pathname = usePathname();
@@ -115,7 +113,7 @@ export default function Sidebar() {
 
   const adminNavItems: NavItem[] = [
     { href: '/admin', label: 'Admin-Bereich', icon: <ShieldLock size={18} />, visible: isAdmin },
-    { href: '/admin/system', label: 'System', icon: <HddNetwork size={18} />, visible: isSuperAdmin, className: 'text-indigo-400' },
+    { href: '/admin/system', label: 'System', icon: <HddNetwork size={18} />, visible: isSuperAdmin, className: 'text-indigo-600 dark:text-indigo-400' },
   ];
 
   const isActive = (href: string): boolean => {
@@ -125,9 +123,8 @@ export default function Sidebar() {
 
   // ═══════════════════════════════════════════════════════
   // RENDER: Desktop Nav-Link
+  // Light: weiß/grau Töne | Dark: dunkel via dark: prefix
   // ═══════════════════════════════════════════════════════
-  // HINWEIS: Sidebar ist IMMER dunkel – keine dark: Prefixe nötig!
-  // Farben sind direkt für dunklen Hintergrund gesetzt.
 
   const renderNavLink = (item: NavItem, index: number) => {
     if (item.visible === false) return null;
@@ -139,13 +136,13 @@ export default function Sidebar() {
           group relative flex items-center gap-3 px-3 py-2.5 rounded-xl
           transition-all duration-150 text-sm font-medium
           ${active
-            ? 'bg-indigo-500/15 text-indigo-300 shadow-sm'
-            : 'text-gray-400 hover:bg-white/5 hover:text-gray-200'
+            ? 'bg-indigo-50 text-indigo-700 shadow-sm dark:bg-indigo-500/15 dark:text-indigo-300'
+            : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-200'
           }
           ${item.className || ''}
         `}
       >
-        <span className={`flex-shrink-0 flex items-center justify-center w-5 h-5 ${active ? 'text-indigo-400' : ''}`}>
+        <span className={`flex-shrink-0 flex items-center justify-center w-5 h-5 ${active ? 'text-indigo-600 dark:text-indigo-400' : ''}`}>
           {item.icon}
         </span>
         <span className={`whitespace-nowrap transition-all duration-200 ${isCollapsed ? 'md:opacity-0 md:w-0 md:overflow-hidden' : 'opacity-100'}`}>
@@ -174,7 +171,7 @@ export default function Sidebar() {
           text-sm font-medium transition-all
           ${active
             ? 'bg-indigo-600 text-white shadow-sm'
-            : 'bg-gray-800 text-gray-200 border border-gray-700 hover:bg-gray-700'
+            : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700 dark:hover:bg-gray-700'
           }
           ${item.className || ''}
         `}>
@@ -192,7 +189,7 @@ export default function Sidebar() {
   const renderThemeToggle = () => (
     <button onClick={toggleTheme}
       title={theme === 'dark' ? 'Zum Light Mode wechseln' : 'Zum Dark Mode wechseln'}
-      className="group relative flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-150 text-sm font-medium text-gray-400 hover:bg-white/5 hover:text-gray-200 w-full"
+      className="group relative flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-150 text-sm font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-200 w-full"
     >
       <span className="flex-shrink-0 flex items-center justify-center w-5 h-5">
         {theme === 'dark' ? <SunFill size={18} /> : <MoonStarsFill size={18} />}
@@ -209,27 +206,28 @@ export default function Sidebar() {
   );
 
   // ═══════════════════════════════════════════════════════
-  // RENDER: DESKTOP SIDEBAR (IMMER DUNKEL)
+  // RENDER: DESKTOP SIDEBAR
+  // Light: bg-white | Dark: bg-gray-900
   // ═══════════════════════════════════════════════════════
 
   const renderDesktopSidebar = () => (
     <aside className={`
       hidden md:flex flex-col h-screen
-      bg-[#0f1729] text-gray-300
-      border-r border-gray-800/50
+      bg-white dark:bg-gray-900
+      border-r border-gray-200 dark:border-gray-800
       transition-all duration-200 ease-in-out relative flex-shrink-0
       ${isCollapsed ? 'w-[72px]' : 'w-[260px]'}
     `}>
       {/* Toggle Button */}
       <button onClick={() => setIsCollapsed(!isCollapsed)}
-        className="absolute -right-3 top-[28px] z-50 w-6 h-6 bg-gray-800 border border-gray-700 rounded-full flex items-center justify-center shadow-sm hover:shadow-md hover:border-indigo-500 hover:bg-indigo-500/10 transition-all duration-150 text-gray-500 hover:text-indigo-400"
+        className="absolute -right-3 top-[28px] z-50 w-6 h-6 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-full flex items-center justify-center shadow-sm hover:shadow-md hover:border-indigo-300 dark:hover:border-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition-all duration-150 text-gray-400 hover:text-indigo-600 dark:text-gray-500 dark:hover:text-indigo-400"
         title={isCollapsed ? 'Sidebar ausklappen' : 'Sidebar einklappen'}
       >
         {isCollapsed ? <ChevronRight size={12} /> : <ChevronLeft size={12} />}
       </button>
 
       {/* Logo */}
-      <div className="flex items-center h-[68px] px-4 border-b border-gray-800/50 flex-shrink-0 gap-3">
+      <div className="flex items-center h-[68px] px-4 border-b border-gray-100 dark:border-gray-800 flex-shrink-0 gap-3">
         <Link href="/" onClick={handleLinkClick} className="flex items-center gap-3 flex-shrink-0">
           <div className="relative h-[40px] w-[40px] flex-shrink-0">
             <Image src={logoSrc} alt="Dashboard Logo" fill priority={priorityLoad}
@@ -237,23 +235,23 @@ export default function Sidebar() {
               className="object-contain" sizes="40px" />
           </div>
           {!isCollapsed && (
-            <span className="text-base font-bold text-white tracking-tight whitespace-nowrap">DataPeak</span>
+            <span className="text-base font-bold text-gray-900 dark:text-white tracking-tight whitespace-nowrap">DataPeak</span>
           )}
         </Link>
       </div>
 
       {/* User-Info */}
       {status === 'authenticated' && session?.user && (
-        <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-800/50 flex-shrink-0">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 border border-emerald-500/30 flex items-center justify-center flex-shrink-0 text-sm font-semibold text-emerald-400">
+        <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-100 dark:border-gray-800 flex-shrink-0">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-500/20 dark:to-teal-500/20 border border-emerald-200 dark:border-emerald-500/30 flex items-center justify-center flex-shrink-0 text-sm font-semibold text-emerald-600 dark:text-emerald-400">
             {(session.user.name || session.user.email || '?').charAt(0).toUpperCase()}
           </div>
           {!isCollapsed && (
             <div className="overflow-hidden">
-              <div className="text-sm font-semibold text-white truncate">
+              <div className="text-sm font-semibold text-gray-900 dark:text-white truncate">
                 {session.user?.name ?? session.user?.email}
               </div>
-              <div className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-indigo-400">
+              <div className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
                 {isAdmin && <ShieldLock size={9} />}
                 <span>{session.user.role}</span>
               </div>
@@ -266,26 +264,26 @@ export default function Sidebar() {
       {status === 'authenticated' && (
         <nav className="flex-1 overflow-y-auto px-2.5 py-3 space-y-1 scrollbar-none">
           {!isCollapsed && (
-            <div className="px-3 pt-2 pb-1.5 text-[10px] font-semibold uppercase tracking-widest text-gray-600">Navigation</div>
+            <div className="px-3 pt-2 pb-1.5 text-[10px] font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-600">Navigation</div>
           )}
           {mainNavItems.map((item, i) => renderNavLink(item, i))}
 
           {adminNavItems.some(item => item.visible !== false) && (
             <>
               {!isCollapsed && (
-                <div className="px-3 pt-5 pb-1.5 text-[10px] font-semibold uppercase tracking-widest text-gray-600">Administration</div>
+                <div className="px-3 pt-5 pb-1.5 text-[10px] font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-600">Administration</div>
               )}
-              {isCollapsed && <div className="my-2 mx-3 h-px bg-gray-800" />}
+              {isCollapsed && <div className="my-2 mx-3 h-px bg-gray-100 dark:bg-gray-800" />}
               {adminNavItems.map((item, i) => renderNavLink(item, i))}
             </>
           )}
 
           {!isCollapsed && (
-            <div className="px-3 pt-5 pb-1.5 text-[10px] font-semibold uppercase tracking-widest text-gray-600">Sonstiges</div>
+            <div className="px-3 pt-5 pb-1.5 text-[10px] font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-600">Sonstiges</div>
           )}
-          {isCollapsed && <div className="my-2 mx-3 h-px bg-gray-800" />}
+          {isCollapsed && <div className="my-2 mx-3 h-px bg-gray-100 dark:bg-gray-800" />}
           
-          <div className="relative flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-150 text-sm font-medium text-gray-400 hover:bg-white/5 hover:text-gray-200">
+          <div className="relative flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-150 text-sm font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-200">
             <NotificationBell />
             {!isCollapsed && <span className="whitespace-nowrap">Benachrichtigungen</span>}
           </div>
@@ -301,10 +299,10 @@ export default function Sidebar() {
       )}
 
       {/* Footer: Abmelden / Anmelden */}
-      <div className="px-2.5 py-3 border-t border-gray-800/50 flex-shrink-0">
+      <div className="px-2.5 py-3 border-t border-gray-100 dark:border-gray-800 flex-shrink-0">
         {status === 'authenticated' ? (
           <button onClick={() => signOut({ callbackUrl: '/login' })}
-            className="group relative w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-150 text-sm font-medium text-red-400 hover:bg-red-500/10 hover:text-red-300"
+            className="group relative w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-150 text-sm font-medium text-red-500 hover:bg-red-50 hover:text-red-600 dark:text-red-400 dark:hover:bg-red-500/10 dark:hover:text-red-300"
           >
             <BoxArrowRight size={18} className="flex-shrink-0" />
             {!isCollapsed && <span>Abmelden</span>}
@@ -316,7 +314,7 @@ export default function Sidebar() {
           </button>
         ) : status === 'unauthenticated' ? (
           <Link href="/login"
-            className="group relative w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-150 text-sm font-medium text-indigo-400 hover:bg-indigo-500/10"
+            className="group relative w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-150 text-sm font-medium text-indigo-600 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-500/10"
           >
             <BoxArrowInRight size={18} className="flex-shrink-0" />
             {!isCollapsed && <span>Anmelden</span>}
@@ -332,11 +330,12 @@ export default function Sidebar() {
   );
 
   // ═══════════════════════════════════════════════════════
-  // RENDER: MOBILE HEADER (IMMER DUNKEL)
+  // RENDER: MOBILE HEADER
+  // Light: bg-white | Dark: bg-gray-900
   // ═══════════════════════════════════════════════════════
 
   const renderMobileHeader = () => (
-    <header className="md:hidden bg-[#0f1729] shadow-md relative print:hidden">
+    <header className="md:hidden bg-white dark:bg-gray-900 shadow-md relative print:hidden">
       <nav className="w-full px-6 py-3 flex justify-between items-center">
         <div className="flex items-center space-x-4">
           <Link href="/" onClick={handleLinkClick}>
@@ -347,27 +346,27 @@ export default function Sidebar() {
             </div>
           </Link>
           {status === 'authenticated' && (
-            <span className="text-gray-300 underline underline-offset-6 hidden sm:block">
+            <span className="text-gray-600 dark:text-gray-300 underline underline-offset-6 hidden sm:block">
               Hallo, {session?.user?.name ?? session?.user?.email}
             </span>
           )}
         </div>
 
         <div className="flex items-center">
-          <button onClick={toggleTheme} className="p-2 text-gray-400 hover:text-gray-200 transition-colors"
+          <button onClick={toggleTheme} className="p-2 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
             title={theme === 'dark' ? 'Light Mode' : 'Dark Mode'}>
             {theme === 'dark' ? <SunFill size={18} /> : <MoonStarsFill size={18} />}
           </button>
           {status === 'authenticated' && <NotificationBell />}
           <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="text-gray-400 hover:text-gray-200 p-2 ml-2" aria-label="Menü umschalten">
+            className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200 p-2 ml-2" aria-label="Menü umschalten">
             {isMobileMenuOpen ? <X size={28} /> : <List size={28} />}
           </button>
         </div>
       </nav>
 
       {isMobileMenuOpen && status === 'authenticated' && (
-        <div className="absolute top-full left-0 w-full bg-[#0f1729] shadow-lg border-t border-gray-800 z-50"
+        <div className="absolute top-full left-0 w-full bg-white dark:bg-gray-900 shadow-lg border-t border-gray-100 dark:border-gray-800 z-50"
           onClick={handleLinkClick}>
           <div className="flex flex-col space-y-2 p-4">
             {isAdmin && (
@@ -376,7 +375,7 @@ export default function Sidebar() {
                 {renderMobileNavLink({ href: '/admin/redaktionsplan', label: 'Redaktionspläne', icon: <CalendarCheck size={16} />, visible: true }, 1)}
                 {shouldShowKiTool && renderMobileNavLink({ href: '/admin/ki-tool', label: 'KI Tool', icon: <Magic size={16} />, visible: true }, 2)}
                 {renderMobileNavLink({ href: '/admin', label: 'Admin-Bereich', icon: <ShieldLock size={16} />, visible: true }, 3)}
-                {isSuperAdmin && renderMobileNavLink({ href: '/admin/system', label: 'System Status', icon: <HddNetwork size={16} />, visible: true, className: 'text-indigo-400 border-indigo-500/30 bg-indigo-500/10' }, 4)}
+                {isSuperAdmin && renderMobileNavLink({ href: '/admin/system', label: 'System Status', icon: <HddNetwork size={16} />, visible: true, className: 'text-indigo-600 border-indigo-200 bg-indigo-50 dark:text-indigo-400 dark:border-indigo-500/30 dark:bg-indigo-500/10' }, 4)}
               </>
             )}
             {isUser && (
@@ -385,8 +384,8 @@ export default function Sidebar() {
                 {shouldShowRedaktionsplanForUser && renderMobileNavLink({ href: '/dashboard/freigabe', label: 'Redaktionsplan', icon: <CalendarCheck size={16} />, visible: true }, 11)}
               </>
             )}
-            <hr className="my-2 border-gray-700" />
-            <button className="w-full flex items-center justify-start gap-2 px-4 py-2.5 rounded-lg text-sm font-medium bg-gray-800 text-gray-200 border border-gray-700 hover:bg-gray-700 transition-all"
+            <hr className="my-2 border-gray-200 dark:border-gray-700" />
+            <button className="w-full flex items-center justify-start gap-2 px-4 py-2.5 rounded-lg text-sm font-medium bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700 dark:hover:bg-gray-700 transition-all"
               onClick={() => signOut({ callbackUrl: '/login' })}>
               <BoxArrowRight size={16} /> Abmelden
             </button>
