@@ -212,10 +212,11 @@ export default function Sidebar() {
 
   const renderDesktopSidebar = () => (
     <aside className={`
-      hidden md:flex flex-col h-screen
+      hidden md:flex flex-col
       bg-white dark:bg-gray-900
       border-r border-gray-200 dark:border-gray-800
       transition-all duration-200 ease-in-out relative flex-shrink-0
+      min-h-screen self-stretch
       ${isCollapsed ? 'w-[72px]' : 'w-[260px]'}
     `}>
       {/* Toggle Button */}
