@@ -39,7 +39,7 @@ export default function GlobalHeader({
 
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <h1 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">{domain || 'Projekt Dashboard'}</h1>
+              <h1 className="text-xl font-bold text-theme-heading tracking-tight">{domain || 'Projekt Dashboard'}</h1>
               {isAdmin && (
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700">
                   <ShieldLock size={10} />
@@ -51,7 +51,7 @@ export default function GlobalHeader({
             <div className="flex flex-col gap-1">
               {/* Projekt-ID */}
               {projectId && (
-                <span className="text-[10px] text-gray-400 dark:text-gray-500 font-mono tracking-wide">
+                <span className="text-[10px] text-theme-muted font-mono tracking-wide">
                   ID: {projectId}
                 </span>
               )}
@@ -75,7 +75,7 @@ export default function GlobalHeader({
         <div className="w-full sm:w-auto flex flex-col gap-2 sm:items-end">
 
           {/* Update-Info (über dem Picker) */}
-          <span className="text-gray-500 dark:text-gray-500 text-[10px] flex items-center gap-1">
+          <span className="text-theme-muted text-[10px] flex items-center gap-1">
             <span>Google Updates: 24h</span>
             <span className="text-gray-300 dark:text-gray-600">•</span>
             <span>Semrush Updates: 14 Tage</span>
