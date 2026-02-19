@@ -328,19 +328,19 @@ export default function Sidebar() {
                       key={id}
                       onClick={() => scrollToSection(id)}
                       className={`
-                        flex items-center gap-2.5 w-full px-3 py-1.5 rounded-lg text-xs font-medium
-                        transition-all duration-150 text-left
+                        flex items-center gap-2.5 w-full px-3 py-1.5 rounded-lg text-xs
+                        transition-all duration-200 text-left relative
                         ${isActiveSection
-                          ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300'
-                          : 'text-gray-400 hover:bg-gray-50 hover:text-gray-700 dark:text-gray-500 dark:hover:bg-white/5 dark:hover:text-gray-300'
+                          ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300 font-semibold'
+                          : 'text-gray-400 hover:bg-gray-50 hover:text-gray-700 dark:text-gray-500 dark:hover:bg-white/5 dark:hover:text-gray-300 font-medium'
                         }
                       `}
                     >
+                      {isActiveSection && (
+                        <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-4 rounded-full bg-indigo-500 dark:bg-indigo-400" />
+                      )}
                       <span className={`flex-shrink-0 ${isActiveSection ? 'text-indigo-500 dark:text-indigo-400' : ''}`}>{icon}</span>
                       <span className="truncate">{label}</span>
-                      {isActiveSection && (
-                        <span className="ml-auto w-1.5 h-1.5 rounded-full bg-indigo-500 dark:bg-indigo-400 flex-shrink-0" />
-                      )}
                     </button>
                   );
                 })}
@@ -417,8 +417,15 @@ export default function Sidebar() {
         </div>
       </nav>
 
+      {isMobileMenuOpen && (
+        <div
+          className="fixed inset-0 bg-black/20 dark:bg-black/40 z-40 md:hidden backdrop-blur-[1px]"
+          onClick={() => setIsMobileMenuOpen(false)}
+          aria-hidden="true"
+        />
+      )}
       {isMobileMenuOpen && status === 'authenticated' && (
-        <div className="absolute top-full left-0 w-full sidebar-bg shadow-lg border-t border-gray-100 dark:border-gray-800 z-50 p-4 flex flex-col gap-2">
+        <div className="absolute top-full left-0 w-full sidebar-bg shadow-xl border-t border-gray-100 dark:border-gray-800 z-50 p-4 flex flex-col gap-2 max-h-[80vh] overflow-y-auto">
           {mainNavItems.map((item, i) => renderMobileNavLink(item, i))}
           
           {/* Mobile: Dashboard Sektionen */}
