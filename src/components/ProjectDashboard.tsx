@@ -176,7 +176,7 @@ export default function ProjectDashboard({
         </div>
       )}
       
-      <div className="flex-grow w-full px-4 sm:px-6 lg:px-8 py-6">
+      <div className="flex-grow w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <GlobalHeader 
           domain={domain}
           projectId={projectId}
@@ -194,7 +194,7 @@ export default function ProjectDashboard({
 
         {/* AI WIDGET */}
         {projectId && (
-          <div id="section-ai-analyse" className="mt-6 print:hidden">
+          <div id="section-ai-analyse" className="mt-8 scroll-mt-20 print:hidden">
             <AiAnalysisWidget 
               projectId={projectId}
               domain={domain}
@@ -206,7 +206,7 @@ export default function ProjectDashboard({
         )}
 
         {/* KPI GRID */}
-        <div id="section-kpis" className="mt-6 print-kpi-grid">
+        <div id="section-kpis" className="mt-8 scroll-mt-20 print-kpi-grid">
           {extendedKpis && (
             <TableauKpiGrid
               kpis={extendedKpis}
@@ -218,7 +218,7 @@ export default function ProjectDashboard({
           )}
         </div>
 
-        <div id="section-verlauf" className="mt-6 print-trend-chart" ref={chartRef}>
+        <div id="section-verlauf" className="mt-8 scroll-mt-20 print-trend-chart" ref={chartRef}>
           <KpiTrendChart 
             activeKpi={activeKpi}
             onKpiChange={(kpi) => setActiveKpi(kpi as ActiveKpi)}
@@ -227,7 +227,7 @@ export default function ProjectDashboard({
         </div>
         
         {/* KI-Traffic Sektion mit Toggle für Detail-Ansicht */}
-        <div id="section-ki-traffic" className="grid grid-cols-1 xl:grid-cols-3 gap-6 mt-6 print-traffic-grid">
+        <div id="section-ki-traffic" className="grid grid-cols-1 xl:grid-cols-3 gap-6 mt-8 scroll-mt-20 print-traffic-grid">
           <div className="xl:col-span-1 print-ai-card">
             <AiTrafficCard 
               totalSessions={data.aiTraffic?.totalSessions ?? 0}
@@ -261,7 +261,7 @@ export default function ProjectDashboard({
 
         {/* KI-Traffic Detail-Ansicht (ausklappbar) */}
         {showAiTrafficDetail && hasAiTraffic && (
-          <div className="mt-6 animate-in slide-in-from-top-4 duration-300 print:hidden">
+          <div className="mt-8 animate-in slide-in-from-top-4 duration-300 print:hidden">
             <AiTrafficDetailWidgetV2 
               projectId={projectId}
               dateRange={dateRange}
@@ -270,7 +270,7 @@ export default function ProjectDashboard({
         )}
 
         {shouldRenderChart && (
-          <div id="section-landingpages" className={`mt-6 transition-all duration-300 ${!isLandingPagesVisible && isAdmin ? 'opacity-70 grayscale-[0.5]' : ''}`}>
+          <div id="section-landingpages" className={`mt-8 scroll-mt-20 transition-all duration-300 ${!isLandingPagesVisible && isAdmin ? 'opacity-70 grayscale-[0.5]' : ''}`}>
             {isAdmin && (
                <div className="flex items-center justify-end mb-2 print:hidden">
                  <button 
@@ -303,7 +303,7 @@ export default function ProjectDashboard({
         )}
 
         {/* PIE CHARTS */}
-        <div id="section-zugriffe" className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6 print-pie-grid">
+        <div id="section-zugriffe" className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8 scroll-mt-20 print-pie-grid">
           <TableauPieChart 
             data={data.channelData} 
             title="Zugriffe nach Channel" 
@@ -328,7 +328,7 @@ export default function ProjectDashboard({
         </div>
         
         {hasSemrushConfig && (
-          <div id="section-semrush" className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6 print-semrush-grid">
+          <div id="section-semrush" className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8 scroll-mt-20 print-semrush-grid">
             {hasKampagne1Config && <div className="card-glass p-4 sm:p-6"><SemrushTopKeywords projectId={projectId} /></div>}
             {hasKampagne2Config && <div className="card-glass p-4 sm:p-6"><SemrushTopKeywords02 projectId={projectId} /></div>}
           </div>

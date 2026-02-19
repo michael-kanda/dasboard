@@ -74,9 +74,12 @@ export default function TableauKpiGrid({
       
       {/* ZEILE 1: Traffic & Reichweite */}
       <div>
-        <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4 px-1">Traffic & Reichweite</h3>
-        {/* Layout angepasst auf grid-cols-4, da Sessions entfernt wurde */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-4">
+        <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-4 px-1 flex items-center gap-3">
+          <span className="h-px flex-1 bg-gray-200 dark:bg-gray-700"></span>
+          <span>Traffic & Reichweite</span>
+          <span className="h-px flex-1 bg-gray-200 dark:bg-gray-700"></span>
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
           
           <TableauKpiCard
             title="Impressionen"
@@ -143,8 +146,12 @@ export default function TableauKpiGrid({
 
       {/* ZEILE 2: Qualität & Interaktion */}
       <div>
-        <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4 px-1">Qualität & Interaktion</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-4">
+        <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-4 px-1 flex items-center gap-3">
+          <span className="h-px flex-1 bg-gray-200 dark:bg-gray-700"></span>
+          <span>Qualität & Interaktion</span>
+          <span className="h-px flex-1 bg-gray-200 dark:bg-gray-700"></span>
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
           
           {kpis.engagementRate && (
             <TableauKpiCard
