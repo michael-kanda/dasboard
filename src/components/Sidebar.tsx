@@ -177,7 +177,7 @@ export default function Sidebar() {
 
   const adminNavItems: NavItem[] = [
     { href: '/admin', label: 'Admin-Bereich', icon: <ShieldLock size={18} />, visible: isAdmin },
-    { href: '/admin/system', label: 'System', icon: <HddNetwork size={18} />, visible: isSuperAdmin, className: 'text-indigo-600 dark:text-indigo-400' },
+    { href: '/admin/system', label: 'System', icon: <HddNetwork size={18} />, visible: isSuperAdmin, className: 'accent-indigo-text' },
   ];
 
   const isActive = (href: string): boolean => {
@@ -195,13 +195,13 @@ export default function Sidebar() {
           group relative flex items-center gap-3 px-3 py-2.5 rounded-xl
           transition-all duration-150 text-sm font-medium
           ${active
-            ? 'bg-indigo-50 text-indigo-700 shadow-sm dark:bg-indigo-500/15 dark:text-indigo-300'
-            : 'text-muted hover:bg-surface-secondary hover:text-heading dark:hover:bg-white/5'
+            ? 'nav-active shadow-sm'
+            : 'text-muted hover:bg-surface-secondary hover:text-heading nav-hover'
           }
           ${item.className || ''}
         `}
       >
-        <span className={`flex-shrink-0 flex items-center justify-center w-5 h-5 ${active ? 'text-indigo-600 dark:text-indigo-400' : ''}`}>
+        <span className={`flex-shrink-0 flex items-center justify-center w-5 h-5 ${active ? 'accent-indigo-text' : ''}`}>
           {item.icon}
         </span>
         <span className={`whitespace-nowrap transition-all duration-200 ${isCollapsed ? 'md:opacity-0 md:w-0 md:overflow-hidden' : 'opacity-100'}`}>
@@ -239,7 +239,7 @@ export default function Sidebar() {
 
   const renderThemeToggle = () => (
     <button onClick={toggleTheme}
-      className="group relative flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-150 text-sm font-medium text-muted hover:bg-surface-secondary hover:text-heading dark:hover:bg-white/5 w-full"
+      className="group relative flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-150 text-sm font-medium text-muted hover:bg-surface-secondary hover:text-heading nav-hover w-full"
     >
       <span className="flex-shrink-0 flex items-center justify-center w-5 h-5">
         {theme === 'dark' ? <SunFill size={18} /> : <MoonStarsFill size={18} />}
@@ -261,7 +261,7 @@ export default function Sidebar() {
       ${isCollapsed ? 'w-[72px]' : 'w-[260px]'}
     `}>
       <button onClick={() => setIsCollapsed(!isCollapsed)}
-        className="absolute -right-3 top-[28px] z-50 w-6 h-6 sidebar-bg border border-theme-border-default rounded-full flex items-center justify-center shadow-sm hover:shadow-md hover:border-indigo-300 dark:hover:border-indigo-500 transition-all duration-150 text-faint hover:text-indigo-600"
+        className="absolute -right-3 top-[28px] z-50 w-6 h-6 sidebar-bg border border-theme-border-default rounded-full flex items-center justify-center shadow-sm hover:shadow-md hover-border-indigo transition-all duration-150 text-faint hover:text-indigo-600"
       >
         {isCollapsed ? <ChevronRight size={12} /> : <ChevronLeft size={12} />}
       </button>
@@ -288,7 +288,7 @@ export default function Sidebar() {
 
       {status === 'authenticated' && session?.user && (
         <div className="flex items-center gap-3 px-4 py-3 border-b border-theme-border-subtle flex-shrink-0">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-500/20 dark:to-teal-500/20 border border-emerald-200 dark:border-emerald-500/30 flex items-center justify-center flex-shrink-0 text-sm font-semibold text-emerald-600 dark:text-emerald-400">
+          <div className="w-9 h-9 rounded-xl accent-emerald-avatar border flex items-center justify-center flex-shrink-0 text-sm font-semibold">
             {(session.user.name || session.user.email || '?').charAt(0).toUpperCase()}
           </div>
           {!isCollapsed && (
@@ -296,7 +296,7 @@ export default function Sidebar() {
               <div className="text-sm font-semibold text-theme-heading truncate">
                 {session.user?.name ?? session.user?.email}
               </div>
-              <div className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
+              <div className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider accent-indigo-text">
                 {isAdmin && <ShieldLock size={9} />}
                 <span>{session.user.role}</span>
               </div>
@@ -331,15 +331,15 @@ export default function Sidebar() {
                         flex items-center gap-2.5 w-full px-3 py-1.5 rounded-lg text-xs
                         transition-all duration-200 text-left relative
                         ${isActiveSection
-                          ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300 font-semibold'
-                          : 'text-faint hover:bg-surface-secondary hover:text-body dark:hover:bg-white/5 font-medium'
+                          ? 'nav-active font-semibold'
+                          : 'text-faint hover:bg-surface-secondary hover:text-body nav-hover font-medium'
                         }
                       `}
                     >
                       {isActiveSection && (
-                        <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-4 rounded-full bg-indigo-500 dark:bg-indigo-400" />
+                        <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-4 rounded-full accent-indigo-indicator" />
                       )}
-                      <span className={`flex-shrink-0 ${isActiveSection ? 'text-indigo-500 dark:text-indigo-400' : ''}`}>{icon}</span>
+                      <span className={`flex-shrink-0 ${isActiveSection ? 'accent-indigo-text' : ''}`}>{icon}</span>
                       <span className="truncate">{label}</span>
                     </button>
                   );
@@ -358,7 +358,7 @@ export default function Sidebar() {
         )}
 
         <div className="my-2 mx-3 h-px bg-theme-border-subtle" />
-        <div className="relative flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-150 text-sm font-medium text-muted hover:bg-surface-secondary hover:text-heading dark:hover:bg-white/5">
+        <div className="relative flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-150 text-sm font-medium text-muted hover:bg-surface-secondary hover:text-heading nav-hover">
           <NotificationBell />
           {!isCollapsed && <span className="whitespace-nowrap">Benachrichtigungen</span>}
         </div>
@@ -368,13 +368,13 @@ export default function Sidebar() {
       <div className="px-2.5 py-3 border-t border-theme-border-subtle flex-shrink-0">
         {status === 'authenticated' ? (
           <button onClick={() => signOut({ callbackUrl: '/login' })}
-            className="group relative w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10"
+            className="group relative w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-500 hover-red-bg"
           >
             <BoxArrowRight size={18} className="flex-shrink-0" />
             {!isCollapsed && <span>Abmelden</span>}
           </button>
         ) : (
-          <Link href="/login" className="group relative w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-indigo-600 hover:bg-indigo-50 dark:text-indigo-400">
+          <Link href="/login" className="group relative w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium accent-indigo-text hover:bg-indigo-50">
             <BoxArrowInRight size={18} className="flex-shrink-0" />
             {!isCollapsed && <span>Anmelden</span>}
           </Link>
@@ -419,7 +419,7 @@ export default function Sidebar() {
 
       {isMobileMenuOpen && (
         <div
-          className="fixed inset-0 bg-black/20 dark:bg-black/40 z-40 md:hidden backdrop-blur-[1px]"
+          className="fixed inset-0 overlay-backdrop z-40 md:hidden backdrop-blur-[1px]"
           onClick={() => setIsMobileMenuOpen(false)}
           aria-hidden="true"
         />
@@ -438,8 +438,8 @@ export default function Sidebar() {
                   onClick={() => { scrollToSection(id); setIsMobileMenuOpen(false); }}
                   className={`flex items-center gap-2 w-full px-3 py-2 rounded-lg text-xs font-medium transition-all
                     ${activeSection === id
-                      ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300'
-                      : 'text-muted hover:bg-surface-secondary dark:hover:bg-white/5'}`}
+                      ? 'nav-active'
+                      : 'text-muted hover:bg-surface-secondary nav-hover'}`}
                 >
                   {icon}
                   <span>{label}</span>

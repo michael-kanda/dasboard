@@ -134,7 +134,7 @@ export default function ProjectsClientView({ initialProjects }: Props) {
             }
 
             return (
-              <div key={user.id} className="bg-surface rounded-xl shadow-sm border border-theme-border-default hover:shadow-lg hover:border-indigo-300 dark:hover:border-indigo-500/30 hover:-translate-y-0.5 transition-all duration-300 p-6 flex flex-col h-full">
+              <div key={user.id} className="bg-surface rounded-xl shadow-sm border border-theme-border-default hover:shadow-lg hover-border-indigo hover:-translate-y-0.5 transition-all duration-300 p-6 flex flex-col h-full">
                 
                 <div className="flex justify-between items-start mb-4">
                   <div>

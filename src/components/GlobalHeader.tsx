@@ -31,7 +31,7 @@ export default function GlobalHeader({
         
         {/* LINKE SEITE: Projekt-Kontext */}
         <div className="flex items-center gap-5">
-          <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 bg-indigo-50/80 dark:bg-indigo-500/15 p-3 rounded-xl backdrop-blur-sm shadow-sm border border-indigo-100/50 dark:border-indigo-500/20">
+          <div className="flex items-center gap-2 accent-indigo-box p-3 rounded-xl backdrop-blur-sm shadow-sm border">
             <Globe size={28} />
           </div>
 
@@ -58,7 +58,7 @@ export default function GlobalHeader({
 
               {/* Betreut durch */}
               {userEmail && (
-                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 mt-1 rounded-full text-[10px] font-bold tracking-wider bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-500/15 dark:to-teal-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-100/80 dark:border-emerald-500/25 shadow-sm w-fit">
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 mt-1 rounded-full text-[10px] font-bold tracking-wider accent-emerald-badge border shadow-sm w-fit">
                   <span className="relative flex h-1.5 w-1.5">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                     <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>

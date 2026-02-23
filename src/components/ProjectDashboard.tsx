@@ -147,7 +147,7 @@ export default function ProjectDashboard({
   const hasAiTraffic = (data.aiTraffic?.totalSessions ?? 0) > 0;
 
   return (
-    <div className="min-h-screen flex flex-col dashboard-gradient dark:dashboard-gradient-dark relative">
+    <div className="min-h-screen flex flex-col dashboard-gradient relative">
       
       {/* Lightbox Spinner */}
       {isUpdating && (
@@ -293,7 +293,7 @@ export default function ProjectDashboard({
                />
                {!isLandingPagesVisible && isAdmin && (
                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                   <div className="bg-gray-900/10 dark:bg-gray-100/10 backdrop-blur-[1px] px-4 py-2 rounded-lg border border-gray-900/20 dark:border-gray-100/20 text-strong text-xs font-semibold shadow-sm">
+                   <div className="overlay-muted-badge backdrop-blur-[1px] px-4 py-2 rounded-lg border text-strong text-xs font-semibold shadow-sm">
                      🚫 Für Kunden ausgeblendet
                    </div>
                  </div>
