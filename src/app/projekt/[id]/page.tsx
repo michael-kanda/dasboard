@@ -92,8 +92,8 @@ export default async function ProjectPage({
 
   if (!data || !data.dashboardData) {
     return (
-      <div className="flex justify-center items-center min-h-screen bg-gray-50">
-        <p className="text-gray-500">Projekt nicht gefunden oder keine Daten verfügbar.</p>
+      <div className="flex justify-center items-center min-h-screen bg-surface-secondary">
+        <p className="text-muted">Projekt nicht gefunden oder keine Daten verfügbar.</p>
       </div>
     );
   }
