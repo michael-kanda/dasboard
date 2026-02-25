@@ -44,32 +44,32 @@ export async function POST(req: NextRequest) {
       await new Promise(resolve => setTimeout(resolve, 2000));
 
       const demoResponse = `<h4 class="font-bold text-indigo-900 mb-3 text-base">Zeitplan:</h4>
-<p class="mb-4 text-gray-700">Status: Laufende Betreuung<br>Monat: Fortlaufend / Offen</p>
+<p class="mb-4 text-body">Status: Laufende Betreuung<br>Monat: Fortlaufend / Offen</p>
 <h4 class="font-bold text-indigo-900 mt-6 mb-3 text-base">Performance Kennzahlen:</h4>
-<ul class="space-y-2 mb-4 text-sm text-gray-600 list-none pl-1">
-<li class="flex gap-2"><span class="text-indigo-400 mt-1">•</span><span>Nutzer (Gesamt): <span class="font-semibold text-gray-900">2.847</span> (<span class="text-emerald-600 font-bold">+19,2%</span>)</span></li>
-<li class="flex gap-2"><span class="text-indigo-400 mt-1">•</span><span>Klassische Besucher: <span class="font-semibold text-gray-900">2.713</span></span></li>
-<li class="flex gap-2"><span class="text-indigo-400 mt-1">•</span><span>Sichtbarkeit in KI-Systemen: <span class="font-semibold text-gray-900">134</span></span></li>
-<li class="flex gap-2"><span class="text-indigo-400 mt-1">•</span><span>Impressionen: <span class="font-semibold text-gray-900">28.934</span> (<span class="text-emerald-600 font-bold">+22,3%</span>)</span></li>
-<li class="flex gap-2"><span class="text-indigo-400 mt-1">•</span><span>Klicks: <span class="font-semibold text-gray-900">1.247</span> (<span class="text-emerald-600 font-bold">+18,5%</span>)</span></li>
-<li class="flex gap-2"><span class="text-indigo-400 mt-1">•</span><span>Conversions: <span class="font-semibold text-gray-900">127</span> (<span class="text-emerald-600 font-bold">+31,5%</span>)</span></li>
-<li class="flex gap-2"><span class="text-indigo-400 mt-1">•</span><span>Interaktionsrate: <span class="font-semibold text-gray-900">68,5%</span></span></li>
+<ul class="space-y-2 mb-4 text-sm text-secondary list-none pl-1">
+<li class="flex gap-2"><span class="text-indigo-400 mt-1">•</span><span>Nutzer (Gesamt): <span class="font-semibold text-heading">2.847</span> (<span class="text-emerald-600 font-bold">+19,2%</span>)</span></li>
+<li class="flex gap-2"><span class="text-indigo-400 mt-1">•</span><span>Klassische Besucher: <span class="font-semibold text-heading">2.713</span></span></li>
+<li class="flex gap-2"><span class="text-indigo-400 mt-1">•</span><span>Sichtbarkeit in KI-Systemen: <span class="font-semibold text-heading">134</span></span></li>
+<li class="flex gap-2"><span class="text-indigo-400 mt-1">•</span><span>Impressionen: <span class="font-semibold text-heading">28.934</span> (<span class="text-emerald-600 font-bold">+22,3%</span>)</span></li>
+<li class="flex gap-2"><span class="text-indigo-400 mt-1">•</span><span>Klicks: <span class="font-semibold text-heading">1.247</span> (<span class="text-emerald-600 font-bold">+18,5%</span>)</span></li>
+<li class="flex gap-2"><span class="text-indigo-400 mt-1">•</span><span>Conversions: <span class="font-semibold text-heading">127</span> (<span class="text-emerald-600 font-bold">+31,5%</span>)</span></li>
+<li class="flex gap-2"><span class="text-indigo-400 mt-1">•</span><span>Interaktionsrate: <span class="font-semibold text-heading">68,5%</span></span></li>
 </ul>
 <div class="mt-6 p-4 bg-emerald-50 rounded-xl border border-emerald-100 flex items-start gap-4 shadow-sm">
-<div class="bg-white p-2.5 rounded-full text-emerald-600 shadow-sm mt-1">🏆</div>
+<div class="bg-surface p-2.5 rounded-full text-emerald-600 shadow-sm mt-1">🏆</div>
 <div><div class="text-[10px] font-bold text-emerald-700 uppercase tracking-wider mb-1">Top Erfolg</div>
 <div class="text-sm font-semibold text-emerald-900 leading-relaxed">Starker Zuwachs bei Conversions (+31,5%) und stabile Engagement-Rate</div></div>
 </div>[[SPLIT]]<p class="mb-4 font-medium">Sehr geehrte Kundin, sehr geehrter Kunde,</p>
 <h4 class="font-bold text-indigo-900 mt-6 mb-3 text-base">Zusammenfassung:</h4>
-<p class="mb-4 leading-relaxed text-gray-700">Ihr Demo-Shop entwickelt sich hervorragend! Die Besucherzahlen zeigen einen starken Aufwärtstrend (+24% im Vergleich zum Vormonat). Besonders erfreulich: Die Conversion-Rate ist auf stabile 3,2% gestiegen.</p>
+<p class="mb-4 leading-relaxed text-body">Ihr Demo-Shop entwickelt sich hervorragend! Die Besucherzahlen zeigen einen starken Aufwärtstrend (+24% im Vergleich zum Vormonat). Besonders erfreulich: Die Conversion-Rate ist auf stabile 3,2% gestiegen.</p>
 <h4 class="font-bold text-indigo-900 mt-6 mb-3 text-base">Top Seiten (Umsatz):</h4>
-<ul class="space-y-2 mb-4 text-sm text-gray-600 list-none pl-1">
+<ul class="space-y-2 mb-4 text-sm text-secondary list-none pl-1">
 <li class="flex gap-2"><span class="text-indigo-400 mt-1">•</span><span>/produkte/sneaker-collection (52 Conversions)</span></li>
 <li class="flex gap-2"><span class="text-indigo-400 mt-1">•</span><span>/sale/sommer-special (38 Conversions)</span></li>
 <li class="flex gap-2"><span class="text-indigo-400 mt-1">•</span><span>/landingpage/newsletter-anmeldung (21 Conversions)</span></li>
 </ul>
 <h4 class="font-bold text-indigo-900 mt-6 mb-3 text-base">Ihr Wachstumspotenzial:</h4>
-<p class="mb-4 leading-relaxed text-gray-700">Wir haben tolles Potenzial entdeckt! Viele Menschen suchen nach "sneaker online kaufen", und Sie sind schon fast ganz vorne dabei (Position 4.2). Kleine Anpassungen an Ihren Meta-Beschreibungen und internen Verlinkungen können hier noch mehr Besucher bringen.</p>`;
+<p class="mb-4 leading-relaxed text-body">Wir haben tolles Potenzial entdeckt! Viele Menschen suchen nach "sneaker online kaufen", und Sie sind schon fast ganz vorne dabei (Position 4.2). Kleine Anpassungen an Ihren Meta-Beschreibungen und internen Verlinkungen können hier noch mehr Besucher bringen.</p>`;
 
       return new NextResponse(demoResponse, {
         headers: { 'Content-Type': 'text/plain; charset=utf-8' }
@@ -273,7 +273,7 @@ export async function POST(req: NextRequest) {
     // 2. PROMPT SETUP
     const visualSuccessTemplate = `
       <div class="mt-6 p-4 bg-emerald-50 rounded-xl border border-emerald-100 flex items-start gap-4 shadow-sm">
-         <div class="bg-white p-2.5 rounded-full text-emerald-600 shadow-sm mt-1">🏆</div>
+         <div class="bg-surface p-2.5 rounded-full text-emerald-600 shadow-sm mt-1">🏆</div>
          <div><div class="text-[10px] font-bold text-emerald-700 uppercase tracking-wider mb-1">Top Erfolg</div>
          <div class="text-sm font-semibold text-emerald-900 leading-relaxed">ERFOLG_TEXT_PLATZHALTER</div></div>
       </div>
@@ -298,14 +298,14 @@ export async function POST(req: NextRequest) {
       2. Nutze AUSSCHLIESSLICH HTML-Tags.
       
       ERLAUBTE HTML-STRUKTUR:
-      - Absätze: <p class="mb-4 leading-relaxed text-gray-700">Dein Text...</p>
+      - Absätze: <p class="mb-4 leading-relaxed text-body">Dein Text...</p>
       - Überschriften: <h4 class="font-bold text-indigo-900 mt-6 mb-3 text-base flex items-center gap-2">Dein Titel</h4>
-      - Listen: <ul class="space-y-2 mb-4 text-sm text-gray-600 list-none pl-1"> 
+      - Listen: <ul class="space-y-2 mb-4 text-sm text-secondary list-none pl-1"> 
                   <li class="flex gap-2"><span class="text-indigo-400 mt-1">•</span> <span>Dein Punkt</span></li> 
                 </ul>
       - Positiv: <span class="text-emerald-600 font-bold">
       - Negativ: <span class="text-red-600 font-bold">
-      - Wichtig: <span class="font-semibold text-gray-900">
+      - Wichtig: <span class="font-semibold text-heading">
       - KI-Highlight: <span class="text-purple-600 font-semibold">
 
       OUTPUT AUFBAU:
