@@ -195,7 +195,7 @@ export default function ProjectTimelineWidget({ projectId }: ProjectTimelineWidg
   const TrendIcon = ({ direction, colorClass }: { direction: 'up' | 'down' | 'neutral', colorClass: string }) => {
     if (direction === 'up') return <GraphUpArrow className={colorClass} size={16} />; // Etwas größer für die neue Position
     if (direction === 'down') return <GraphDownArrow className={colorClass} size={16} />;
-    return <Dash className="text-gray-400" size={16} />;
+    return <Dash className="text-faint" size={16} />;
   };
 
   // Das neue Badge-Element (Grün/Rot mit Pfeil, Style wie Top-Performer)
@@ -210,7 +210,7 @@ export default function ProjectTimelineWidget({ projectId }: ProjectTimelineWidg
     const Icon = isPositive ? ArrowUp : ArrowDown;
 
     return (
-      <div className={`flex items-center gap-1 font-bold text-[10px] bg-white px-1.5 py-0.5 rounded border shadow-sm ${colorClass} mb-1`}>
+      <div className={`flex items-center gap-1 font-bold text-[10px] bg-surface px-1.5 py-0.5 rounded border shadow-sm ${colorClass} mb-1`}>
         <Icon size={9} />
         {Math.abs(change).toFixed(0)}%
       </div>
@@ -221,9 +221,9 @@ export default function ProjectTimelineWidget({ projectId }: ProjectTimelineWidg
     <div className="card-glass p-6 lg:p-8 print-timeline">
       
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 border-b border-gray-200/50 pb-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 border-b border-theme-border-default/50 pb-4">
         <div>
-          <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+          <h2 className="text-xl font-bold text-heading flex items-center gap-2">
             <ClockHistory className="text-indigo-600" size={22} />
             Projekt-Status
           </h2>
@@ -238,21 +238,21 @@ export default function ProjectTimelineWidget({ projectId }: ProjectTimelineWidg
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 h-full">
         
         {/* SPALTE 1: Zeit & Status & KPIs */}
-        <div className="flex flex-col gap-8 border-b lg:border-b-0 lg:border-r border-gray-100 pb-6 lg:pb-0 lg:pr-6">
+        <div className="flex flex-col gap-8 border-b lg:border-b-0 lg:border-r border-theme-border-subtle pb-6 lg:pb-0 lg:pr-6">
           {/* Zeitachse */}
           <div className="space-y-3">
             <div className="flex justify-between items-end mb-2">
-              <div className="flex items-center gap-2 text-lg font-semibold text-gray-900">
+              <div className="flex items-center gap-2 text-lg font-semibold text-heading">
                 <CalendarWeek className="text-indigo-500" size={20} />
                 <h3>Zeitachse</h3>
               </div>
-              <span className="text-sm font-medium text-gray-500">{Math.round(timeElapsedPercentage)}% vergangen</span>
+              <span className="text-sm font-medium text-muted">{Math.round(timeElapsedPercentage)}% vergangen</span>
             </div>
-            <div className="relative h-10 w-full bg-gray-100/80 rounded-lg border border-gray-200/60 overflow-hidden">
+            <div className="relative h-10 w-full bg-surface-tertiary/80 rounded-lg border border-theme-border-default/60 overflow-hidden">
               <div className="absolute top-0 left-0 h-full bg-indigo-200 border-r-2 border-indigo-500 transition-all duration-1000" style={{ width: `${timeElapsedPercentage}%` }} />
-              <div className="absolute inset-0 flex justify-between items-center px-4 text-xs font-medium text-gray-500 pointer-events-none">
-                <div className="flex flex-col items-start z-10"><span className="text-[10px] uppercase tracking-wider text-gray-500">Start</span><span className="text-gray-800">{format(startDate, 'dd.MM.yyyy')}</span></div>
-                <div className="flex flex-col items-end z-10"><span className="text-[10px] uppercase tracking-wider text-gray-400">Ende</span><span className="text-gray-500">{format(endDate, 'dd.MM.yyyy')}</span></div>
+              <div className="absolute inset-0 flex justify-between items-center px-4 text-xs font-medium text-muted pointer-events-none">
+                <div className="flex flex-col items-start z-10"><span className="text-[10px] uppercase tracking-wider text-muted">Start</span><span className="text-strong">{format(startDate, 'dd.MM.yyyy')}</span></div>
+                <div className="flex flex-col items-end z-10"><span className="text-[10px] uppercase tracking-wider text-faint">Ende</span><span className="text-muted">{format(endDate, 'dd.MM.yyyy')}</span></div>
               </div>
             </div>
           </div>
@@ -260,26 +260,26 @@ export default function ProjectTimelineWidget({ projectId }: ProjectTimelineWidg
           {/* Status */}
           <div className="space-y-3">
             <div className="flex justify-between items-end mb-2">
-              <div className="flex items-center gap-2 text-lg font-semibold text-gray-900">
+              <div className="flex items-center gap-2 text-lg font-semibold text-heading">
                 <ListCheck className="text-green-600" size={22} />
                 <h3>Landingpages Status</h3>
               </div>
-              <div className="flex items-baseline gap-1"><span className="text-2xl font-bold text-gray-900">{Math.round(percentage)}%</span><span className="text-sm text-gray-500 font-medium">fertig</span></div>
+              <div className="flex items-baseline gap-1"><span className="text-2xl font-bold text-heading">{Math.round(percentage)}%</span><span className="text-sm text-muted font-medium">fertig</span></div>
             </div>
-            <div className="h-6 w-full bg-gray-100/80 rounded-full overflow-hidden flex shadow-inner border border-gray-200/60">
+            <div className="h-6 w-full bg-surface-tertiary/80 rounded-full overflow-hidden flex shadow-inner border border-theme-border-default/60">
               {counts.Total > 0 ? (
                 <>
                   <div className="bg-green-500 h-full" style={{ width: `${(counts.Freigegeben / counts.Total) * 100}%` }} />
                   <div className="bg-amber-400 h-full" style={{ width: `${(counts['In Prüfung'] / counts.Total) * 100}%` }} />
                   <div className="bg-red-400 h-full" style={{ width: `${(counts.Gesperrt / counts.Total) * 100}%` }} />
                 </>
-              ) : (<div className="w-full h-full flex items-center justify-center text-xs text-gray-400">Keine Daten</div>)}
+              ) : (<div className="w-full h-full flex items-center justify-center text-xs text-faint">Keine Daten</div>)}
             </div>
-            <div className="flex flex-wrap gap-3 mt-2 text-[11px] text-gray-500 justify-between">
+            <div className="flex flex-wrap gap-3 mt-2 text-[11px] text-muted justify-between">
               <div className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-500"></span>Freig.: {counts.Freigegeben}</div>
               <div className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-amber-400"></span>Prüf.: {counts['In Prüfung']}</div>
               <div className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-red-400"></span>Gesp.: {counts.Gesperrt}</div>
-              <div className="flex items-center gap-1 font-medium text-gray-700"><BoxSeam size={10} />Ges: {counts.Total}</div>
+              <div className="flex items-center gap-1 font-medium text-body"><BoxSeam size={10} />Ges: {counts.Total}</div>
             </div>
           </div>
 
@@ -293,7 +293,7 @@ export default function ProjectTimelineWidget({ projectId }: ProjectTimelineWidg
                </div>
                <div className="flex items-end gap-2">
                   <div className="mb-1"><TrendIcon direction={gscTrend} colorClass="text-blue-600" /></div>
-                  <span className="text-xl font-bold text-gray-900 leading-none">
+                  <span className="text-xl font-bold text-heading leading-none">
                     {new Intl.NumberFormat('de-DE', { notation: 'compact', maximumFractionDigits: 1 }).format(totalGscImpressions)}
                   </span>
                   <ChangeBadge change={gscChangePercent} />
@@ -308,7 +308,7 @@ export default function ProjectTimelineWidget({ projectId }: ProjectTimelineWidg
                </div>
                <div className="flex items-end gap-2">
                   <div className="mb-1"><TrendIcon direction={aiTrend} colorClass="text-purple-600" /></div>
-                  <span className="text-xl font-bold text-gray-900 leading-none">
+                  <span className="text-xl font-bold text-heading leading-none">
                     {new Intl.NumberFormat('de-DE', { notation: 'compact', maximumFractionDigits: 1 }).format(totalAiSessions)}
                   </span>
                   <ChangeBadge change={aiChangePercent} />
@@ -319,25 +319,25 @@ export default function ProjectTimelineWidget({ projectId }: ProjectTimelineWidg
         </div>
 
         {/* SPALTE 2: Top Movers */}
-        <div className="flex flex-col h-full border-b lg:border-b-0 lg:border-r border-gray-100 pb-6 lg:pb-0 lg:px-6">
+        <div className="flex flex-col h-full border-b lg:border-b-0 lg:border-r border-theme-border-subtle pb-6 lg:pb-0 lg:px-6">
           <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2 text-lg font-semibold text-gray-900">
+            <div className="flex items-center gap-2 text-lg font-semibold text-heading">
               <Trophy className="text-amber-500" size={20} />
               <h3>Top-Performer (GSC)</h3>
             </div>
-            <span className="text-[10px] px-2 py-0.5 bg-gray-100 text-gray-500 rounded-full">Trend (90T)</span>
+            <span className="text-[10px] px-2 py-0.5 bg-surface-tertiary text-muted rounded-full">Trend (90T)</span>
           </div>
           {topMovers && topMovers.length > 0 ? (
             <div className="flex-grow overflow-hidden space-y-2">
               {topMovers.map((page, index) => (
-                <div key={index} className="bg-gray-50/50 rounded-lg border border-gray-100 p-3 hover:shadow-sm transition-all flex items-center justify-between">
+                <div key={index} className="bg-surface-secondary/50 rounded-lg border border-theme-border-subtle p-3 hover:shadow-sm transition-all flex items-center justify-between">
                   <div className="min-w-0 flex-1 pr-3">
-                    <div className="font-medium text-sm text-gray-900 truncate" title={page.haupt_keyword || page.url}>
-                      {page.haupt_keyword || <span className="text-gray-400 italic">Kein Keyword</span>}
+                    <div className="font-medium text-sm text-heading truncate" title={page.haupt_keyword || page.url}>
+                      {page.haupt_keyword || <span className="text-faint italic">Kein Keyword</span>}
                     </div>
-                    <div className="text-[10px] text-gray-400 truncate mt-0.5">{new URL(page.url).pathname}</div>
+                    <div className="text-[10px] text-faint truncate mt-0.5">{new URL(page.url).pathname}</div>
                   </div>
-                  <div className="flex items-center gap-1 text-green-600 font-bold text-xs bg-white px-1.5 py-0.5 rounded border border-green-100 shadow-sm">
+                  <div className="flex items-center gap-1 text-green-600 font-bold text-xs bg-surface px-1.5 py-0.5 rounded border border-green-100 shadow-sm">
                     <ArrowUp size={10} />
                     {page.gsc_impressionen_change > 1000 ? (page.gsc_impressionen_change / 1000).toFixed(1) + 'k' : page.gsc_impressionen_change}
                   </div>
@@ -345,7 +345,7 @@ export default function ProjectTimelineWidget({ projectId }: ProjectTimelineWidg
               ))}
             </div>
           ) : (
-            <div className="flex-grow flex items-center justify-center text-gray-400 text-xs italic border border-dashed border-gray-200 rounded-lg bg-gray-50">Keine Daten</div>
+            <div className="flex-grow flex items-center justify-center text-faint text-xs italic border border-dashed border-theme-border-default rounded-lg bg-surface-secondary">Keine Daten</div>
           )}
         </div>
 
@@ -354,7 +354,7 @@ export default function ProjectTimelineWidget({ projectId }: ProjectTimelineWidg
           <div className="mb-4 flex items-center justify-between">
             <div className="flex items-center gap-2">
                {/* Titel */}
-               <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+               <h3 className="text-lg font-semibold text-heading flex items-center gap-2">
                   <GraphUpArrow className="text-blue-500" size={18} />
                   Reichweite
                </h3>
@@ -367,7 +367,7 @@ export default function ProjectTimelineWidget({ projectId }: ProjectTimelineWidg
             </div>
           </div>
 
-          <div className="bg-gray-50/50 rounded-xl border border-gray-200/60 p-4 h-full min-h-[200px] flex flex-col shadow-inner backdrop-blur-sm">
+          <div className="bg-surface-secondary/50 rounded-xl border border-theme-border-default/60 p-4 h-full min-h-[200px] flex flex-col shadow-inner backdrop-blur-sm">
             <div className="flex-grow w-full relative">
               {chartData.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
@@ -444,7 +444,7 @@ export default function ProjectTimelineWidget({ projectId }: ProjectTimelineWidg
                   </AreaChart>
                 </ResponsiveContainer>
               ) : (
-                <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-400">
+                <div className="absolute inset-0 flex flex-col items-center justify-center text-faint">
                   <GraphUpArrow size={24} className="mb-2 opacity-20" />
                   <span className="text-xs">Keine Daten</span>
                 </div>

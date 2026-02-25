@@ -154,7 +154,7 @@ export default function NotificationBell() {
       {/* Bell Icon */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 text-gray-600 hover:text-gray-900 focus:outline-none"
+        className="relative p-2 text-secondary hover:text-heading focus:outline-none"
         aria-label="Benachrichtigungen anzeigen"
       >
         <Bell size={24} />
@@ -169,10 +169,10 @@ export default function NotificationBell() {
 
       {/* Dropdown */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
+        <div className="absolute right-0 mt-2 w-96 bg-surface rounded-lg shadow-xl border border-theme-border-default z-50">
           {/* Header */}
-          <div className="p-4 border-b border-gray-200 flex justify-between items-center">
-            <h3 className="font-semibold text-gray-900">
+          <div className="p-4 border-b border-theme-border-default flex justify-between items-center">
+            <h3 className="font-semibold text-heading">
               Benachrichtigungen {unreadCount > 0 && `(${unreadCount})`}
             </h3>
             {unreadCount > 0 && (
@@ -188,20 +188,20 @@ export default function NotificationBell() {
           {/* Content */}
           <div className="max-h-96 overflow-y-auto">
             {isLoading ? (
-              <div className="p-8 text-center text-gray-500 flex items-center justify-center gap-2">
+              <div className="p-8 text-center text-muted flex items-center justify-center gap-2">
                 <ArrowRepeat size={18} className="animate-spin" /> Lade...
               </div>
             ) : notifications.length === 0 ? (
               <div className="p-8 text-center">
-                <BellFill className="text-4xl text-gray-300 mx-auto" />
-                <p className="text-gray-500 mt-2">Keine Benachrichtigungen</p>
+                <BellFill className="text-4xl text-faint mx-auto" />
+                <p className="text-muted mt-2">Keine Benachrichtigungen</p>
               </div>
             ) : (
-              <div className="divide-y divide-gray-100">
+              <div className="divide-y divide-theme-border-subtle">
                 {notifications.map((notification) => (
                   <div
                     key={notification.id}
-                    className={`p-4 hover:bg-gray-50 transition-colors ${
+                    className={`p-4 hover:bg-surface-secondary transition-colors ${
                       !notification.read ? 'bg-blue-50' : ''
                     }`}
                     // KORREKTUR: getNotificationColor() entfernt, da minimalistisch
@@ -211,10 +211,10 @@ export default function NotificationBell() {
                         {getNotificationIcon(notification.type)}
                       </span>
                       <div className="flex-1 min-w-0">
-                        <p className={`text-sm ${!notification.read ? 'font-semibold' : ''} text-gray-900`}>
+                        <p className={`text-sm ${!notification.read ? 'font-semibold' : ''} text-heading`}>
                           {notification.message}
                         </p>
-                        <p className="text-xs text-gray-500 mt-1">
+                        <p className="text-xs text-muted mt-1">
                           {formatTime(notification.created_at)}
                         </p>
                       </div>
@@ -246,7 +246,7 @@ export default function NotificationBell() {
           {/* Footer (Optional, Link zu einer Übersichtsseite) */}
           {/*
           {notifications.length > 0 && (
-            <div className="p-3 border-t border-gray-200 text-center">
+            <div className="p-3 border-t border-theme-border-default text-center">
               <button
                 onClick={() => setIsOpen(false)}
                 className="text-sm text-indigo-600 hover:text-indigo-800 font-medium"
