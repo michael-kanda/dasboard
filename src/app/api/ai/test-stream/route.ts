@@ -25,10 +25,10 @@ export async function POST(req: NextRequest) {
     </ul>
   </div>
 
-  <div class="bg-white rounded-2xl border border-gray-200 p-6">
-    <h3 class="text-lg font-bold text-gray-900 mb-4">Test Stream - Spalte 2</h3>
-    <p class="text-gray-700">Dies ist ein einfacher Test ohne:</p>
-    <ul class="mt-4 space-y-2 text-sm text-gray-600">
+  <div class="bg-surface rounded-2xl border border-theme-border-default p-6">
+    <h3 class="text-lg font-bold text-heading mb-4">Test Stream - Spalte 2</h3>
+    <p class="text-body">Dies ist ein einfacher Test ohne:</p>
+    <ul class="mt-4 space-y-2 text-sm text-secondary">
       <li>❌ Keine Datenbank-Abfragen</li>
       <li>❌ Keine Google API Calls</li>
       <li>❌ Kein Gemini API Call</li>
