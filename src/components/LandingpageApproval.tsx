@@ -168,7 +168,7 @@ export default function LandingpageApproval() {
       case 'In Prüfung': return 'text-yellow-700 border-yellow-300 bg-yellow-50';
       case 'Gesperrt': return 'text-red-700 border-red-300 bg-red-50';
       case 'Freigegeben': return 'text-green-700 border-green-300 bg-green-50';
-      default: return 'text-gray-700 border-gray-300 bg-gray-50';
+      default: return 'text-body border-theme-border-default bg-surface-secondary';
     }
   };
 
@@ -185,11 +185,11 @@ export default function LandingpageApproval() {
   // Render-Logik
   if (isLoading) {
     return (
-      <div className="mt-8 bg-white p-6 rounded-lg shadow-md border border-gray-200">
-        <h3 className="text-xl font-bold mb-4 text-gray-800">Redaktionsplan</h3>
+      <div className="mt-8 bg-surface p-6 rounded-lg shadow-md border border-theme-border-default">
+        <h3 className="text-xl font-bold mb-4 text-strong">Redaktionsplan</h3>
         <div className="flex items-center justify-center py-10">
           <ArrowRepeat className="animate-spin text-indigo-600 mr-2" size={24} />
-          <p className="text-gray-500">Lade Redaktionsplan...</p>
+          <p className="text-muted">Lade Redaktionsplan...</p>
         </div>
       </div>
     );
@@ -219,8 +219,8 @@ export default function LandingpageApproval() {
   }
 
   return (
-    <div className="mt-8 bg-white p-6 rounded-lg shadow-md border border-gray-200">
-      <h3 className="text-xl font-bold mb-6 text-gray-800 border-b pb-3">Redaktionsplan</h3>
+    <div className="mt-8 bg-surface p-6 rounded-lg shadow-md border border-theme-border-default">
+      <h3 className="text-xl font-bold mb-6 text-strong border-b pb-3">Redaktionsplan</h3>
 
       {/* GSC-Abgleich-Box */}
       <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
@@ -237,7 +237,7 @@ export default function LandingpageApproval() {
           <button
             onClick={handleGscRefresh}
             disabled={isRefreshing || isLoading}
-            className="px-4 py-2 text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-wait flex items-center justify-center gap-2 w-full sm:w-auto"
+            className="px-4 py-2 text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 disabled:bg-surface-tertiary disabled:cursor-wait flex items-center justify-center gap-2 w-full sm:w-auto"
           >
             {isRefreshing ? (
               <ArrowRepeat className="animate-spin" size={16} />
@@ -271,8 +271,8 @@ export default function LandingpageApproval() {
               <div key={lp.id} className="p-4 border rounded-md bg-yellow-50 border-yellow-200 hover:shadow-sm transition-shadow">
                 <div className="flex flex-col sm:flex-row justify-between sm:items-start gap-4">
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-gray-800 mb-1 truncate" title={lp.haupt_keyword || undefined}>
-                      {lp.haupt_keyword || <span className="italic text-gray-500">Kein Haupt-Keyword</span>}
+                    <p className="font-semibold text-strong mb-1 truncate" title={lp.haupt_keyword || undefined}>
+                      {lp.haupt_keyword || <span className="italic text-muted">Kein Haupt-Keyword</span>}
                     </p>
                     <a
                       href={lp.url}
@@ -284,31 +284,31 @@ export default function LandingpageApproval() {
                       {lp.url}
                     </a>
                     {/* ✅ KORREKTUR: Zeige GSC-Daten IMMER an (auch bei 0) */}
-                    <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-600">
+                    <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-secondary">
                       <span className="flex items-center">
                         Position: 
-                        <span className="font-medium text-gray-800 ml-1">
+                        <span className="font-medium text-strong ml-1">
                           {lp.gsc_position != null ? parseFloat(String(lp.gsc_position)).toFixed(2) : '-'}
                         </span>
                         {lp.gsc_position != null && <GscChangeIndicator change={lp.gsc_position_change} isPosition={true} />}
                       </span>
                       <span className="flex items-center">
                         Klicks: 
-                        <span className="font-medium text-gray-800 ml-1">
+                        <span className="font-medium text-strong ml-1">
                           {lp.gsc_klicks != null ? lp.gsc_klicks.toLocaleString('de-DE') : '-'}
                         </span>
                         {lp.gsc_klicks != null && <GscChangeIndicator change={lp.gsc_klicks_change} />}
                       </span>
                       <span className="flex items-center">
                         Impr.: 
-                        <span className="font-medium text-gray-800 ml-1">
+                        <span className="font-medium text-strong ml-1">
                           {lp.gsc_impressionen != null ? lp.gsc_impressionen.toLocaleString('de-DE') : '-'}
                         </span>
                         {lp.gsc_impressionen != null && <GscChangeIndicator change={lp.gsc_impressionen_change} />}
                       </span>
                     </div>
                     {lp.gsc_last_updated && (
-                      <div className="text-[10px] text-gray-500 mt-2">
+                      <div className="text-[10px] text-muted mt-2">
                         GSC-Daten ({lp.gsc_last_range}): {new Date(lp.gsc_last_updated).toLocaleDateString('de-DE')}
                       </div>
                     )}
@@ -345,8 +345,8 @@ export default function LandingpageApproval() {
               <div key={lp.id} className="p-3 border rounded-md bg-green-50 border-green-200">
                 <div className="flex justify-between items-start gap-4">
                   <div className="min-w-0 flex-1">
-                    <p className="font-semibold text-gray-800 text-sm truncate mb-1" title={lp.haupt_keyword || undefined}>
-                      {lp.haupt_keyword || <span className="italic text-gray-500">Kein Haupt-Keyword</span>}
+                    <p className="font-semibold text-strong text-sm truncate mb-1" title={lp.haupt_keyword || undefined}>
+                      {lp.haupt_keyword || <span className="italic text-muted">Kein Haupt-Keyword</span>}
                     </p>
                     <a
                       href={lp.url}
@@ -358,7 +358,7 @@ export default function LandingpageApproval() {
                       {lp.url}
                     </a>
                     {/* ✅ KORREKTUR: Zeige GSC-Daten IMMER an */}
-                    <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-gray-600">
+                    <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-secondary">
                       <span>Pos: {lp.gsc_position != null ? parseFloat(String(lp.gsc_position)).toFixed(2) : '-'}</span>
                       <span>Klicks: {lp.gsc_klicks != null ? lp.gsc_klicks.toLocaleString('de-DE') : '-'}</span>
                       <span>Impr: {lp.gsc_impressionen != null ? lp.gsc_impressionen.toLocaleString('de-DE') : '-'}</span>
@@ -388,8 +388,8 @@ export default function LandingpageApproval() {
               <div key={lp.id} className="p-3 border rounded-md bg-red-50 border-red-200 opacity-80">
                 <div className="flex justify-between items-start gap-4">
                   <div className="min-w-0 flex-1">
-                    <p className="font-semibold text-gray-800 text-sm truncate mb-1" title={lp.haupt_keyword || undefined}>
-                      {lp.haupt_keyword || <span className="italic text-gray-500">Kein Haupt-Keyword</span>}
+                    <p className="font-semibold text-strong text-sm truncate mb-1" title={lp.haupt_keyword || undefined}>
+                      {lp.haupt_keyword || <span className="italic text-muted">Kein Haupt-Keyword</span>}
                     </p>
                     <a
                       href={lp.url}
@@ -401,7 +401,7 @@ export default function LandingpageApproval() {
                       {lp.url}
                     </a>
                     {/* ✅ KORREKTUR: Zeige GSC-Daten IMMER an */}
-                    <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-gray-600">
+                    <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-secondary">
                       <span>Pos: {lp.gsc_position != null ? parseFloat(String(lp.gsc_position)).toFixed(2) : '-'}</span>
                       <span>Klicks: {lp.gsc_klicks != null ? lp.gsc_klicks.toLocaleString('de-DE') : '-'}</span>
                       <span>Impr: {lp.gsc_impressionen != null ? lp.gsc_impressionen.toLocaleString('de-DE') : '-'}</span>

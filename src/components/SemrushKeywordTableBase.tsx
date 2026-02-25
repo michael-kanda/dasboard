@@ -162,8 +162,8 @@ export default function SemrushKeywordTableBase({
     }
     if (rounded <= 3) {
       return (
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-gray-100 text-gray-700 border border-gray-200 shadow-sm">
-          <Award size={10} className="text-gray-500" />
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-surface-tertiary text-body border border-theme-border-default shadow-sm">
+          <Award size={10} className="text-muted" />
           {position}
         </span>
       );
@@ -179,7 +179,7 @@ export default function SemrushKeywordTableBase({
     
     // Default > 10
     return (
-      <span className="text-gray-500 font-medium text-xs">
+      <span className="text-muted font-medium text-xs">
         {position}
       </span>
     );
@@ -187,7 +187,7 @@ export default function SemrushKeywordTableBase({
 
   if (isLoading) {
     return (
-      <div className="bg-white rounded-lg shadow-md border border-gray-200">
+      <div className="bg-surface rounded-lg shadow-md border border-theme-border-default">
         <div className={cn("p-4 rounded-t-lg bg-gradient-to-r", theme.headerGradient)}>
           <div className="flex items-center gap-2">
             <Search className="text-white" size={20} />
@@ -195,7 +195,7 @@ export default function SemrushKeywordTableBase({
           </div>
         </div>
         <div className="p-6 animate-pulse space-y-3">
-          {[...Array(5)].map((_, i) => <div key={i} className="h-16 bg-gray-100 rounded"></div>)}
+          {[...Array(5)].map((_, i) => <div key={i} className="h-16 bg-surface-tertiary rounded"></div>)}
         </div>
       </div>
     );
@@ -207,7 +207,7 @@ export default function SemrushKeywordTableBase({
       : `Keine Semrush Tracking ID (${errorContext}) konfiguriert oder keine Keywords gefunden.`;
 
     return (
-      <div className="bg-white rounded-lg shadow-md border border-gray-200">
+      <div className="bg-surface rounded-lg shadow-md border border-theme-border-default">
         <div className={cn("p-4 rounded-t-lg bg-gradient-to-r", theme.headerGradient)}>
           <div className="flex items-center gap-2">
             <Search className="text-white" size={20} />
@@ -215,11 +215,11 @@ export default function SemrushKeywordTableBase({
           </div>
         </div>
         <div className="p-6">
-          <p className="text-sm text-gray-500 italic">{error || defaultError}</p>
+          <p className="text-sm text-muted italic">{error || defaultError}</p>
           {lastFetched && !isLoading && (
-            <div className="mt-4 pt-4 border-t border-gray-100 text-xs text-gray-500 flex flex-col items-start gap-1">
+            <div className="mt-4 pt-4 border-t border-theme-border-subtle text-xs text-muted flex flex-col items-start gap-1">
               Letzter Versuch: {formatLastFetched(lastFetched)}
-              <span className="text-[10px] text-gray-400">({new Date(lastFetched).toLocaleString('de-DE')})</span>
+              <span className="text-[10px] text-faint">({new Date(lastFetched).toLocaleString('de-DE')})</span>
             </div>
           )}
         </div>
@@ -228,7 +228,7 @@ export default function SemrushKeywordTableBase({
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-md border border-gray-200 flex flex-col">
+    <div className="bg-surface rounded-lg shadow-md border border-theme-border-default flex flex-col">
       {/* Header */}
       <div className={cn("p-4 rounded-t-lg bg-gradient-to-r", theme.headerGradient)}>
         <div className="flex items-center justify-between">
@@ -240,7 +240,7 @@ export default function SemrushKeywordTableBase({
             {lastFetched && (
               <div className={cn("text-xs flex flex-col items-end gap-1", theme.headerText)}>
                 <div className="flex items-center gap-2">
-                  <span className={cn("px-2 py-0.5 rounded text-xs font-medium", fromCache ? 'bg-white/20 text-white' : 'bg-green-500 text-white')}>
+                  <span className={cn("px-2 py-0.5 rounded text-xs font-medium", fromCache ? 'bg-surface/20 text-white' : 'bg-green-500 text-white')}>
                     {fromCache ? 'Cache' : 'Live'}
                   </span>
                   <span className="whitespace-nowrap">{formatLastFetched(lastFetched)}</span>
@@ -287,30 +287,30 @@ export default function SemrushKeywordTableBase({
               {sortedKeywords.map((kw, index) => {
                 const positionChange = getPositionChange(kw.position, kw.previousPosition);
                 return (
-                  <tr key={`${keyPrefix}-${projectId || 'user'}-${kw.keyword}-${index}`} className={cn("border-b border-gray-200 transition-colors", index % 2 === 0 ? "bg-white" : "bg-gray-50", theme.tableRowHover)}>
-                    <td className="px-4 py-3 text-sm text-gray-900 font-medium border-r border-gray-200"><div className="break-words max-w-xs">{kw.keyword}</div></td>
+                  <tr key={`${keyPrefix}-${projectId || 'user'}-${kw.keyword}-${index}`} className={cn("border-b border-theme-border-default transition-colors", index % 2 === 0 ? "bg-surface" : "bg-surface-secondary", theme.tableRowHover)}>
+                    <td className="px-4 py-3 text-sm text-heading font-medium border-r border-theme-border-default"><div className="break-words max-w-xs">{kw.keyword}</div></td>
                     
                     {/* ✅ KORREKTUR: Neue Badges */}
-                    <td className="px-4 py-3 text-sm text-right border-r border-gray-200 whitespace-nowrap">
+                    <td className="px-4 py-3 text-sm text-right border-r border-theme-border-default whitespace-nowrap">
                       <div className="flex justify-end">
                         {renderRankingBadge(kw.position)}
                       </div>
                     </td>
                     
-                    <td className="px-4 py-3 text-sm text-center border-r border-gray-200 whitespace-nowrap">
+                    <td className="px-4 py-3 text-sm text-center border-r border-theme-border-default whitespace-nowrap">
                       {positionChange !== null && positionChange !== 0 ? (
                         <span className={cn("inline-flex items-center gap-0.5 px-2 py-0.5 rounded text-xs font-semibold", positionChange > 0 ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700")}>
                           {positionChange > 0 ? <ArrowUp size={12} /> : <ArrowDown size={12} />}
                           {Math.abs(positionChange)}
                         </span>
-                      ) : (<span className="text-gray-400 text-xs">-</span>)}
+                      ) : (<span className="text-faint text-xs">-</span>)}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-900 text-right font-medium border-r border-gray-200 whitespace-nowrap">{kw.searchVolume.toLocaleString('de-DE')}</td>
-                    <td className="px-4 py-3 text-sm text-gray-900 text-right font-medium border-r border-gray-200 whitespace-nowrap">{kw.trafficPercent.toFixed(1)}%</td>
+                    <td className="px-4 py-3 text-sm text-heading text-right font-medium border-r border-theme-border-default whitespace-nowrap">{kw.searchVolume.toLocaleString('de-DE')}</td>
+                    <td className="px-4 py-3 text-sm text-heading text-right font-medium border-r border-theme-border-default whitespace-nowrap">{kw.trafficPercent.toFixed(1)}%</td>
                     <td className="px-4 py-3 text-sm border-r-0">
                       {kw.url ? (
                         <a href={kw.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline truncate block max-w-xs text-xs" title={kw.url}>{kw.url.length > 40 ? kw.url.substring(0, 40) + '...' : kw.url}</a>
-                      ) : (<span className="text-gray-400 text-xs">-</span>)}
+                      ) : (<span className="text-faint text-xs">-</span>)}
                     </td>
                   </tr>
                 );
@@ -320,13 +320,13 @@ export default function SemrushKeywordTableBase({
         </div>
       </div>
 
-      <div className="px-4 py-3 bg-gray-50 border-t border-gray-200 rounded-b-lg">
-        <div className="flex flex-wrap items-center justify-between gap-4 text-xs text-gray-600">
+      <div className="px-4 py-3 bg-surface-secondary border-t border-theme-border-default rounded-b-lg">
+        <div className="flex flex-wrap items-center justify-between gap-4 text-xs text-secondary">
           <div className="flex items-center gap-4">
-            <span>Ø Position: <span className="font-semibold text-gray-900">{(sortedKeywords.reduce((sum, k) => sum + k.position, 0) / (sortedKeywords.length || 1)).toFixed(1)}</span></span>
-            <span>Gesamt Traffic: <span className="font-semibold text-gray-900">{sortedKeywords.reduce((sum, k) => sum + k.trafficPercent, 0).toFixed(1)}%</span></span>
+            <span>Ø Position: <span className="font-semibold text-heading">{(sortedKeywords.reduce((sum, k) => sum + k.position, 0) / (sortedKeywords.length || 1)).toFixed(1)}</span></span>
+            <span>Gesamt Traffic: <span className="font-semibold text-heading">{sortedKeywords.reduce((sum, k) => sum + k.trafficPercent, 0).toFixed(1)}%</span></span>
           </div>
-          <div className="text-gray-500">💡 Datenaktualisierung alle 14 Tage | Klicken Sie auf die Spaltenüberschriften zum Sortieren</div>
+          <div className="text-muted">💡 Datenaktualisierung alle 14 Tage | Klicken Sie auf die Spaltenüberschriften zum Sortieren</div>
         </div>
       </div>
     </div>

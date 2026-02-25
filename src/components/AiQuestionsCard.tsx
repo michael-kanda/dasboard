@@ -23,11 +23,11 @@ export default function AiQuestionsCard({
   
   if (isLoading) {
     return (
-      <div className={cn("bg-white rounded-2xl border border-gray-200 p-6 h-full shadow-sm animate-pulse", className)}>
-        <div className="h-6 w-1/3 bg-gray-100 rounded mb-4"></div>
+      <div className={cn("bg-surface rounded-2xl border border-theme-border-default p-6 h-full shadow-sm animate-pulse", className)}>
+        <div className="h-6 w-1/3 bg-surface-tertiary rounded mb-4"></div>
         <div className="space-y-3">
-          <div className="h-12 bg-gray-50 rounded"></div>
-          <div className="h-8 bg-gray-50 rounded"></div>
+          <div className="h-12 bg-surface-secondary rounded"></div>
+          <div className="h-8 bg-surface-secondary rounded"></div>
         </div>
       </div>
     );
@@ -50,7 +50,7 @@ export default function AiQuestionsCard({
   const totalQuestionImpr = questionQueries.reduce((sum, q) => sum + q.impressions, 0);
 
   return (
-    <div className={cn("bg-white rounded-2xl border border-gray-200 p-6 h-full shadow-sm flex flex-col", className)}>
+    <div className={cn("bg-surface rounded-2xl border border-theme-border-default p-6 h-full shadow-sm flex flex-col", className)}>
       
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
@@ -59,8 +59,8 @@ export default function AiQuestionsCard({
             <ChatQuote className="text-white" size={20} />
           </div>
           <div>
-            <h3 className="text-lg font-bold text-gray-900">KI & Fragen</h3>
-            <p className="text-xs text-gray-500 font-medium">Conversational Search Potential</p>
+            <h3 className="text-lg font-bold text-heading">KI & Fragen</h3>
+            <p className="text-xs text-muted font-medium">Conversational Search Potential</p>
           </div>
         </div>
         {topQuestions.length > 0 && (
@@ -71,10 +71,10 @@ export default function AiQuestionsCard({
       </div>
 
       {questionQueries.length === 0 ? (
-        <div className="flex-grow flex flex-col items-center justify-center text-center p-4 border border-dashed border-gray-200 rounded-xl bg-gray-50/50">
-          <QuestionCircle className="text-gray-300 mb-2" size={24} />
-          <p className="text-sm text-gray-600 font-medium">Keine Fragen gefunden</p>
-          <p className="text-xs text-gray-500 max-w-[200px] mt-1">
+        <div className="flex-grow flex flex-col items-center justify-center text-center p-4 border border-dashed border-theme-border-default rounded-xl bg-surface-secondary">
+          <QuestionCircle className="text-faint mb-2" size={24} />
+          <p className="text-sm text-secondary font-medium">Keine Fragen gefunden</p>
+          <p className="text-xs text-muted max-w-[200px] mt-1">
             Nutzer suchen aktuell nicht mit direkten W-Fragen nach Ihren Inhalten.
           </p>
         </div>
@@ -86,27 +86,27 @@ export default function AiQuestionsCard({
                  <div className="text-[10px] text-emerald-700 uppercase font-bold tracking-wider mb-0.5">Frage-Traffic</div>
                  <div className="text-lg font-bold text-emerald-900">{totalQuestionClicks.toLocaleString('de-DE')} <span className="text-xs font-normal text-emerald-600">Klicks</span></div>
               </div>
-              <div className="p-3 bg-gray-50 rounded-xl border border-gray-100">
-                 <div className="text-[10px] text-gray-500 uppercase font-bold tracking-wider mb-0.5">Sichtbarkeit</div>
-                 <div className="text-lg font-bold text-gray-900">{totalQuestionImpr.toLocaleString('de-DE')} <span className="text-xs font-normal text-gray-500">Impr.</span></div>
+              <div className="p-3 bg-surface-secondary rounded-xl border border-theme-border-subtle">
+                 <div className="text-[10px] text-muted uppercase font-bold tracking-wider mb-0.5">Sichtbarkeit</div>
+                 <div className="text-lg font-bold text-heading">{totalQuestionImpr.toLocaleString('de-DE')} <span className="text-xs font-normal text-muted">Impr.</span></div>
               </div>
            </div>
 
            {/* Questions List */}
            <div className="flex-grow space-y-3">
-             <h4 className="text-xs font-bold text-gray-800 uppercase tracking-wider flex items-center gap-1.5">
+             <h4 className="text-xs font-bold text-strong uppercase tracking-wider flex items-center gap-1.5">
                Top Nutzer-Fragen
-               <QuestionCircle size={10} className="text-gray-400" />
+               <QuestionCircle size={10} className="text-faint" />
              </h4>
              
              <div className="space-y-2">
                {topQuestions.map((q, i) => (
                  <div key={i} className="group flex items-start justify-between p-2.5 rounded-lg hover:bg-emerald-50/50 transition-colors border border-transparent hover:border-emerald-100/50">
                     <div className="flex gap-2.5 overflow-hidden">
-                       <span className="flex-shrink-0 w-5 h-5 rounded flex items-center justify-center bg-gray-100 text-[10px] font-bold text-gray-500 mt-0.5 group-hover:bg-emerald-100 group-hover:text-emerald-700 transition-colors">
+                       <span className="flex-shrink-0 w-5 h-5 rounded flex items-center justify-center bg-surface-tertiary text-[10px] font-bold text-muted mt-0.5 group-hover:bg-emerald-100 group-hover:text-emerald-700 transition-colors">
                          ?
                        </span>
-                       <span className="text-sm text-gray-700 font-medium leading-tight truncate group-hover:text-gray-900">
+                       <span className="text-sm text-body font-medium leading-tight truncate group-hover:text-heading">
                          {q.query}
                        </span>
                     </div>
@@ -114,7 +114,7 @@ export default function AiQuestionsCard({
                        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${
                          q.position <= 3 ? 'bg-green-100 text-green-700 border-green-200' : 
                          q.position <= 10 ? 'bg-blue-50 text-blue-700 border-blue-100' : 
-                         'bg-gray-100 text-gray-600 border-gray-200'
+                         'bg-surface-tertiary text-secondary border-theme-border-default'
                        }`}>
                          Pos {q.position.toFixed(0)}
                        </span>
@@ -127,10 +127,10 @@ export default function AiQuestionsCard({
       )}
 
       {/* Footer Insight */}
-      <div className="mt-5 pt-3 border-t border-gray-100">
+      <div className="mt-5 pt-3 border-t border-theme-border-subtle">
          <div className="flex gap-2 items-start">
             <PatchCheckFill className="text-emerald-500 shrink-0 mt-0.5" size={12} />
-            <p className="text-[10px] text-gray-500 leading-relaxed">
+            <p className="text-[10px] text-muted leading-relaxed">
                <strong>KI-Insight:</strong> Inhalte, die diese Fragen präzise beantworten, werden bevorzugt von Google Gemini & ChatGPT zitiert.
             </p>
          </div>

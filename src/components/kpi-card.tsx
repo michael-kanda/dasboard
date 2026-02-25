@@ -53,20 +53,20 @@ export default function KpiCard({
 
   if (isLoading) {
     return (
-      <div className={`p-6 rounded-xl border border-gray-100 ${className || 'bg-white shadow-sm'}`}>
+      <div className={`p-6 rounded-xl border border-theme-border-subtle ${className || 'bg-surface shadow-sm'}`}>
         <div className="animate-pulse space-y-4">
-          <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-          <div className="h-8 bg-gray-200 rounded w-3/4"></div>
-          <div className="h-16 bg-gray-100 rounded-lg w-full mt-2"></div>
+          <div className="h-3 bg-surface-tertiary rounded w-1/2"></div>
+          <div className="h-8 bg-surface-tertiary rounded w-3/4"></div>
+          <div className="h-16 bg-surface-tertiary rounded-lg w-full mt-2"></div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className={`p-6 rounded-xl transition-all duration-300 ${className || 'bg-white shadow-sm border border-gray-200 hover:shadow-md'}`}>
+    <div className={`p-6 rounded-xl transition-all duration-300 ${className || 'bg-surface shadow-sm border border-theme-border-default hover:shadow-md'}`}>
       <div className="flex justify-between items-start mb-1">
-        <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider">{title}</h3>
+        <h3 className="text-xs font-bold text-muted uppercase tracking-wider">{title}</h3>
         
         {/* Trend Indikator oben rechts */}
         {!error && change !== undefined && (
@@ -85,13 +85,13 @@ export default function KpiCard({
             <ExclamationTriangleFill size={14} />
             <span className="text-xs font-semibold">Datenfehler</span>
           </div>
-          <p className="text-[10px] text-gray-500 leading-tight">
+          <p className="text-[10px] text-muted leading-tight">
             {error}
           </p>
         </div>
       ) : (
         <>
-          <div className="text-2xl font-bold text-gray-900 mb-4 tracking-tight">
+          <div className="text-2xl font-bold text-heading mb-4 tracking-tight">
             {value.toLocaleString('de-DE')}
           </div>
 
@@ -131,8 +131,8 @@ export default function KpiCard({
             ) : (
               // Fallback, wenn keine Historie da ist
               <div className="h-full flex items-end pb-1 px-2">
-                <div className="h-1 w-full bg-gray-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-gray-300 w-1/2 rounded-full"></div>
+                <div className="h-1 w-full bg-surface-tertiary rounded-full overflow-hidden">
+                  <div className="h-full bg-surface-tertiary w-1/2 rounded-full"></div>
                 </div>
               </div>
             )}

@@ -56,7 +56,7 @@ export default function CacheRefreshButton({ projectId }: Props) {
     <button
       onClick={handleClearCache}
       disabled={isLoading}
-      className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-gray-500 bg-white border border-gray-200 rounded-lg hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-all disabled:opacity-50 shadow-sm"
+      className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-muted bg-surface border border-theme-border-default rounded-lg hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-all disabled:opacity-50 shadow-sm"
       title="Erzwingt eine Aktualisierung der Daten von Google beim nächsten Laden"
     >
       {isLoading ? (

@@ -130,7 +130,7 @@ const TabButton: React.FC<{
 }> = ({ active, onClick, icon, label }) => (
   <button onClick={onClick} className={cn(
     "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all",
-    active ? "bg-purple-600 text-white shadow-sm" : "text-gray-600 hover:bg-gray-100"
+    active ? "bg-purple-600 text-white shadow-sm" : "text-secondary hover:bg-surface-tertiary"
   )}>
     {icon}{label}
   </button>
@@ -142,12 +142,12 @@ const IntentCard: React.FC<{
   conversionRate: number; avgEngagementTime: number; engagementRate: number;
   percentage: number; topPages: Array<{ path: string; sessions: number }>;
 }> = ({ intent, sessions, conversions, conversionRate, avgEngagementTime, engagementRate, percentage, topPages }) => (
-  <div className="p-4 rounded-xl border border-gray-100 hover:border-purple-200 hover:shadow-md transition-all bg-white"
+  <div className="p-4 rounded-xl border border-theme-border-subtle hover:border-purple-200 hover:shadow-md transition-all bg-surface"
     style={{ borderLeftColor: intent.color, borderLeftWidth: '4px' }}>
     <div className="flex items-center justify-between mb-3">
       <div className="flex items-center gap-2">
         <span style={{ color: intent.color }}>{getIntentIcon(intent.icon, 20)}</span>
-        <span className="font-semibold text-gray-900">{intent.label}</span>
+        <span className="font-semibold text-heading">{intent.label}</span>
       </div>
       <span className="text-xs px-2 py-0.5 rounded-full font-medium"
         style={{ backgroundColor: `${intent.color}20`, color: intent.color }}>
@@ -155,26 +155,26 @@ const IntentCard: React.FC<{
       </span>
     </div>
     <div className="grid grid-cols-2 gap-3 mb-3">
-      <div><div className="text-xs text-gray-500">Sessions</div>
-        <div className="text-lg font-bold text-gray-900">{sessions.toLocaleString('de-DE')}</div></div>
-      <div><div className="text-xs text-gray-500">Conversions</div>
-        <div className="text-lg font-bold text-gray-900">{conversions}</div></div>
-      <div><div className="text-xs text-gray-500">Conv. Rate</div>
-        <div className={cn("text-lg font-bold", conversionRate > 5 ? "text-green-600" : conversionRate > 2 ? "text-amber-600" : "text-gray-600")}>
+      <div><div className="text-xs text-muted">Sessions</div>
+        <div className="text-lg font-bold text-heading">{sessions.toLocaleString('de-DE')}</div></div>
+      <div><div className="text-xs text-muted">Conversions</div>
+        <div className="text-lg font-bold text-heading">{conversions}</div></div>
+      <div><div className="text-xs text-muted">Conv. Rate</div>
+        <div className={cn("text-lg font-bold", conversionRate > 5 ? "text-green-600" : conversionRate > 2 ? "text-amber-600" : "text-secondary")}>
           {conversionRate.toFixed(1)}%</div></div>
-      <div><div className="text-xs text-gray-500">Interaktionsrate</div>
-        <div className={cn("text-lg font-bold", engagementRate > 60 ? "text-green-600" : engagementRate > 40 ? "text-amber-600" : "text-gray-600")}>
+      <div><div className="text-xs text-muted">Interaktionsrate</div>
+        <div className={cn("text-lg font-bold", engagementRate > 60 ? "text-green-600" : engagementRate > 40 ? "text-amber-600" : "text-secondary")}>
           {engagementRate.toFixed(1)}%</div></div>
     </div>
     {topPages.length > 0 && (
-      <div className="pt-3 border-t border-gray-100">
-        <div className="text-xs font-semibold text-gray-500 mb-2">Top Seiten</div>
+      <div className="pt-3 border-t border-theme-border-subtle">
+        <div className="text-xs font-semibold text-muted mb-2">Top Seiten</div>
         <div className="space-y-1">
           {topPages.slice(0, 3).map((page, i) => (
             <div key={i} className="flex items-center justify-between text-xs">
-              <span className="text-gray-600 truncate max-w-[70%]" title={page.path}>
+              <span className="text-secondary truncate max-w-[70%]" title={page.path}>
                 {page.path === '/' ? '/ (Startseite)' : page.path}</span>
-              <span className="text-gray-400 font-medium">{page.sessions}</span>
+              <span className="text-faint font-medium">{page.sessions}</span>
             </div>
           ))}
         </div>
@@ -189,46 +189,46 @@ const JourneyFlowCard: React.FC<{
   engagementRate: number; avgSessionDuration: number;
   nextPages: Array<{ path: string; sessions: number; percentage: number }>;
 }> = ({ landingPage, totalSessions, conversionRate, engagementRate, avgSessionDuration, nextPages }) => (
-  <div className="p-4 rounded-xl border border-gray-100 bg-white hover:shadow-md transition-all">
+  <div className="p-4 rounded-xl border border-theme-border-subtle bg-surface hover:shadow-md transition-all">
     <div className="flex items-start justify-between mb-3">
       <div className="flex-1 min-w-0">
-        <div className="text-xs text-gray-500 mb-1">Einstiegsseite</div>
-        <div className="font-semibold text-gray-900 truncate" title={landingPage}>
+        <div className="text-xs text-muted mb-1">Einstiegsseite</div>
+        <div className="font-semibold text-heading truncate" title={landingPage}>
           {landingPage === '/' ? '/ (Startseite)' : landingPage}</div>
       </div>
       <div className="text-right ml-4">
         <div className="text-lg font-bold text-purple-600">{totalSessions}</div>
-        <div className="text-xs text-gray-500">Sessions</div>
+        <div className="text-xs text-muted">Sessions</div>
       </div>
     </div>
     <div className="flex items-center gap-4 mb-3 text-xs">
       <div className="flex items-center gap-1">
         <CheckCircle2 className="text-green-500" size={12} />
-        <span className="text-gray-600">Conv: </span>
+        <span className="text-secondary">Conv: </span>
         <span className="font-semibold">{conversionRate.toFixed(1)}%</span>
       </div>
       <div className="flex items-center gap-1">
         <Activity className="text-purple-500" size={12} />
-        <span className="text-gray-600">Interaktion: </span>
+        <span className="text-secondary">Interaktion: </span>
         <span className="font-semibold">{engagementRate.toFixed(1)}%</span>
       </div>
       <div className="flex items-center gap-1">
         <Clock className="text-blue-500" size={12} />
-        <span className="text-gray-600">Zeit: </span>
+        <span className="text-secondary">Zeit: </span>
         <span className="font-semibold">{formatDuration(avgSessionDuration)}</span>
       </div>
     </div>
     {nextPages.length > 0 && (
-      <div className="pt-3 border-t border-gray-100">
-        <div className="text-xs font-semibold text-gray-500 mb-2 flex items-center gap-1">
+      <div className="pt-3 border-t border-theme-border-subtle">
+        <div className="text-xs font-semibold text-muted mb-2 flex items-center gap-1">
           <ArrowRight size={10} />Nächste Seiten</div>
         <div className="space-y-2">
           {nextPages.slice(0, 4).map((page, i) => (
             <div key={i} className="flex items-center gap-2">
               <div className="h-1.5 rounded-full bg-purple-500" style={{ width: `${Math.max(page.percentage, 5)}%` }} />
-              <span className="text-xs text-gray-600 truncate flex-1" title={page.path}>
+              <span className="text-xs text-secondary truncate flex-1" title={page.path}>
                 {page.path === '/' ? 'Startseite' : page.path}</span>
-              <span className="text-xs text-gray-400 font-medium">{page.percentage.toFixed(0)}%</span>
+              <span className="text-xs text-faint font-medium">{page.percentage.toFixed(0)}%</span>
             </div>
           ))}
         </div>
@@ -289,22 +289,22 @@ export default function AiTrafficDetailCardV2({
 
   // LOADING
   if (isLoading) return (
-    <div className={cn("bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden", className)}>
+    <div className={cn("bg-surface rounded-2xl border border-theme-border-default shadow-sm overflow-hidden", className)}>
       <div className="p-6 animate-pulse">
-        <div className="h-8 bg-gray-100 rounded w-1/3 mb-6" />
-        <div className="grid grid-cols-6 gap-4 mb-6">{[...Array(6)].map((_, i) => <div key={i} className="h-24 bg-gray-50 rounded-xl" />)}</div>
-        <div className="h-64 bg-gray-50 rounded-xl" />
+        <div className="h-8 bg-surface-tertiary rounded w-1/3 mb-6" />
+        <div className="grid grid-cols-6 gap-4 mb-6">{[...Array(6)].map((_, i) => <div key={i} className="h-24 bg-surface-secondary rounded-xl" />)}</div>
+        <div className="h-64 bg-surface-secondary rounded-xl" />
       </div>
     </div>
   );
 
   // ERROR
   if (error) return (
-    <div className={cn("bg-white rounded-2xl border border-gray-200 shadow-sm p-6", className)}>
+    <div className={cn("bg-surface rounded-2xl border border-theme-border-default shadow-sm p-6", className)}>
       <div className="flex flex-col items-center justify-center text-center py-8">
         <AlertTriangle className="text-red-500 w-12 h-12 mb-4" />
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">Fehler beim Laden</h3>
-        <p className="text-sm text-gray-500 mb-4 max-w-md">{error}</p>
+        <h3 className="text-lg font-semibold text-heading mb-2">Fehler beim Laden</h3>
+        <p className="text-sm text-muted mb-4 max-w-md">{error}</p>
         {onRefresh && <button onClick={onRefresh} className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"><RefreshCcw size={16} />Erneut versuchen</button>}
       </div>
     </div>
@@ -312,36 +312,36 @@ export default function AiTrafficDetailCardV2({
 
   // EMPTY
   if (!data || data.totalSessions === 0) return (
-    <div className={cn("bg-white rounded-2xl border border-gray-200 shadow-sm p-6", className)}>
+    <div className={cn("bg-surface rounded-2xl border border-theme-border-default shadow-sm p-6", className)}>
       <div className="flex flex-col items-center justify-center text-center py-12">
         <div className="w-16 h-16 rounded-2xl bg-purple-50 flex items-center justify-center mb-4"><Bot className="text-purple-400" size={32} /></div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">Keine KI-Traffic Daten</h3>
-        <p className="text-sm text-gray-500 max-w-md">Im ausgewählten Zeitraum wurden keine Besuche von KI-Plattformen erfasst.</p>
+        <h3 className="text-lg font-semibold text-heading mb-2">Keine KI-Traffic Daten</h3>
+        <p className="text-sm text-muted max-w-md">Im ausgewählten Zeitraum wurden keine Besuche von KI-Plattformen erfasst.</p>
       </div>
     </div>
   );
 
   // MAIN RENDER
   return (
-    <div className={cn("bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden", className)}>
+    <div className={cn("bg-surface rounded-2xl border border-theme-border-default shadow-sm overflow-hidden", className)}>
       
       {/* HEADER */}
-      <div className="px-6 pt-6 pb-4 border-b border-gray-100">
+      <div className="px-6 pt-6 pb-4 border-b border-theme-border-subtle">
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-purple-500/20">
               <Bot className="text-white" size={24} /></div>
-            <div><h2 className="text-xl font-bold text-gray-900">KI-Traffic Analyse</h2>
-              <p className="text-sm text-gray-500">Intent-Kategorisierung & User-Journey</p></div>
+            <div><h2 className="text-xl font-bold text-heading">KI-Traffic Analyse</h2>
+              <p className="text-sm text-muted">Intent-Kategorisierung & User-Journey</p></div>
           </div>
-          <button onClick={() => setIsExpanded(!isExpanded)} className="p-2 hover:bg-gray-100 rounded-lg">
+          <button onClick={() => setIsExpanded(!isExpanded)} className="p-2 hover:bg-surface-tertiary rounded-lg">
             {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}</button>
         </div>
         <div className="flex items-center gap-3 text-xs">
           <span className="bg-purple-100 text-purple-700 px-2 py-1 rounded font-semibold">GA4</span>
-          <span className="text-gray-400">•</span>
-          <span className="text-gray-500">{formattedDateRange}</span>
-          {onRefresh && <><span className="text-gray-400">•</span>
+          <span className="text-faint">•</span>
+          <span className="text-muted">{formattedDateRange}</span>
+          {onRefresh && <><span className="text-faint">•</span>
             <button onClick={onRefresh} className="text-purple-600 hover:text-purple-700 font-medium flex items-center gap-1">
               <RefreshCcw size={12} />Aktualisieren</button></>}
         </div>
@@ -391,7 +391,7 @@ export default function AiTrafficDetailCardV2({
           </div>
 
           {/* TABS */}
-          <div className="px-6 py-3 border-b border-gray-100 flex items-center gap-2 overflow-x-auto">
+          <div className="px-6 py-3 border-b border-theme-border-subtle flex items-center gap-2 overflow-x-auto">
             <TabButton active={activeTab === 'overview'} onClick={() => setActiveTab('overview')} icon={<BarChart3 size={14} />} label="Übersicht" />
             <TabButton active={activeTab === 'intent'} onClick={() => setActiveTab('intent')} icon={<Target size={14} />} label="Intent-Analyse" />
             <TabButton active={activeTab === 'journey'} onClick={() => setActiveTab('journey')} icon={<Waypoints size={14} />} label="User-Journey" />
@@ -406,7 +406,7 @@ export default function AiTrafficDetailCardV2({
             {activeTab === 'overview' && (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                  <h3 className="text-sm font-semibold text-strong mb-3 flex items-center gap-2">
                     <TrendingUp size={14} className="text-purple-500" />Sessions-Trend</h3>
                   <div className="h-48">
                     <ResponsiveContainer width="100%" height="100%">
@@ -424,7 +424,7 @@ export default function AiTrafficDetailCardV2({
                   </div>
                 </div>
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                  <h3 className="text-sm font-semibold text-strong mb-3 flex items-center gap-2">
                     <Bot size={14} className="text-purple-500" />KI-Quellen</h3>
                   <div className="h-48">
                     <ResponsiveContainer width="100%" height="100%">
@@ -441,32 +441,32 @@ export default function AiTrafficDetailCardV2({
                   </div>
                 </div>
                 <div className="lg:col-span-2">
-                  <h3 className="text-sm font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                  <h3 className="text-sm font-semibold text-strong mb-3 flex items-center gap-2">
                     <Target size={14} className="text-purple-500" />Intent-Verteilung</h3>
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
                     {data.intentBreakdown.map((item, i) => (
-                      <div key={i} className="p-3 rounded-lg border border-gray-100 hover:border-purple-200 transition-all cursor-pointer"
+                      <div key={i} className="p-3 rounded-lg border border-theme-border-subtle hover:border-purple-200 transition-all cursor-pointer"
                         style={{ borderLeftColor: item.intent.color, borderLeftWidth: '3px' }}
                         onClick={() => { setSelectedIntent(item.intent.key); setActiveTab('pages'); }}>
                         <div className="flex items-center gap-1.5 mb-1">
                           <span style={{ color: item.intent.color }}>{getIntentIcon(item.intent.icon, 14)}</span>
-                          <span className="text-xs font-medium text-gray-700 truncate">{item.intent.label}</span>
+                          <span className="text-xs font-medium text-body truncate">{item.intent.label}</span>
                         </div>
-                        <div className="text-lg font-bold text-gray-900">{item.sessions}</div>
-                        <div className="text-xs text-gray-500">{item.percentage.toFixed(1)}% • {item.engagementRate.toFixed(0)}% Int.</div>
+                        <div className="text-lg font-bold text-heading">{item.sessions}</div>
+                        <div className="text-xs text-muted">{item.percentage.toFixed(1)}% • {item.engagementRate.toFixed(0)}% Int.</div>
                       </div>
                     ))}
                   </div>
                 </div>
                 {data.userJourney.interactionEvents.length > 0 && (
                   <div className="lg:col-span-2">
-                    <h3 className="text-sm font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                    <h3 className="text-sm font-semibold text-strong mb-3 flex items-center gap-2">
                       <MousePointerClick size={14} className="text-purple-500" />Interaktionen</h3>
                     <div className="flex flex-wrap gap-2">
                       {data.userJourney.interactionEvents.slice(0, 10).map((event, i) => (
-                        <div key={i} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-gray-100 text-sm">
-                          <span className="font-medium text-gray-700">{event.eventName}</span>
-                          <span className="text-xs text-gray-500 bg-white px-1.5 py-0.5 rounded-full">{event.count.toLocaleString('de-DE')}</span>
+                        <div key={i} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-tertiary text-sm">
+                          <span className="font-medium text-body">{event.eventName}</span>
+                          <span className="text-xs text-muted bg-surface px-1.5 py-0.5 rounded-full">{event.count.toLocaleString('de-DE')}</span>
                         </div>
                       ))}
                     </div>
@@ -491,7 +491,7 @@ export default function AiTrafficDetailCardV2({
               <div className="space-y-6">
                 {(data.userJourney.scrollDepth.reached25 > 0 || data.userJourney.scrollDepth.reached50 > 0) && (
                   <div>
-                    <h3 className="text-sm font-semibold text-gray-800 mb-3">Scroll-Tiefe</h3>
+                    <h3 className="text-sm font-semibold text-strong mb-3">Scroll-Tiefe</h3>
                     <div className="flex items-end gap-4 h-24">
                       {[{ label: '25%', value: data.userJourney.scrollDepth.reached25 },
                         { label: '50%', value: data.userJourney.scrollDepth.reached50 },
@@ -503,9 +503,9 @@ export default function AiTrafficDetailCardV2({
                         const height = max > 0 ? (item.value / max) * 100 : 0;
                         return (
                           <div key={i} className="flex flex-col items-center gap-1 flex-1">
-                            <div className="text-xs font-semibold text-gray-700">{item.value.toLocaleString('de-DE')}</div>
+                            <div className="text-xs font-semibold text-body">{item.value.toLocaleString('de-DE')}</div>
                             <div className="w-full bg-purple-500 rounded-t-sm transition-all" style={{ height: `${Math.max(height, 4)}%` }} />
-                            <div className="text-xs text-gray-500">{item.label}</div>
+                            <div className="text-xs text-muted">{item.label}</div>
                           </div>
                         );
                       })}
@@ -513,7 +513,7 @@ export default function AiTrafficDetailCardV2({
                   </div>
                 )}
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-800 mb-3">Top Einstiegsseiten & Folgepfade</h3>
+                  <h3 className="text-sm font-semibold text-strong mb-3">Top Einstiegsseiten & Folgepfade</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {data.userJourney.topJourneys.slice(0, 6).map((journey, i) => (
                       <JourneyFlowCard key={i} landingPage={journey.landingPage} totalSessions={journey.totalSessions}
@@ -531,13 +531,13 @@ export default function AiTrafficDetailCardV2({
                 <div className="flex flex-wrap items-center gap-3 mb-4">
                   <div className="relative flex-1 min-w-[200px] max-w-[300px]">
                     <input type="text" placeholder="Seite suchen..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full pl-9 pr-8 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500" />
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
-                    {searchTerm && <button onClick={() => setSearchTerm('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                      className="w-full pl-9 pr-8 py-2 text-sm border border-theme-border-default rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500" />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-faint" size={14} />
+                    {searchTerm && <button onClick={() => setSearchTerm('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-faint hover:text-secondary">
                       <XCircle size={16} /></button>}
                   </div>
                   <select value={selectedIntent || ''} onChange={(e) => setSelectedIntent(e.target.value || null)}
-                    className="px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/20">
+                    className="px-3 py-2 text-sm border border-theme-border-default rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/20">
                     <option value="">Alle Intents</option>
                     {data.intentBreakdown.map(item => (
                       <option key={item.intent.key} value={item.intent.key}>{item.intent.label} ({item.sessions})</option>
@@ -547,7 +547,7 @@ export default function AiTrafficDetailCardV2({
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
-                      <tr className="bg-gray-50 text-xs text-gray-600">
+                      <tr className="bg-surface-secondary text-xs text-secondary">
                         <th className="px-4 py-3 text-left font-semibold">Seite</th>
                         <th className="px-4 py-3 text-left font-semibold">Intent</th>
                         <th className="px-4 py-3 text-right font-semibold cursor-pointer hover:text-purple-600" onClick={() => handleSort('sessions')}>
@@ -562,9 +562,9 @@ export default function AiTrafficDetailCardV2({
                     </thead>
                     <tbody>
                       {filteredPages.slice(0, 50).map((page, i) => (
-                        <tr key={i} className="border-b border-gray-100 hover:bg-purple-50/50">
+                        <tr key={i} className="border-b border-theme-border-subtle hover:bg-purple-50/50">
                           <td className="px-4 py-3">
-                            <div className="text-sm font-medium text-gray-900 truncate max-w-[300px]" title={page.path}>
+                            <div className="text-sm font-medium text-heading truncate max-w-[300px]" title={page.path}>
                               {page.path === '/' ? '/ (Startseite)' : page.path}</div>
                             <div className="flex flex-wrap gap-1 mt-1">
                               {page.sources.slice(0, 2).map((s, j) => (
@@ -579,21 +579,21 @@ export default function AiTrafficDetailCardV2({
                               style={{ backgroundColor: `${page.intent.color}15`, color: page.intent.color }}>
                               {getIntentIcon(page.intent.icon, 12)} {page.intent.label}</span>
                           </td>
-                          <td className="px-4 py-3 text-right text-sm font-semibold text-gray-900">{page.sessions.toLocaleString('de-DE')}</td>
+                          <td className="px-4 py-3 text-right text-sm font-semibold text-heading">{page.sessions.toLocaleString('de-DE')}</td>
                           <td className="px-4 py-3 text-right text-sm">
-                            <span className={cn("font-medium", page.engagementRate > 60 ? "text-green-600" : page.engagementRate > 40 ? "text-amber-600" : "text-gray-600")}>
+                            <span className={cn("font-medium", page.engagementRate > 60 ? "text-green-600" : page.engagementRate > 40 ? "text-amber-600" : "text-secondary")}>
                               {page.engagementRate.toFixed(1)}%</span>
                           </td>
-                          <td className="px-4 py-3 text-right text-sm text-gray-600">{formatDuration(page.avgEngagementTime)}</td>
+                          <td className="px-4 py-3 text-right text-sm text-secondary">{formatDuration(page.avgEngagementTime)}</td>
                           <td className="px-4 py-3 text-right">
                             <span className={cn("inline-flex items-center justify-center min-w-[2rem] px-2 py-0.5 rounded text-sm font-semibold",
-                              page.conversions > 0 ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500")}>{page.conversions}</span>
+                              page.conversions > 0 ? "bg-green-100 text-green-700" : "bg-surface-tertiary text-muted")}>{page.conversions}</span>
                           </td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
-                  {filteredPages.length === 0 && <div className="text-center py-8 text-gray-500 text-sm">Keine Ergebnisse gefunden</div>}
+                  {filteredPages.length === 0 && <div className="text-center py-8 text-muted text-sm">Keine Ergebnisse gefunden</div>}
                 </div>
               </div>
             )}
@@ -601,8 +601,8 @@ export default function AiTrafficDetailCardV2({
             {/* SOURCES TAB */}
             {activeTab === 'sources' && (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="bg-gray-50 rounded-xl p-5 border border-gray-100">
-                  <h3 className="text-sm font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                <div className="bg-surface-secondary rounded-xl p-5 border border-theme-border-subtle">
+                  <h3 className="text-sm font-semibold text-strong mb-4 flex items-center gap-2">
                     <BarChart3 size={14} className="text-purple-500" />Verteilung der KI-Quellen</h3>
                   <div className="h-64">
                     <ResponsiveContainer width="100%" height="100%">
@@ -619,11 +619,11 @@ export default function AiTrafficDetailCardV2({
                   </div>
                 </div>
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                  <h3 className="text-sm font-semibold text-strong mb-3 flex items-center gap-2">
                     <Sparkles size={14} className="text-amber-500" />Performance nach Plattform</h3>
-                  <div className="overflow-hidden rounded-xl border border-gray-100">
+                  <div className="overflow-hidden rounded-xl border border-theme-border-subtle">
                     <table className="w-full">
-                      <thead className="bg-gray-50 text-xs text-gray-500">
+                      <thead className="bg-surface-secondary text-xs text-muted">
                         <tr>
                           <th className="px-4 py-2 text-left font-medium">Plattform</th>
                           <th className="px-4 py-2 text-right font-medium">Sessions</th>
@@ -631,19 +631,19 @@ export default function AiTrafficDetailCardV2({
                           <th className="px-4 py-2 text-right font-medium">Interaktionsrate</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-gray-50">
+                      <tbody className="divide-y divide-theme-border-subtle">
                         {sourceChartData.map((source, i) => (
                           <tr key={i} className="hover:bg-purple-50/30 transition-colors">
                             <td className="px-4 py-3">
                               <div className="flex items-center gap-2">
                                 <div className="w-2 h-2 rounded-full" style={{ backgroundColor: source.fill }} />
-                                <span className="text-sm font-medium text-gray-900">{source.name}</span>
+                                <span className="text-sm font-medium text-heading">{source.name}</span>
                               </div>
                             </td>
-                            <td className="px-4 py-3 text-right text-sm text-gray-600">{source.sessions.toLocaleString('de-DE')}</td>
-                            <td className="px-4 py-3 text-right text-sm text-gray-600">{source.users.toLocaleString('de-DE')}</td>
+                            <td className="px-4 py-3 text-right text-sm text-secondary">{source.sessions.toLocaleString('de-DE')}</td>
+                            <td className="px-4 py-3 text-right text-sm text-secondary">{source.users.toLocaleString('de-DE')}</td>
                             <td className="px-4 py-3 text-right text-sm">
-                              <span className={cn("font-medium", source.engagementRate > 50 ? "text-green-600" : "text-gray-600")}>
+                              <span className={cn("font-medium", source.engagementRate > 50 ? "text-green-600" : "text-secondary")}>
                                 {source.engagementRate.toFixed(1)}%</span>
                             </td>
                           </tr>
@@ -657,9 +657,9 @@ export default function AiTrafficDetailCardV2({
           </div>
 
           {/* FOOTER */}
-          <div className="px-6 py-4 bg-gray-50 border-t border-gray-100">
-            <div className="flex items-start gap-2 text-xs text-gray-500">
-              <Info size={14} className="text-gray-400 mt-0.5 shrink-0" />
+          <div className="px-6 py-4 bg-surface-secondary border-t border-theme-border-subtle">
+            <div className="flex items-start gap-2 text-xs text-muted">
+              <Info size={14} className="text-faint mt-0.5 shrink-0" />
               <p><strong>Intent-Kategorisierung:</strong> Seiten werden automatisch anhand ihrer URL-Struktur kategorisiert.
                 Die User-Journey zeigt, welche Seiten nach dem KI-Einstieg besucht werden.</p>
             </div>

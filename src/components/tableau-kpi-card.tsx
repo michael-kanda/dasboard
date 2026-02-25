@@ -78,7 +78,7 @@ export default function TableauKpiCard({
     ];
   }, [data]);
 
-  const InfoIcon = ({ iconClass = "text-gray-400 hover:text-blue-600" }: { iconClass?: string }) => {
+  const InfoIcon = ({ iconClass = "text-faint hover:text-blue-600" }: { iconClass?: string }) => {
     if (!description) return null;
     return (
       <div className="group relative inline-flex items-center align-middle z-20">
@@ -98,10 +98,10 @@ export default function TableauKpiCard({
     return (
       <div className={`bg-surface rounded-xl border border-theme-border-default p-5 ${className}`}>
         <div className="animate-pulse space-y-4">
-          <div className="h-4 bg-gray-200 rounded w-1/3"></div>
-          <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-          <div className="h-8 bg-gray-200 rounded w-2/3 mt-4"></div>
-          <div className="h-16 bg-gray-100 rounded w-full mt-2"></div>
+          <div className="h-4 bg-surface-tertiary rounded w-1/3"></div>
+          <div className="h-3 bg-surface-tertiary rounded w-1/2"></div>
+          <div className="h-8 bg-surface-tertiary rounded w-2/3 mt-4"></div>
+          <div className="h-16 bg-surface-tertiary rounded w-full mt-2"></div>
         </div>
       </div>
     );
@@ -131,7 +131,7 @@ export default function TableauKpiCard({
               <div className="mr-2">
                 <InfoIcon />
               </div>
-              <h3 className="text-lg font-bold text-gray-600 tracking-tight leading-none">
+              <h3 className="text-lg font-bold text-secondary tracking-tight leading-none">
                 {title}
               </h3>
             </div>
@@ -164,9 +164,9 @@ export default function TableauKpiCard({
               <span>{formatValue(barComparison.current)}</span>
             </div>
             
-            <div className="w-px h-7 bg-gray-300"></div>
+            <div className="w-px h-7 bg-surface-tertiary"></div>
             
-            <div className="w-auto min-w-[3rem] text-right text-sm text-gray-500 font-medium">
+            <div className="w-auto min-w-[3rem] text-right text-sm text-muted font-medium">
               {formatValue(barComparison.previous)}
             </div>
           </div>
@@ -179,15 +179,15 @@ export default function TableauKpiCard({
               <ExclamationTriangleFill size={16} />
               <span className="text-sm font-semibold">Fehler</span>
             </div>
-            <p className="text-xs text-gray-500">{error}</p>
+            <p className="text-xs text-muted">{error}</p>
           </div>
         ) : (
           <div className="flex-grow flex flex-col justify-end">
             <div className="mb-2">
-              <div className="text-3xl font-extrabold text-gray-900 tracking-tight">
+              <div className="text-3xl font-extrabold text-heading tracking-tight">
                 {formatValue(value)}
               </div>
-              <div className="text-xs text-gray-400 font-medium uppercase tracking-wide">
+              <div className="text-xs text-faint font-medium uppercase tracking-wide">
                 {valueLabel}
               </div>
             </div>
@@ -197,7 +197,7 @@ export default function TableauKpiCard({
                 <div className={`text-lg font-bold ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
                   {isPositive ? '+' : ''}{change.toFixed(1)}%
                 </div>
-                <div className="text-xs text-gray-400 uppercase tracking-wide font-medium">
+                <div className="text-xs text-faint uppercase tracking-wide font-medium">
                   {changeLabel}
                 </div>
               </div>
@@ -238,7 +238,7 @@ export default function TableauKpiCard({
                 </ResponsiveContainer>
               ) : (
                 <div className="h-full flex items-end pb-1 px-2">
-                  <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
+                  <div className="h-1.5 w-full bg-surface-tertiary rounded-full overflow-hidden">
                     <div 
                       className="h-full rounded-full" 
                       style={{ width: '50%', backgroundColor: color, opacity: 0.3 }}

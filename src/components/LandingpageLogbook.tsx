@@ -35,18 +35,18 @@ export default function LandingpageLogbook({ landingpageId }: LandingpageLogbook
 
     return (
         <div className="mt-4 border-t pt-4">
-            <h4 className="text-md font-semibold mb-3 flex items-center gap-2 text-gray-700">
+            <h4 className="text-md font-semibold mb-3 flex items-center gap-2 text-body">
                 <ClockHistory size={18} /> Logbuch
             </h4>
-            {isLoading && <p className="text-sm text-gray-500">Lade Logs...</p>}
+            {isLoading && <p className="text-sm text-muted">Lade Logs...</p>}
             {error && <p className="text-sm text-red-600">Fehler beim Laden der Logs.</p>}
-            {logs && logs.length === 0 && <p className="text-sm text-gray-500 italic">Keine Einträge vorhanden.</p>}
+            {logs && logs.length === 0 && <p className="text-sm text-muted italic">Keine Einträge vorhanden.</p>}
             {logs && logs.length > 0 && (
                 <ul className="space-y-3 max-h-60 overflow-y-auto pr-2">
                     {logs.map((log) => (
                         <li key={log.id} className="text-xs border-b pb-2 last:border-b-0 last:pb-0">
-                            <p className="text-gray-800">{log.action}</p>
-                            <div className="flex items-center justify-between text-gray-500 mt-1">
+                            <p className="text-strong">{log.action}</p>
+                            <div className="flex items-center justify-between text-muted mt-1">
                                 <span className="flex items-center gap-1">
                                    <PersonCircle size={12}/> {log.user_email || 'System'}
                                 </span>

@@ -28,14 +28,14 @@ function InfoTooltip({ title, description }: { title: string; description: strin
         >
           <InfoCircle
             size={14}
-            className="text-gray-400 hover:text-indigo-600 transition-colors"
+            className="text-faint hover:text-indigo-600 transition-colors"
           />
         </button>
 
         {isVisible && (
-          <div className="absolute right-0 top-6 w-60 bg-white/95 backdrop-blur-sm rounded-lg shadow-xl border border-gray-100 p-3 z-20 animate-in fade-in zoom-in-95 duration-200">
-            <strong className="block text-sm font-semibold text-gray-900 mb-1">{title}</strong>
-            <p className="text-xs text-gray-600 leading-relaxed">{description}</p>
+          <div className="absolute right-0 top-6 w-60 bg-surface/95 backdrop-blur-sm rounded-lg shadow-xl border border-theme-border-subtle p-3 z-20 animate-in fade-in zoom-in-95 duration-200">
+            <strong className="block text-sm font-semibold text-heading mb-1">{title}</strong>
+            <p className="text-xs text-secondary leading-relaxed">{description}</p>
           </div>
         )}
       </div>

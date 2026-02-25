@@ -70,21 +70,21 @@ export default function CustomerLandingpagesView({ userId }: CustomerLandingpage
 
   if (approvedPages.length === 0) {
     return (
-      <div className="bg-white p-6 rounded-lg shadow-md mt-8">
+      <div className="bg-surface p-6 rounded-lg shadow-md mt-8">
         <h3 className="text-xl font-bold mb-4">Deine freigegebenen Landingpages</h3>
-        <p className="text-gray-500">Aktuell sind keine Landingpages für dich freigegeben.</p>
+        <p className="text-muted">Aktuell sind keine Landingpages für dich freigegeben.</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md mt-8">
+    <div className="bg-surface p-6 rounded-lg shadow-md mt-8">
       <h3 className="text-xl font-bold mb-4">Deine freigegebenen Landingpages</h3>
       <div className="space-y-4">
         {approvedPages.map((lp) => (
           <div key={lp.id} className="p-4 border rounded-md">
-            {lp.haupt_keyword && <p className="font-bold text-gray-800">{lp.haupt_keyword}</p>}
-            <p className="font-mono text-sm text-gray-600">{lp.url}</p>
+            {lp.haupt_keyword && <p className="font-bold text-strong">{lp.haupt_keyword}</p>}
+            <p className="font-mono text-sm text-secondary">{lp.url}</p>
           </div>
         ))}
       </div>

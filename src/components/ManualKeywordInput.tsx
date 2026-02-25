@@ -21,7 +21,7 @@ export function ManualKeywordInput({ keywords, onChange }: Props) {
 
   return (
     <div className="space-y-2">
-      <label className="text-sm font-medium text-gray-700">Keywords (Manuell)</label>
+      <label className="text-sm font-medium text-body">Keywords (Manuell)</label>
       <div className="flex gap-2">
         <input
           value={input}

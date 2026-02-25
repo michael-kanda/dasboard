@@ -158,7 +158,7 @@ export default function AiAnalysisWidget({
     return (
       <div className="relative group mb-6">
         <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-500 to-blue-500 rounded-2xl opacity-5 group-hover:opacity-15 transition duration-700 blur-sm"></div>
-        <div className="relative bg-white rounded-xl p-6 flex flex-col sm:flex-row items-center gap-6 shadow-sm border border-gray-100/80">
+        <div className="relative bg-surface rounded-xl p-6 flex flex-col sm:flex-row items-center gap-6 shadow-sm border border-theme-border-subtle">
           <div className="relative shrink-0">
             <div className={`absolute inset-0 rounded-2xl opacity-10 animate-pulse ${isPrefetched ? 'bg-emerald-500' : 'bg-indigo-500'}`}></div>
             <div className={`relative p-1 rounded-2xl border-2 ${isPrefetched ? 'bg-emerald-50/30 border-emerald-100/50' : 'bg-indigo-50/30 border-indigo-100/50'}`}>
@@ -173,13 +173,13 @@ export default function AiAnalysisWidget({
           </div>
           <div className="flex-1 text-center sm:text-left">
             <div className="flex items-center justify-center sm:justify-start gap-3 mb-2">
-              <h3 className="text-xl font-bold text-gray-900">Data Max</h3>
+              <h3 className="text-xl font-bold text-heading">Data Max</h3>
               <span className="px-2.5 py-0.5 rounded-full text-indigo-600/90 bg-indigo-50 text-[10px] font-bold uppercase tracking-wider border border-indigo-100/50">AI Analyst</span>
             </div>
-            <p className="text-base text-gray-600 leading-relaxed max-w-xl">
-              {isPrefetched && teaserText 
-                ? <span className="text-gray-600 animate-in fade-in duration-500">{teaserText}</span>
-                : <span>Soll ich die Performance der letzten <span className="font-medium text-gray-700">{rangeLabel}</span> analysieren?</span>}
+            <p className="text-base text-secondary leading-relaxed max-w-xl">
+              {isPrefetched && teaserText
+                ? <span className="text-secondary animate-in fade-in duration-500">{teaserText}</span>
+                : <span>Soll ich die Performance der letzten <span className="font-medium text-body">{rangeLabel}</span> analysieren?</span>}
             </p>
           </div>
           <button onClick={handleAnalyze} className="shrink-0 px-6 py-3 bg-[#188BDB] hover:bg-[#1479BF] text-white rounded-lg text-sm font-medium shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex items-center gap-2 group">
@@ -214,9 +214,9 @@ export default function AiAnalysisWidget({
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl border border-gray-200 flex flex-col h-full shadow-sm">
-        <div className="p-5 border-b border-gray-100 flex justify-between items-center">
-          <h3 className="font-bold text-gray-900 flex items-center gap-2">
+      <div className="bg-surface rounded-2xl border border-theme-border-default flex flex-col h-full shadow-sm">
+        <div className="p-5 border-b border-theme-border-subtle flex justify-between items-center">
+          <h3 className="font-bold text-heading flex items-center gap-2">
             <GraphUpArrow className="text-emerald-600" />
             Analyse & Fazit
           </h3>
@@ -234,11 +234,11 @@ export default function AiAnalysisWidget({
           )}
         </div>
         
-        <div className="p-5 text-sm text-gray-700 leading-relaxed flex-grow">
+        <div className="p-5 text-sm text-body leading-relaxed flex-grow">
            {analysisContent ? (
              <div dangerouslySetInnerHTML={{ __html: analysisContent }} />
            ) : (
-             isLoading && !statusContent ? <p className="text-gray-400 italic">Warte auf Datenverarbeitung...</p> : null
+             isLoading && !statusContent ? <p className="text-faint italic">Warte auf Datenverarbeitung...</p> : null
            )}
            {isLoading && analysisContent && (
              <div className="inline-flex items-center gap-2 mt-2 text-emerald-600 font-medium animate-pulse opacity-80">

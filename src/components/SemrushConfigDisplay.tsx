@@ -74,21 +74,21 @@ export default function SemrushConfigDisplay({ projectId }: SemrushConfigDisplay
 
   if (isLoading) {
     return (
-      <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200">
+      <div className="bg-surface p-4 rounded-lg shadow-md border border-theme-border-default">
         <div className="animate-pulse">
-          <div className="h-4 bg-gray-200 rounded w-1/3 mb-2"></div>
-          <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+          <div className="h-4 bg-surface-tertiary rounded w-1/3 mb-2"></div>
+          <div className="h-3 bg-surface-tertiary rounded w-1/2"></div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200">
+    <div className="bg-surface p-4 rounded-lg shadow-md border border-theme-border-default">
       {/* Header */}
       <div className="flex items-start justify-between mb-3">
         <div>
-          <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+          <h3 className="text-base font-semibold text-heading flex items-center gap-2">
             <Database size={18} className="text-orange-600" />
             Semrush Konfiguration
           </h3>
@@ -112,20 +112,20 @@ export default function SemrushConfigDisplay({ projectId }: SemrushConfigDisplay
       <div className="space-y-2 text-sm">
         {/* Project ID */}
         <div className="flex items-center justify-between">
-          <span className="text-gray-600">Project ID:</span>
-          <span className="font-medium text-gray-900">
+          <span className="text-secondary">Project ID:</span>
+          <span className="font-medium text-heading">
             {config?.semrushProjectId || (
-              <span className="text-gray-400 italic">–</span>
+              <span className="text-faint italic">–</span>
             )}
           </span>
         </div>
 
         {/* Tracking ID */}
         <div className="flex items-center justify-between">
-          <span className="text-gray-600">Tracking ID:</span>
-          <span className="font-medium text-gray-900">
+          <span className="text-secondary">Tracking ID:</span>
+          <span className="font-medium text-heading">
             {config?.semrushTrackingId || (
-              <span className="text-gray-400 italic">–</span>
+              <span className="text-faint italic">–</span>
             )}
           </span>
         </div>
@@ -133,10 +133,10 @@ export default function SemrushConfigDisplay({ projectId }: SemrushConfigDisplay
 
       {/* Zeitstempel */}
       {config?.lastUpdated && (
-        <div className="mt-3 pt-3 border-t border-gray-100">
-          <div className="text-xs text-gray-500 flex flex-col gap-0.5">
+        <div className="mt-3 pt-3 border-t border-theme-border-subtle">
+          <div className="text-xs text-muted flex flex-col gap-0.5">
             <span>Zuletzt geändert: {formatLastUpdated(config.lastUpdated)}</span>
-            <span className="text-[10px] text-gray-400">
+            <span className="text-[10px] text-faint">
               {new Date(config.lastUpdated).toLocaleString('de-DE')}
             </span>
           </div>
@@ -145,8 +145,8 @@ export default function SemrushConfigDisplay({ projectId }: SemrushConfigDisplay
 
       {/* Hinweis wenn nicht konfiguriert */}
       {!isConfigured && (
-        <div className="mt-3 pt-3 border-t border-gray-100">
-          <p className="text-xs text-gray-500">
+        <div className="mt-3 pt-3 border-t border-theme-border-subtle">
+          <p className="text-xs text-muted">
             💡 Konfigurieren Sie Semrush in den Projekteinstellungen
           </p>
         </div>

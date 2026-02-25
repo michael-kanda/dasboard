@@ -205,7 +205,7 @@ const SourceBadge: React.FC<{ source: string; sessions: number }> = ({ source, s
     className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium text-white shadow-sm"
     style={{ backgroundColor: getSourceColor(source) }}
   >
-    <span className="w-1.5 h-1.5 rounded-full bg-white/30" />
+    <span className="w-1.5 h-1.5 rounded-full bg-surface/30" />
     {getSourceLabel(source)}
     <span className="opacity-75">({sessions})</span>
   </span>
@@ -223,7 +223,7 @@ const SortButton: React.FC<{
     onClick={() => onClick(field)}
     className={cn(
       "flex items-center gap-1 text-xs font-semibold transition-colors",
-      currentField === field ? "text-purple-700" : "text-gray-500 hover:text-gray-700"
+      currentField === field ? "text-purple-700" : "text-muted hover:text-body"
     )}
   >
     {children}
@@ -338,15 +338,15 @@ export default function AiTrafficDetailCard({
   // ========== LOADING STATE ==========
   if (isLoading) {
     return (
-      <div className={cn("bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden", className)}>
+      <div className={cn("bg-surface rounded-2xl border border-theme-border-default shadow-sm overflow-hidden", className)}>
         <div className="p-6 animate-pulse">
-          <div className="h-8 bg-gray-100 rounded w-1/3 mb-6" />
+          <div className="h-8 bg-surface-tertiary rounded w-1/3 mb-6" />
           <div className="grid grid-cols-4 gap-4 mb-6">
             {[...Array(4)].map((_, i) => (
-              <div key={i} className="h-24 bg-gray-50 rounded-xl" />
+              <div key={i} className="h-24 bg-surface-secondary rounded-xl" />
             ))}
           </div>
-          <div className="h-64 bg-gray-50 rounded-xl" />
+          <div className="h-64 bg-surface-secondary rounded-xl" />
         </div>
       </div>
     );
@@ -355,11 +355,11 @@ export default function AiTrafficDetailCard({
   // ========== ERROR STATE ==========
   if (error) {
     return (
-      <div className={cn("bg-white rounded-2xl border border-gray-200 shadow-sm p-6", className)}>
+      <div className={cn("bg-surface rounded-2xl border border-theme-border-default shadow-sm p-6", className)}>
         <div className="flex flex-col items-center justify-center text-center py-8">
           <ExclamationTriangleFill className="text-red-500 w-12 h-12 mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">Fehler beim Laden</h3>
-          <p className="text-sm text-gray-500 mb-4 max-w-md">{error}</p>
+          <h3 className="text-lg font-semibold text-heading mb-2">Fehler beim Laden</h3>
+          <p className="text-sm text-muted mb-4 max-w-md">{error}</p>
           {onRefresh && (
             <button
               onClick={onRefresh}
@@ -377,13 +377,13 @@ export default function AiTrafficDetailCard({
   // ========== EMPTY STATE ==========
   if (!data || data.totalSessions === 0) {
     return (
-      <div className={cn("bg-white rounded-2xl border border-gray-200 shadow-sm p-6", className)}>
+      <div className={cn("bg-surface rounded-2xl border border-theme-border-default shadow-sm p-6", className)}>
         <div className="flex flex-col items-center justify-center text-center py-12">
           <div className="w-16 h-16 rounded-2xl bg-purple-50 flex items-center justify-center mb-4">
             <Cpu className="text-purple-400" size={32} />
           </div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">Keine KI-Traffic Daten</h3>
-          <p className="text-sm text-gray-500 max-w-md">
+          <h3 className="text-lg font-semibold text-heading mb-2">Keine KI-Traffic Daten</h3>
+          <p className="text-sm text-muted max-w-md">
             Im ausgewählten Zeitraum wurden keine Besuche von KI-Plattformen wie ChatGPT, Claude oder Perplexity erfasst.
           </p>
         </div>
@@ -394,26 +394,26 @@ export default function AiTrafficDetailCard({
   // ========== MAIN RENDER ==========
   return (
     <div className={cn(
-      "bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden transition-all duration-300",
+      "bg-surface rounded-2xl border border-theme-border-default shadow-sm overflow-hidden transition-all duration-300",
       className
     )}>
       
       {/* ===== HEADER ===== */}
-      <div className="px-6 pt-6 pb-4 border-b border-gray-100">
+      <div className="px-6 pt-6 pb-4 border-b border-theme-border-subtle">
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-purple-500/20">
               <Cpu className="text-white" size={24} />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-gray-900">KI-Traffic Analyse</h2>
-              <p className="text-sm text-gray-500">Detaillierte Auswertung nach Quelle & Landingpage</p>
+              <h2 className="text-xl font-bold text-heading">KI-Traffic Analyse</h2>
+              <p className="text-sm text-muted">Detaillierte Auswertung nach Quelle & Landingpage</p>
             </div>
           </div>
           
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 hover:bg-surface-tertiary rounded-lg transition-colors"
           >
             {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
           </button>
@@ -424,11 +424,11 @@ export default function AiTrafficDetailCard({
           <span className="bg-purple-100 text-purple-700 px-2 py-1 rounded font-semibold">
             Quelle: GA4
           </span>
-          <span className="text-gray-400">•</span>
-          <span className="text-gray-500">{formattedDateRange}</span>
+          <span className="text-faint">•</span>
+          <span className="text-muted">{formattedDateRange}</span>
           {onRefresh && (
             <>
-              <span className="text-gray-400">•</span>
+              <span className="text-faint">•</span>
               <button
                 onClick={onRefresh}
                 className="text-purple-600 hover:text-purple-700 font-medium flex items-center gap-1"
@@ -503,11 +503,11 @@ export default function AiTrafficDetailCard({
           </div>
 
           {/* ===== CHARTS ROW ===== */}
-          <div className="px-6 py-5 grid grid-cols-1 lg:grid-cols-2 gap-6 border-b border-gray-100">
+          <div className="px-6 py-5 grid grid-cols-1 lg:grid-cols-2 gap-6 border-b border-theme-border-subtle">
             
             {/* Trend Chart */}
             <div>
-              <h3 className="text-sm font-semibold text-gray-800 mb-3 flex items-center gap-2">
+              <h3 className="text-sm font-semibold text-strong mb-3 flex items-center gap-2">
                 <GraphUpArrow size={14} className="text-purple-500" />
                 Sitzungs-Trend
               </h3>
@@ -560,7 +560,7 @@ export default function AiTrafficDetailCard({
 
             {/* Sources Bar Chart */}
             <div>
-              <h3 className="text-sm font-semibold text-gray-800 mb-3 flex items-center gap-2">
+              <h3 className="text-sm font-semibold text-strong mb-3 flex items-center gap-2">
                 <Cpu size={14} className="text-purple-500" />
                 KI-Quellen Verteilung
               </h3>
@@ -596,18 +596,18 @@ export default function AiTrafficDetailCard({
           </div>
 
           {/* ===== FILTER & VIEW TOGGLE ===== */}
-          <div className="px-6 py-4 bg-gray-50/50 border-b border-gray-100">
+          <div className="px-6 py-4 bg-surface-secondary/50 border-b border-theme-border-subtle">
             <div className="flex flex-wrap items-center justify-between gap-4">
               
               {/* View Mode Toggle */}
-              <div className="flex items-center bg-white rounded-lg border border-gray-200 p-1">
+              <div className="flex items-center bg-surface rounded-lg border border-theme-border-default p-1">
                 <button
                   onClick={() => setViewMode('pages')}
                   className={cn(
                     "px-3 py-1.5 rounded-md text-sm font-medium transition-all",
                     viewMode === 'pages' 
                       ? "bg-purple-600 text-white shadow-sm" 
-                      : "text-gray-600 hover:text-gray-900"
+                      : "text-secondary hover:text-heading"
                   )}
                 >
                   <FileEarmarkText size={14} className="inline mr-1.5" />
@@ -619,7 +619,7 @@ export default function AiTrafficDetailCard({
                     "px-3 py-1.5 rounded-md text-sm font-medium transition-all",
                     viewMode === 'sources' 
                       ? "bg-purple-600 text-white shadow-sm" 
-                      : "text-gray-600 hover:text-gray-900"
+                      : "text-secondary hover:text-heading"
                   )}
                 >
                   <Cpu size={14} className="inline mr-1.5" />
@@ -637,13 +637,13 @@ export default function AiTrafficDetailCard({
                     placeholder="Seite suchen..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-9 pr-8 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 w-56 bg-white"
+                    className="pl-9 pr-8 py-2 text-sm border border-theme-border-default rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 w-56 bg-surface"
                   />
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-faint" size={14} />
                   {searchTerm && (
                     <button
                       onClick={() => setSearchTerm('')}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-faint hover:text-secondary"
                     >
                       <XCircleFill size={16} />
                     </button>
@@ -655,7 +655,7 @@ export default function AiTrafficDetailCard({
                   <select
                     value={selectedSource || ''}
                     onChange={(e) => setSelectedSource(e.target.value || null)}
-                    className="pl-9 pr-8 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 bg-white appearance-none cursor-pointer"
+                    className="pl-9 pr-8 py-2 text-sm border border-theme-border-default rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 bg-surface appearance-none cursor-pointer"
                   >
                     <option value="">Alle Quellen</option>
                     {data.sources.map(s => (
@@ -664,7 +664,7 @@ export default function AiTrafficDetailCard({
                       </option>
                     ))}
                   </select>
-                  <FunnelFill className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
+                  <FunnelFill className="absolute left-3 top-1/2 -translate-y-1/2 text-faint" size={14} />
                 </div>
               </div>
             </div>
@@ -677,8 +677,8 @@ export default function AiTrafficDetailCard({
               <>
                 {/* Table Header - Feste Breiten statt Grid */}
                 <div className="min-w-[800px]">
-                  <div className="flex items-center px-4 py-3 bg-gray-50 rounded-lg mb-2 text-xs">
-                    <div className="flex-1 min-w-[300px] font-semibold text-gray-600">Landingpage</div>
+                  <div className="flex items-center px-4 py-3 bg-surface-secondary rounded-lg mb-2 text-xs">
+                    <div className="flex-1 min-w-[300px] font-semibold text-secondary">Landingpage</div>
                     <div className="w-[90px] text-center">
                       <SortButton field="sessions" currentField={sortField} direction={sortDirection} onClick={handleSort}>
                         Sitzungen
@@ -709,7 +709,7 @@ export default function AiTrafficDetailCard({
                   {/* Table Body */}
                   <div className="space-y-1 max-h-[400px] overflow-y-auto custom-scrollbar">
                     {filteredPages.length === 0 ? (
-                      <div className="text-center py-8 text-gray-500 text-sm">
+                      <div className="text-center py-8 text-muted text-sm">
                         {searchTerm || selectedSource 
                           ? 'Keine Ergebnisse für diese Filter' 
                           : 'Keine Landingpage-Daten verfügbar'}
@@ -721,7 +721,7 @@ export default function AiTrafficDetailCard({
                           className="flex items-center px-4 py-3 hover:bg-purple-50/50 rounded-lg transition-colors group"
                         >
                           <div className="flex-1 min-w-[300px] pr-4">
-                            <div className="font-medium text-gray-800 text-sm truncate mb-1" title={page.path}>
+                            <div className="font-medium text-strong text-sm truncate mb-1" title={page.path}>
                               {formatPath(page.path)}
                             </div>
                             <div className="flex flex-wrap gap-1">
@@ -738,24 +738,24 @@ export default function AiTrafficDetailCard({
                                 </span>
                               ))}
                               {page.sources.length > 3 && (
-                                <span className="text-[10px] text-gray-400">
+                                <span className="text-[10px] text-faint">
                                   +{page.sources.length - 3}
                                 </span>
                               )}
                             </div>
                           </div>
                           <div className="w-[90px] text-center">
-                            <span className="text-sm font-semibold text-gray-900">
+                            <span className="text-sm font-semibold text-heading">
                               {page.sessions.toLocaleString('de-DE')}
                             </span>
                           </div>
                           <div className="w-[70px] text-center">
-                            <span className="text-sm text-gray-600">
+                            <span className="text-sm text-secondary">
                               {page.users.toLocaleString('de-DE')}
                             </span>
                           </div>
                           <div className="w-[70px] text-center">
-                            <span className="text-sm text-gray-600">
+                            <span className="text-sm text-secondary">
                               {formatDuration(page.avgEngagementTime)}
                             </span>
                           </div>
@@ -773,7 +773,7 @@ export default function AiTrafficDetailCard({
                               "inline-flex items-center justify-center min-w-[2rem] px-2 py-0.5 rounded text-sm font-semibold",
                               page.conversions > 0 
                                 ? "bg-green-100 text-green-700" 
-                                : "bg-gray-100 text-gray-500"
+                                : "bg-surface-tertiary text-muted"
                             )}>
                               {page.conversions}
                             </span>
@@ -796,7 +796,7 @@ export default function AiTrafficDetailCard({
                   return (
                     <div 
                       key={i}
-                      className="p-4 rounded-xl border border-gray-100 hover:border-purple-200 hover:shadow-md transition-all bg-white"
+                      className="p-4 rounded-xl border border-theme-border-subtle hover:border-purple-200 hover:shadow-md transition-all bg-surface"
                     >
                       <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-2">
@@ -804,7 +804,7 @@ export default function AiTrafficDetailCard({
                             className="w-3 h-3 rounded-full"
                             style={{ backgroundColor: getSourceColor(source.source) }}
                           />
-                          <span className="font-semibold text-gray-900">
+                          <span className="font-semibold text-heading">
                             {getSourceLabel(source.source)}
                           </span>
                         </div>
@@ -815,14 +815,14 @@ export default function AiTrafficDetailCard({
 
                       <div className="grid grid-cols-2 gap-3 mb-3">
                         <div>
-                          <div className="text-xs text-gray-500 mb-0.5">Sitzungen</div>
-                          <div className="text-lg font-bold text-gray-900">
+                          <div className="text-xs text-muted mb-0.5">Sitzungen</div>
+                          <div className="text-lg font-bold text-heading">
                             {source.sessions.toLocaleString('de-DE')}
                           </div>
                         </div>
                         <div>
-                          <div className="text-xs text-gray-500 mb-0.5">Nutzer</div>
-                          <div className="text-lg font-bold text-gray-900">
+                          <div className="text-xs text-muted mb-0.5">Nutzer</div>
+                          <div className="text-lg font-bold text-heading">
                             {source.users.toLocaleString('de-DE')}
                           </div>
                         </div>
@@ -830,17 +830,17 @@ export default function AiTrafficDetailCard({
 
                       {cleanTopPages.length > 0 && (
                         <div>
-                          <div className="text-xs font-semibold text-gray-500 mb-2">Top Seiten</div>
+                          <div className="text-xs font-semibold text-muted mb-2">Top Seiten</div>
                           <div className="space-y-1">
                             {cleanTopPages.slice(0, 3).map((page, j) => (
                               <div 
                                 key={j}
                                 className="flex items-center justify-between text-xs"
                               >
-                                <span className="text-gray-600 truncate max-w-[70%]" title={page.path}>
+                                <span className="text-secondary truncate max-w-[70%]" title={page.path}>
                                   {formatPath(page.path)}
                                 </span>
-                                <span className="text-gray-400 font-medium">
+                                <span className="text-faint font-medium">
                                   {page.sessions}
                                 </span>
                               </div>
@@ -856,9 +856,9 @@ export default function AiTrafficDetailCard({
           </div>
 
           {/* ===== FOOTER INFO ===== */}
-          <div className="px-6 py-4 bg-gray-50 border-t border-gray-100">
-            <div className="flex items-start gap-2 text-xs text-gray-500">
-              <InfoCircle size={14} className="text-gray-400 mt-0.5 shrink-0" />
+          <div className="px-6 py-4 bg-surface-secondary border-t border-theme-border-subtle">
+            <div className="flex items-start gap-2 text-xs text-muted">
+              <InfoCircle size={14} className="text-faint mt-0.5 shrink-0" />
               <p>
                 <strong>Hinweis:</strong> KI-Traffic umfasst Besuche von ChatGPT, Claude, Perplexity, Gemini und weiteren KI-Assistenten. 
                 Die tatsächliche Suchanfrage der Nutzer wird von diesen Plattformen nicht übermittelt – 

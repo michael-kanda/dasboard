@@ -123,29 +123,29 @@ export default function SemrushConfiguration({ projectId, isAdmin = false }: Sem
 
   if (isLoading) {
     return (
-      <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
+      <div className="bg-surface p-6 rounded-lg shadow-md border border-theme-border-default">
         <div className="animate-pulse">
-          <div className="h-5 bg-gray-200 rounded w-1/3 mb-4"></div>
-          <div className="h-10 bg-gray-200 rounded mb-3"></div>
-          <div className="h-10 bg-gray-200 rounded"></div>
+          <div className="h-5 bg-surface-tertiary rounded w-1/3 mb-4"></div>
+          <div className="h-10 bg-surface-tertiary rounded mb-3"></div>
+          <div className="h-10 bg-surface-tertiary rounded"></div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
+    <div className="bg-surface p-6 rounded-lg shadow-md border border-theme-border-default">
       {/* Header */}
       <div className="flex justify-between items-start mb-4">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+          <h3 className="text-lg font-semibold text-heading flex items-center gap-2">
             <Database size={20} className="text-orange-600" />
             Semrush Konfiguration
           </h3>
           {config?.lastUpdated && !isEditing && (
-            <div className="mt-2 text-xs text-gray-500 flex flex-col gap-1">
+            <div className="mt-2 text-xs text-muted flex flex-col gap-1">
               <span>{formatLastUpdated(config.lastUpdated)}</span>
-              <span className="text-[10px] text-gray-400">
+              <span className="text-[10px] text-faint">
                 {new Date(config.lastUpdated).toLocaleString('de-DE')}
               </span>
             </div>
@@ -174,7 +174,7 @@ export default function SemrushConfiguration({ projectId, isAdmin = false }: Sem
       <div className="space-y-4">
         {/* Semrush Project ID */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-body mb-1">
             Semrush Project ID
           </label>
           {isEditing ? (
@@ -183,23 +183,23 @@ export default function SemrushConfiguration({ projectId, isAdmin = false }: Sem
               value={tempProjectId}
               onChange={(e) => setTempProjectId(e.target.value)}
               placeholder="z.B. 12920575"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-theme-border-default rounded-md focus:ring-2 focus:ring-orange-500 focus:border-transparent"
             />
           ) : (
-            <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-md text-gray-900">
+            <div className="px-3 py-2 bg-surface-secondary border border-theme-border-default rounded-md text-heading">
               {config?.semrushProjectId || (
-                <span className="text-gray-400 italic">Nicht konfiguriert</span>
+                <span className="text-faint italic">Nicht konfiguriert</span>
               )}
             </div>
           )}
-          <p className="mt-1 text-xs text-gray-500">
+          <p className="mt-1 text-xs text-muted">
             Die Project ID finden Sie in Semrush unter &ldquo;Position Tracking&rdquo; → Projekt auswählen → URL enthält die ID
           </p>
         </div>
 
         {/* Semrush Tracking ID */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-body mb-1">
             Semrush Tracking ID
           </label>
           {isEditing ? (
@@ -208,16 +208,16 @@ export default function SemrushConfiguration({ projectId, isAdmin = false }: Sem
               value={tempTrackingId}
               onChange={(e) => setTempTrackingId(e.target.value)}
               placeholder="z.B. abc123def456"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-theme-border-default rounded-md focus:ring-2 focus:ring-orange-500 focus:border-transparent"
             />
           ) : (
-            <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-md text-gray-900">
+            <div className="px-3 py-2 bg-surface-secondary border border-theme-border-default rounded-md text-heading">
               {config?.semrushTrackingId || (
-                <span className="text-gray-400 italic">Nicht konfiguriert</span>
+                <span className="text-faint italic">Nicht konfiguriert</span>
               )}
             </div>
           )}
-          <p className="mt-1 text-xs text-gray-500">
+          <p className="mt-1 text-xs text-muted">
             Optional: Tracking ID für spezifische Kampagnen oder erweiterte Features
           </p>
         </div>
@@ -242,7 +242,7 @@ export default function SemrushConfiguration({ projectId, isAdmin = false }: Sem
             <button
               onClick={handleCancel}
               disabled={isSaving}
-              className="flex items-center gap-1.5 px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 disabled:opacity-50 transition-colors"
+              className="flex items-center gap-1.5 px-4 py-2 bg-surface-tertiary text-body rounded-md hover:bg-surface-tertiary disabled:opacity-50 transition-colors"
             >
               <X size={16} />
               Abbrechen
@@ -253,8 +253,8 @@ export default function SemrushConfiguration({ projectId, isAdmin = false }: Sem
 
       {/* Info Box */}
       {!isEditing && (
-        <div className="mt-4 pt-4 border-t border-gray-100">
-          <p className="text-xs text-gray-500">
+        <div className="mt-4 pt-4 border-t border-theme-border-subtle">
+          <p className="text-xs text-muted">
             💡 Diese Werte werden verwendet um Daten von Semrush zu laden. Änderungen werden nach dem Speichern sofort aktiv.
           </p>
         </div>

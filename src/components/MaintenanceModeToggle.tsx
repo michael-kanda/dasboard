@@ -31,7 +31,7 @@ export default function MaintenanceModeToggle({
   // SUPERADMIN kann nicht in Wartungsmodus gesetzt werden
   if (userRole === 'SUPERADMIN') {
     return (
-      <div className="flex items-center gap-2 text-gray-400 text-sm">
+      <div className="flex items-center gap-2 text-faint text-sm">
         <PersonFillCheck />
         <span>SUPERADMINs sind ausgenommen</span>
       </div>
@@ -73,19 +73,19 @@ export default function MaintenanceModeToggle({
     <div className={`flex items-center justify-between p-4 rounded-lg border transition-all ${
       isActive 
         ? 'bg-amber-50 border-amber-200' 
-        : 'bg-gray-50 border-gray-200'
+        : 'bg-surface-secondary border-theme-border-default'
     }`}>
       <div className="flex items-center gap-3">
-        <div className={`p-2 rounded-lg ${isActive ? 'bg-amber-100' : 'bg-gray-100'}`}>
+        <div className={`p-2 rounded-lg ${isActive ? 'bg-amber-100' : 'bg-surface-tertiary'}`}>
           {isActive ? (
             <ConeStriped className="text-amber-600 text-lg" />
           ) : (
-            <PersonFillCheck className="text-gray-500 text-lg" />
+            <PersonFillCheck className="text-muted text-lg" />
           )}
         </div>
         <div>
-          <h4 className="font-medium text-gray-900">Wartungsmodus</h4>
-          <p className="text-xs text-gray-500">
+          <h4 className="font-medium text-heading">Wartungsmodus</h4>
+          <p className="text-xs text-muted">
             {isActive 
               ? 'Benutzer ist gesperrt und sieht nur die Wartungsseite' 
               : 'Benutzer hat normalen Zugriff auf das System'}
@@ -134,7 +134,7 @@ export function MaintenanceModeToggleCompact({
   const [isLoading, setIsLoading] = useState(false);
 
   if (userRole === 'SUPERADMIN') {
-    return <span className="text-gray-400 text-xs">—</span>;
+    return <span className="text-faint text-xs">—</span>;
   }
 
   const handleToggle = async () => {
@@ -166,7 +166,7 @@ export function MaintenanceModeToggleCompact({
       className={`p-1.5 rounded-lg transition-all disabled:opacity-50 ${
         isActive
           ? 'bg-amber-100 text-amber-600 hover:bg-amber-200'
-          : 'bg-gray-100 text-gray-400 hover:bg-gray-200 hover:text-gray-600'
+          : 'bg-surface-tertiary text-faint hover:bg-surface-tertiary hover:text-secondary'
       }`}
       title={isActive ? 'Im Wartungsmodus - Klicken zum Freigeben' : 'Klicken für Wartungsmodus'}
     >

@@ -43,7 +43,7 @@ export default function DashboardHeader({
             </div>
           )}
           
-          <span className="text-gray-500 text-sm hidden lg:block">
+          <span className="text-muted text-sm hidden lg:block">
             💡 GOOGLE Datenaktualisierung alle 48 Stunden | SEMRUSH Datenaktualisierung alle 14 Tage.
           </span>
         </div>

@@ -29,14 +29,14 @@ export default function BingAnalysisWidget({
               <Search className="text-white" size={20} />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-gray-900">Bing Suche</h3>
-              <p className="text-xs text-gray-500">Laden...</p>
+              <h3 className="text-lg font-semibold text-heading">Bing Suche</h3>
+              <p className="text-xs text-muted">Laden...</p>
             </div>
           </div>
         </div>
         <div className="animate-pulse space-y-3">
-          <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-          <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+          <div className="h-4 bg-surface-tertiary rounded w-3/4"></div>
+          <div className="h-4 bg-surface-tertiary rounded w-1/2"></div>
         </div>
       </div>
     );
@@ -51,8 +51,8 @@ export default function BingAnalysisWidget({
               <Search className="text-white" size={20} />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-gray-900">Bing Suche</h3>
-              <p className="text-xs text-gray-500">Organische Suchergebnisse</p>
+              <h3 className="text-lg font-semibold text-heading">Bing Suche</h3>
+              <p className="text-xs text-muted">Organische Suchergebnisse</p>
             </div>
           </div>
         </div>
@@ -87,7 +87,7 @@ export default function BingAnalysisWidget({
     if (position <= 3) return 'text-green-600 bg-green-50';
     if (position <= 10) return 'text-blue-600 bg-blue-50';
     if (position <= 20) return 'text-orange-600 bg-orange-50';
-    return 'text-gray-600 bg-gray-50';
+    return 'text-secondary bg-surface-secondary';
   };
 
   return (
@@ -99,16 +99,16 @@ export default function BingAnalysisWidget({
             <Search className="text-white" size={20} />
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-gray-900">Bing Suche</h3>
+            <h3 className="text-lg font-semibold text-heading">Bing Suche</h3>
             <div className="flex items-center gap-2">
-              <span className="text-xs text-gray-500">Organische Suchergebnisse</span>
-              <span className="text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">Letzte 3 Monate</span>
+              <span className="text-xs text-muted">Organische Suchergebnisse</span>
+              <span className="text-xs bg-surface-tertiary text-secondary px-1.5 py-0.5 rounded">Letzte 3 Monate</span>
             </div>
           </div>
         </div>
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+          className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-body hover:bg-surface-tertiary rounded-lg transition-colors"
         >
           {isExpanded ? (
             <>
@@ -163,35 +163,35 @@ export default function BingAnalysisWidget({
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className="border-b border-gray-200">
-              <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">
+            <tr className="border-b border-theme-border-default">
+              <th className="text-left py-3 px-4 text-xs font-semibold text-secondary uppercase tracking-wider">
                 Keyword
               </th>
-              <th className="text-right py-3 px-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">
+              <th className="text-right py-3 px-4 text-xs font-semibold text-secondary uppercase tracking-wider">
                 Position
               </th>
-              <th className="text-right py-3 px-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">
+              <th className="text-right py-3 px-4 text-xs font-semibold text-secondary uppercase tracking-wider">
                 Klicks
               </th>
-              <th className="text-right py-3 px-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">
+              <th className="text-right py-3 px-4 text-xs font-semibold text-secondary uppercase tracking-wider">
                 Impressionen
               </th>
-              <th className="text-right py-3 px-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">
+              <th className="text-right py-3 px-4 text-xs font-semibold text-secondary uppercase tracking-wider">
                 CTR
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100">
+          <tbody className="divide-y divide-theme-border-subtle">
             {topKeywords.map((keyword, index) => {
               const ctr = keyword.impressions > 0 
                 ? ((keyword.clicks / keyword.impressions) * 100).toFixed(2) 
                 : '0.00';
               
               return (
-                <tr key={index} className="hover:bg-gray-50 transition-colors">
+                <tr key={index} className="hover:bg-surface-secondary transition-colors">
                   <td className="py-3 px-4">
                     <div className="flex items-center gap-2">
-                      <span className="text-sm text-gray-900 font-medium">
+                      <span className="text-sm text-heading font-medium">
                         {keyword.query || keyword.keyword}
                       </span>
                     </div>
@@ -202,17 +202,17 @@ export default function BingAnalysisWidget({
                     </span>
                   </td>
                   <td className="py-3 px-4 text-right">
-                    <span className="text-sm font-medium text-gray-900">
+                    <span className="text-sm font-medium text-heading">
                       {(keyword.clicks || 0).toLocaleString('de-DE')}
                     </span>
                   </td>
                   <td className="py-3 px-4 text-right">
-                    <span className="text-sm text-gray-600">
+                    <span className="text-sm text-secondary">
                       {(keyword.impressions || 0).toLocaleString('de-DE')}
                     </span>
                   </td>
                   <td className="py-3 px-4 text-right">
-                    <span className="text-sm font-medium text-gray-900">
+                    <span className="text-sm font-medium text-heading">
                       {ctr}%
                     </span>
                   </td>
@@ -224,9 +224,9 @@ export default function BingAnalysisWidget({
       </div>
 
       {/* Footer Info */}
-      <div className="mt-4 pt-4 border-t border-gray-200">
-        <div className="flex items-center justify-between text-xs text-gray-500">
-          <span>Ø Position: <span className="font-semibold text-gray-700">#{avgPosition.toFixed(1)}</span></span>
+      <div className="mt-4 pt-4 border-t border-theme-border-default">
+        <div className="flex items-center justify-between text-xs text-muted">
+          <span>Ø Position: <span className="font-semibold text-body">#{avgPosition.toFixed(1)}</span></span>
           <span>Zeige {topKeywords.length} von {bingData.length.toLocaleString('de-DE')} Keywords</span>
         </div>
       </div>

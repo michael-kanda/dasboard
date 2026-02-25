@@ -76,14 +76,14 @@ export default function AiTrafficCard({
   // Ladezustand
   if (isLoading) {
     return (
-      <div className={cn("bg-white rounded-lg shadow-md border border-gray-200 p-6", className)}>
+      <div className={cn("bg-surface rounded-lg shadow-md border border-theme-border-default p-6", className)}>
         <div className="animate-pulse">
-          <div className="h-6 bg-gray-200 rounded w-1/3 mb-4"></div>
-          <div className="h-16 bg-gray-200 rounded mb-4"></div>
+          <div className="h-6 bg-surface-tertiary rounded w-1/3 mb-4"></div>
+          <div className="h-16 bg-surface-tertiary rounded mb-4"></div>
           <div className="space-y-3">
-            <div className="h-4 bg-gray-200 rounded"></div>
-            <div className="h-4 bg-gray-200 rounded"></div>
-            <div className="h-4 bg-gray-200 rounded"></div>
+            <div className="h-4 bg-surface-tertiary rounded"></div>
+            <div className="h-4 bg-surface-tertiary rounded"></div>
+            <div className="h-4 bg-surface-tertiary rounded"></div>
           </div>
         </div>
       </div>
@@ -91,13 +91,13 @@ export default function AiTrafficCard({
   }
 
   return (
-    <div className={cn("bg-white rounded-lg shadow-md border border-gray-200 p-6 flex flex-col", className)}>
+    <div className={cn("bg-surface rounded-lg shadow-md border border-theme-border-default p-6 flex flex-col", className)}>
       
       {/* Header - Bereinigt: Nur Icon, Titel und Badge (keine Buttons) */}
       <div className="flex items-center justify-between mb-1">
         <div className="flex items-center gap-2">
           <Cpu className="text-purple-600" size={24} />
-          <h3 className="text-lg font-semibold text-gray-900">KI-Traffic</h3>
+          <h3 className="text-lg font-semibold text-heading">KI-Traffic</h3>
         </div>
         {!error && (
           <div className="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-sm font-medium">
@@ -109,11 +109,11 @@ export default function AiTrafficCard({
 
       {/* Meta-Info: Quelle und Datum */}
       <div className="flex items-center gap-2 mb-5 text-sm">
-        <span className="bg-gray-100 text-gray-700 px-2 py-0.5 rounded text-xs font-semibold">
+        <span className="bg-surface-tertiary text-body px-2 py-0.5 rounded text-xs font-semibold">
           Quelle: GA4
         </span>
-        <span className="text-gray-400 text-xs">•</span>
-        <span className="text-gray-500 text-xs">
+        <span className="text-faint text-xs">•</span>
+        <span className="text-muted text-xs">
           {formattedDateRange}
         </span>
       </div>
@@ -123,7 +123,7 @@ export default function AiTrafficCard({
         <div className="flex-1 flex flex-col items-center justify-center text-center my-4">
           <ExclamationTriangleFill className="text-red-500 w-8 h-8 mb-3" />
           <p className="text-sm text-red-700 font-semibold">Fehler bei GA4-Daten</p>
-          <p className="text-xs text-gray-500 mt-1" title={error}>
+          <p className="text-xs text-muted mt-1" title={error}>
             Die KI-Traffic-Daten konnten nicht geladen werden.
           </p>
         </div>
@@ -162,7 +162,7 @@ export default function AiTrafficCard({
         
           {/* Top KI-Quellen */}
           <div>
-            <h4 className="text-sm font-semibold text-gray-700 mb-3">Top KI-Quellen</h4>
+            <h4 className="text-sm font-semibold text-body mb-3">Top KI-Quellen</h4>
             <div className="space-y-2">
               {safeTopAiSources.length > 0 ? (
                 safeTopAiSources.map((source, index) => {
@@ -178,13 +178,13 @@ export default function AiTrafficCard({
                           index === 2 ? 'bg-purple-400' :
                           'bg-purple-300'
                         }`}></div>
-                        <span className="text-sm text-gray-700 truncate">{source.source || 'Unbekannt'}</span>
+                        <span className="text-sm text-body truncate">{source.source || 'Unbekannt'}</span>
                       </div>
                       <div className="flex items-center gap-3 flex-shrink-0">
-                        <span className="text-sm font-medium text-gray-900">
+                        <span className="text-sm font-medium text-heading">
                           {sourceSessions.toLocaleString('de-DE')}
                         </span>
-                        <span className="text-xs text-gray-500 min-w-[3rem] text-right">
+                        <span className="text-xs text-muted min-w-[3rem] text-right">
                           {sourcePercentage.toFixed(1)}%
                         </span>
                       </div>
@@ -192,14 +192,14 @@ export default function AiTrafficCard({
                   );
                 })
               ) : (
-                <p className="text-sm text-gray-500 italic">Keine KI-Traffic-Daten verfügbar</p>
+                <p className="text-sm text-muted italic">Keine KI-Traffic-Daten verfügbar</p>
               )}
             </div>
           </div>
 
           {/* Trend Chart */}
           <div>
-            <h4 className="text-sm font-semibold text-gray-700 mb-2">Sitzungs-Trend (KI)</h4>
+            <h4 className="text-sm font-semibold text-body mb-2">Sitzungs-Trend (KI)</h4>
             {safeTrend.length > 0 ? (
               <div className="h-[200px]">
                 <ResponsiveContainer width="100%" height="100%">
@@ -253,7 +253,7 @@ export default function AiTrafficCard({
                 </ResponsiveContainer>
               </div>
             ) : (
-              <div className="h-[200px] flex items-center justify-center text-xs text-gray-400 italic border border-dashed border-gray-200 rounded">
+              <div className="h-[200px] flex items-center justify-center text-xs text-faint italic border border-dashed border-theme-border-default rounded">
                 Keine Trenddaten verfügbar
               </div>
             )}
@@ -263,8 +263,8 @@ export default function AiTrafficCard({
       )} 
         
       {/* Footer Info-Text & Neuer Button */}
-      <div className="mt-4 pt-4 border-t border-gray-100 flex flex-col gap-3">
-        <p className="text-xs text-gray-500">
+      <div className="mt-4 pt-4 border-t border-theme-border-subtle flex flex-col gap-3">
+        <p className="text-xs text-muted">
           KI-Traffic umfasst Besuche von bekannten KI-Bots wie ChatGPT, Claude, Perplexity und Google Gemini.
         </p>
         

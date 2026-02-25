@@ -14,10 +14,10 @@ export default function NoDataState({
 }: NoDataStateProps) {
   return (
     <div className={cn("flex flex-col items-center justify-center h-full w-full py-6 animate-in fade-in zoom-in-95 duration-300", className)}>
-      <div className="bg-gray-50 p-4 rounded-full mb-3 border border-gray-100 shadow-sm">
-        <Inbox size={24} className="text-gray-400" />
+      <div className="bg-surface-secondary p-4 rounded-full mb-3 border border-theme-border-subtle shadow-sm">
+        <Inbox size={24} className="text-faint" />
       </div>
-      <p className="text-sm font-medium text-gray-500 text-center max-w-[200px]">
+      <p className="text-sm font-medium text-muted text-center max-w-[200px]">
         {message}
       </p>
     </div>

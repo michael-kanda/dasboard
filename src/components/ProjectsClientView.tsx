@@ -101,13 +101,13 @@ export default function ProjectsClientView({ initialProjects }: Props) {
               <Briefcase className="text-indigo-600" />
               Projekt Übersicht
             </h1>
-            <p className="text-gray-500 mt-1">
+            <p className="text-muted mt-1">
               Übersicht aller Kundenprojekte und deren aktueller Status.
             </p>
           </div>
           
           <div className="relative w-full md:w-96">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-faint" size={16} />
             <input
               type="text"
               placeholder="Projekt, Domain oder E-Mail suchen..."
@@ -139,13 +139,13 @@ export default function ProjectsClientView({ initialProjects }: Props) {
                 <div className="flex justify-between items-start mb-4">
                   <div>
                     <div className="flex items-center gap-3">
-                      <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                        <Globe size={18} className="text-gray-400" />
+                      <h3 className="text-xl font-bold text-heading flex items-center gap-2">
+                        <Globe size={18} className="text-faint" />
                         {user.domain || 'Keine Domain'}
                       </h3>
                       {renderTrendBadge(user.total_impression_change)}
                     </div>
-                    <div className="text-sm text-gray-500 mt-1">{user.email}</div>
+                    <div className="text-sm text-muted mt-1">{user.email}</div>
                   </div>
                   
                   {/* BUTTON 1: ZUM DASHBOARD (Link durch div/button mit onClick ersetzt) */}
@@ -162,11 +162,11 @@ export default function ProjectsClientView({ initialProjects }: Props) {
                   </div>
                 </div>
 
-                <hr className="border-gray-100 mb-4" />
+                <hr className="border-theme-border-subtle mb-4" />
 
                 <div className="grid grid-cols-2 gap-4 mb-5">
                   <div className="flex flex-col">
-                    <span className="text-xs text-gray-400 uppercase font-bold tracking-wider block mb-1">Projekt-Timeline</span>
+                    <span className="text-xs text-faint uppercase font-bold tracking-wider block mb-1">Projekt-Timeline</span>
                     <div className="flex flex-col gap-1">
                       {user.project_timeline_active ? (
                         <>
@@ -174,13 +174,13 @@ export default function ProjectsClientView({ initialProjects }: Props) {
                             <CheckCircleFill size={12} /> Aktiviert
                           </span>
                           {dateRangeString && (
-                            <span className="text-xs text-gray-500 flex items-center gap-1 mt-1 ml-1">
+                            <span className="text-xs text-muted flex items-center gap-1 mt-1 ml-1">
                               <CalendarRange size={10} /> {dateRangeString}
                             </span>
                           )}
                         </>
                       ) : (
-                        <span className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 bg-gray-100 px-2.5 py-1 rounded-full border border-gray-200 w-fit">
+                        <span className="inline-flex items-center gap-1.5 text-sm font-medium text-muted bg-surface-tertiary px-2.5 py-1 rounded-full border border-theme-border-default w-fit">
                           <XCircleFill size={12} /> Deaktiviert
                         </span>
                       )}
@@ -188,7 +188,7 @@ export default function ProjectsClientView({ initialProjects }: Props) {
                   </div>
 
                   <div className="flex flex-col items-end">
-                    <span className="text-xs text-gray-400 uppercase font-bold tracking-wider block mb-1">Redaktionsplan</span>
+                    <span className="text-xs text-faint uppercase font-bold tracking-wider block mb-1">Redaktionsplan</span>
                     {hasRedaktionsplan ? (
                       // BUTTON 2: REDAKTIONSPLAN (Link durch span mit onClick ersetzt)
                       <span 
@@ -203,8 +203,8 @@ export default function ProjectsClientView({ initialProjects }: Props) {
                         <FileEarmarkText size={12} /> Vorhanden (Öffnen)
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 w-fit">
-                        <span className="w-3 h-3 rounded-full border-2 border-gray-300"></span>
+                      <span className="inline-flex items-center gap-1.5 text-sm font-medium text-muted w-fit">
+                        <span className="w-3 h-3 rounded-full border-2 border-theme-border-default"></span>
                         Nein
                       </span>
                     )}
@@ -213,39 +213,39 @@ export default function ProjectsClientView({ initialProjects }: Props) {
 
                 <div className="mb-5 bg-surface-secondary rounded-lg p-3 border border-theme-border-subtle">
                   <div className="flex justify-between items-center mb-2">
-                    <span className="text-xs font-semibold text-gray-700">Landingpages ({user.landingpages_count || 0})</span>
+                    <span className="text-xs font-semibold text-body">Landingpages ({user.landingpages_count || 0})</span>
                   </div>
                   {hasRedaktionsplan ? (
                     <div className="grid grid-cols-4 gap-2 text-center">
-                      <div className="flex flex-col bg-white rounded border border-gray-200 p-1.5">
-                        <span className="text-[10px] text-gray-400 uppercase">Offen</span>
+                      <div className="flex flex-col bg-surface rounded border border-theme-border-default p-1.5">
+                        <span className="text-[10px] text-faint uppercase">Offen</span>
                         <span className="text-sm font-bold text-blue-600">{user.landingpages_offen}</span>
                       </div>
-                      <div className="flex flex-col bg-white rounded border border-gray-200 p-1.5">
-                        <span className="text-[10px] text-gray-400 uppercase">Prüfung</span>
+                      <div className="flex flex-col bg-surface rounded border border-theme-border-default p-1.5">
+                        <span className="text-[10px] text-faint uppercase">Prüfung</span>
                         <span className="text-sm font-bold text-amber-500">{user.landingpages_in_pruefung}</span>
                       </div>
-                      <div className="flex flex-col bg-white rounded border border-gray-200 p-1.5">
-                        <span className="text-[10px] text-gray-400 uppercase">Freigabe</span>
+                      <div className="flex flex-col bg-surface rounded border border-theme-border-default p-1.5">
+                        <span className="text-[10px] text-faint uppercase">Freigabe</span>
                         <span className="text-sm font-bold text-green-600">{user.landingpages_freigegeben}</span>
                       </div>
-                      <div className="flex flex-col bg-white rounded border border-gray-200 p-1.5">
-                        <span className="text-[10px] text-gray-400 uppercase">Gesperrt</span>
+                      <div className="flex flex-col bg-surface rounded border border-theme-border-default p-1.5">
+                        <span className="text-[10px] text-faint uppercase">Gesperrt</span>
                         <span className="text-sm font-bold text-red-500">{user.landingpages_gesperrt}</span>
                       </div>
                     </div>
                   ) : (
-                    <div className="text-xs text-gray-400 text-center py-2 italic">Keine Landingpages angelegt</div>
+                    <div className="text-xs text-faint text-center py-2 italic">Keine Landingpages angelegt</div>
                   )}
                 </div>
 
-                <div className="mt-auto pt-3 border-t border-gray-100 flex items-start gap-2 text-xs text-gray-500">
+                <div className="mt-auto pt-3 border-t border-theme-border-subtle flex items-start gap-2 text-xs text-muted">
                   <ShieldLock size={12} className="mt-0.5 flex-shrink-0" />
                   <div className="flex flex-col w-full">
                     <span className="font-medium mb-1">Betreut durch:</span>
                     <div className="flex flex-wrap gap-1">
                       {adminsDisplay.split(', ').map((adminEmail, idx) => (
-                        <span key={idx} className="bg-gray-100 px-2 py-0.5 rounded text-gray-700 truncate max-w-full" title={adminEmail}>
+                        <span key={idx} className="bg-surface-tertiary px-2 py-0.5 rounded text-body truncate max-w-full" title={adminEmail}>
                           {adminEmail}
                         </span>
                       ))}

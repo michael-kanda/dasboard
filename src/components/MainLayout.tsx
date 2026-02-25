@@ -16,7 +16,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
   if (!showLayout) {
     return (
       <ThemeProvider>
-        <div className="flex flex-col min-h-screen bg-gray-50">
+        <div className="flex flex-col min-h-screen bg-surface-secondary">
           <main className="flex-grow">{children}</main>
         </div>
       </ThemeProvider>
@@ -29,7 +29,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
   // wenn html.dark gesetzt ist.
   return (
     <ThemeProvider>
-      <div className="flex min-h-screen bg-gray-50">
+      <div className="flex min-h-screen bg-surface-secondary">
         <Sidebar />
         <div className="flex flex-col flex-1 min-w-0">
           <main className="flex-grow">{children}</main>

@@ -119,8 +119,8 @@ export default function TopQueriesList({
     }
     if (rounded <= 3) {
       return (
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-gray-100 text-gray-700 border border-gray-200 shadow-sm">
-          <Award size={10} className="text-gray-500" />
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-surface-tertiary text-body border border-theme-border-default shadow-sm">
+          <Award size={10} className="text-muted" />
           {position.toFixed(1)}
         </span>
       );
@@ -135,7 +135,7 @@ export default function TopQueriesList({
     }
     
     return (
-      <span className="text-gray-500 font-medium text-xs">
+      <span className="text-muted font-medium text-xs">
         {position.toFixed(1)}
       </span>
     );
@@ -143,7 +143,7 @@ export default function TopQueriesList({
 
   if (isLoading) {
     return (
-      <div className={cn("bg-white rounded-lg shadow-sm border border-gray-200 card-glass", className)}>
+      <div className={cn("bg-surface rounded-lg shadow-sm border border-theme-border-default card-glass", className)}>
         <div className="p-4 bg-[#188BDB] rounded-t-lg">
           <div className="flex items-center gap-2 text-white">
             <ClockHistory size={20} />
@@ -151,7 +151,7 @@ export default function TopQueriesList({
           </div>
         </div>
         <div className="p-6 animate-pulse space-y-3">
-          {[...Array(5)].map((_, i) => <div key={i} className="h-12 bg-gray-100 rounded"></div>)}
+          {[...Array(5)].map((_, i) => <div key={i} className="h-12 bg-surface-tertiary rounded"></div>)}
         </div>
       </div>
     );
@@ -159,7 +159,7 @@ export default function TopQueriesList({
 
   if (error) {
     return (
-      <div className={cn("bg-white rounded-lg shadow-sm border border-gray-200 card-glass", className)}>
+      <div className={cn("bg-surface rounded-lg shadow-sm border border-theme-border-default card-glass", className)}>
         <div className="p-4 bg-[#188BDB] rounded-t-lg">
           <div className="flex items-center gap-2 text-white">
             <ClockHistory size={20} />
@@ -169,14 +169,14 @@ export default function TopQueriesList({
         <div className="p-6 text-center text-sm text-red-700 flex flex-col items-center gap-2 min-h-[200px] justify-center">
           <ExclamationTriangleFill className="text-red-500 w-6 h-6" />
           <span className="font-semibold">Fehler bei GSC-Daten</span>
-          <p className="text-xs text-gray-500" title={error}>Die Suchanfragen konnten nicht geladen werden.</p>
+          <p className="text-xs text-muted" title={error}>Die Suchanfragen konnten nicht geladen werden.</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className={cn("bg-white rounded-lg shadow-sm border border-gray-200 flex flex-col card-glass", className)}>
+    <div className={cn("bg-surface rounded-lg shadow-sm border border-theme-border-default flex flex-col card-glass", className)}>
       
       {/* Header */}
       <div className="p-4 bg-[#188BDB] rounded-t-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -218,8 +218,8 @@ export default function TopQueriesList({
       {/* Tabelle */}
       <div className="overflow-x-auto flex-grow">
         {displayedQueries.length === 0 ? (
-           <div className="p-8 text-center text-sm text-gray-500 italic min-h-[200px] flex flex-col items-center justify-center">
-             <Search className="text-gray-300 mb-2" size={32} />
+           <div className="p-8 text-center text-sm text-muted italic min-h-[200px] flex flex-col items-center justify-center">
+             <Search className="text-faint mb-2" size={32} />
              {searchTerm ? `Keine Ergebnisse für "${searchTerm}"` : 'Keine Suchanfragen gefunden.'}
            </div>
         ) : (
@@ -241,9 +241,9 @@ export default function TopQueriesList({
                   return (
                     <tr 
                       key={`${query.query}-${index}`}
-                      className={cn("border-b border-gray-200 hover:bg-blue-50 transition-colors", index % 2 === 0 ? "bg-white" : "bg-gray-50")}
+                      className={cn("border-b border-theme-border-default hover:bg-blue-50 transition-colors", index % 2 === 0 ? "bg-surface" : "bg-surface-secondary")}
                     >
-                      <td className="px-4 py-3 text-sm text-gray-900 border-r border-gray-200">
+                      <td className="px-4 py-3 text-sm text-heading border-r border-theme-border-default">
                         <div className="break-words max-w-md">
                           {/* ✅ Suchanfrage */}
                           <span className="font-medium">{query.query}</span>
@@ -252,7 +252,7 @@ export default function TopQueriesList({
                           {formattedPath && (
                             <div className="mt-1">
                               <span 
-                                className="inline-flex items-center text-xs text-rose-400 font-mono px-1.5 py-0.5 bg-gray-900/5 rounded border border-gray-200/50"
+                                className="inline-flex items-center text-xs text-rose-400 font-mono px-1.5 py-0.5 bg-surface-secondary rounded border border-theme-border-default/50"
                                 title={query.url}
                               >
                                 {formattedPath}
@@ -261,9 +261,9 @@ export default function TopQueriesList({
                           )}
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-900 text-right border-r border-gray-200 whitespace-nowrap">{query.clicks.toLocaleString('de-DE')}</td>
-                      <td className="px-4 py-3 text-sm text-gray-900 text-right border-r border-gray-200 whitespace-nowrap">{query.impressions.toLocaleString('de-DE')}</td>
-                      <td className="px-4 py-3 text-sm text-gray-900 text-right border-r border-gray-200 whitespace-nowrap">{(query.ctr * 100).toFixed(1)}%</td>
+                      <td className="px-4 py-3 text-sm text-heading text-right border-r border-theme-border-default whitespace-nowrap">{query.clicks.toLocaleString('de-DE')}</td>
+                      <td className="px-4 py-3 text-sm text-heading text-right border-r border-theme-border-default whitespace-nowrap">{query.impressions.toLocaleString('de-DE')}</td>
+                      <td className="px-4 py-3 text-sm text-heading text-right border-r border-theme-border-default whitespace-nowrap">{(query.ctr * 100).toFixed(1)}%</td>
                       
                       <td className="px-4 py-3 text-right whitespace-nowrap">
                         <div className="flex justify-end">
@@ -280,11 +280,11 @@ export default function TopQueriesList({
       </div>
 
       {/* Footer */}
-      <div className="px-4 py-3 bg-gray-50 border-t border-gray-200 rounded-b-lg">
-        <div className="flex flex-wrap items-center justify-between gap-4 text-xs text-gray-600">
+      <div className="px-4 py-3 bg-surface-secondary border-t border-theme-border-default rounded-b-lg">
+        <div className="flex flex-wrap items-center justify-between gap-4 text-xs text-secondary">
           <div className="flex items-center gap-4">
-            <span>Klicks: <span className="font-semibold text-gray-900">{displayedQueries.reduce((sum, q) => sum + q.clicks, 0).toLocaleString('de-DE')}</span></span>
-            <span>Impressionen: <span className="font-semibold text-gray-900">{displayedQueries.reduce((sum, q) => sum + q.impressions, 0).toLocaleString('de-DE')}</span></span>
+            <span>Klicks: <span className="font-semibold text-heading">{displayedQueries.reduce((sum, q) => sum + q.clicks, 0).toLocaleString('de-DE')}</span></span>
+            <span>Impressionen: <span className="font-semibold text-heading">{displayedQueries.reduce((sum, q) => sum + q.impressions, 0).toLocaleString('de-DE')}</span></span>
           </div>
         </div>
       </div>
