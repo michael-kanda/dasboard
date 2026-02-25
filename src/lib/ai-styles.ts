@@ -90,11 +90,11 @@ export const ICONS = {
 // ============================================================================
 export const STYLES = {
   // Typography (angepasst an page.tsx)
-  h3: 'font-bold text-gray-900 mt-4 mb-2 flex items-center gap-2',                    // text-base (default), wie page.tsx h3
-  h4: 'font-semibold text-gray-800 text-xs uppercase tracking-wide mb-2',             // wie page.tsx labels
-  p: 'text-sm text-gray-600 leading-relaxed mb-3',                                    // wie page.tsx text
-  pSmall: 'text-xs text-gray-500 leading-relaxed',                                    // kleinerer Text
-  label: 'font-semibold text-gray-800 text-xs uppercase tracking-wide',               // wie page.tsx labels
+  h3: 'font-bold text-heading mt-4 mb-2 flex items-center gap-2',                    // text-base (default), wie page.tsx h3
+  h4: 'font-semibold text-strong text-xs uppercase tracking-wide mb-2',             // wie page.tsx labels
+  p: 'text-sm text-secondary leading-relaxed mb-3',                                    // wie page.tsx text
+  pSmall: 'text-xs text-muted leading-relaxed',                                    // kleinerer Text
+  label: 'font-semibold text-strong text-xs uppercase tracking-wide',               // wie page.tsx labels
   
   // Layout (größere Abstände wie page.tsx)
   container: 'space-y-4',                                                              // space-y-4 statt space-y-2
@@ -106,10 +106,10 @@ export const STYLES = {
   flexCenter: 'flex items-center gap-2',
   
   // Cards & Containers (angepasst an page.tsx rounded-2xl, p-6)
-  card: 'bg-white border border-gray-100 rounded-xl p-4 shadow-sm',                   // rounded-xl, p-4, shadow-sm
-  cardHover: 'bg-white border border-gray-100 rounded-xl p-4 shadow-sm hover:shadow-md hover:border-indigo-200 transition-all',
-  cardHeader: 'bg-white border border-gray-200 rounded-xl p-4 text-gray-900 shadow-sm',
-  cardHeaderSmall: 'bg-white border border-gray-200 rounded-lg p-3 text-gray-900 shadow-sm',
+  card: 'bg-surface border border-theme-border-subtle rounded-xl p-4 shadow-sm',                   // rounded-xl, p-4, shadow-sm
+  cardHover: 'bg-surface border border-theme-border-subtle rounded-xl p-4 shadow-sm hover:shadow-md hover:border-indigo-200 transition-all',
+  cardHeader: 'bg-surface border border-theme-border-default rounded-xl p-4 text-heading shadow-sm',
+  cardHeaderSmall: 'bg-surface border border-theme-border-default rounded-lg p-3 text-heading shadow-sm',
   
   // Boxes (Info, Warning, Success, Error) - größere Abstände
   infoBox: 'bg-blue-50 border border-blue-100 rounded-xl p-4',
@@ -119,11 +119,11 @@ export const STYLES = {
   
   // Accent Boxes
   indigoBox: 'bg-indigo-50 border border-indigo-100 rounded-xl p-4',                  // wie page.tsx indigo boxes
-  purpleBox: 'bg-white-50 border border-purple-200 rounded-xl p-4',
+  purpleBox: 'bg-purple-50 border border-purple-200 rounded-xl p-4',
   amberBox: 'bg-amber-50 border border-amber-200 rounded-xl p-4',
   
   // Recommendation Box 
-recommendBox: 'bg-white border border-gray-200 shadow-sm p-4 rounded-xl',
+recommendBox: 'bg-surface border border-theme-border-default shadow-sm p-4 rounded-xl',
   
   // Fazit Boxes (with left border)
   fazitPositive: 'bg-emerald-50 border-l-4 border-emerald-500 p-4 rounded-r-xl',
@@ -135,7 +135,7 @@ recommendBox: 'bg-white border border-gray-200 shadow-sm p-4 rounded-xl',
   badge: 'px-2.5 py-1 rounded-lg text-xs font-semibold',
   badgePositive: 'bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-lg text-xs font-semibold',
   badgeNegative: 'bg-rose-100 text-rose-700 px-2.5 py-1 rounded-lg text-xs font-semibold',
-  badgeNeutral: 'bg-gray-100 text-gray-600 px-2.5 py-1 rounded-lg text-xs font-semibold',
+  badgeNeutral: 'bg-surface-tertiary text-secondary px-2.5 py-1 rounded-lg text-xs font-semibold',
   badgeInfo: 'bg-blue-100 text-blue-700 px-2.5 py-1 rounded-lg text-xs font-semibold',
   badgeWarning: 'bg-amber-100 text-amber-700 px-2.5 py-1 rounded-lg text-xs font-semibold',
   badgePurple: 'bg-purple-100 text-purple-700 px-2.5 py-1 rounded-lg text-xs font-semibold',
@@ -147,42 +147,42 @@ recommendBox: 'bg-white border border-gray-200 shadow-sm p-4 rounded-xl',
   listCompact: 'space-y-1',
   
   // List Items (größer, wie page.tsx)
-  listItem: 'flex items-start gap-2 text-sm text-gray-700',                           // text-sm statt text-xs
-  listItemSuccess: 'flex items-start gap-2 text-sm text-gray-700',
-  listItemError: 'flex items-start gap-2 text-sm text-gray-700',
-  listItemFeature: 'flex items-start gap-2 text-sm text-gray-700',
+  listItem: 'flex items-start gap-2 text-sm text-body',                           // text-sm statt text-xs
+  listItemSuccess: 'flex items-start gap-2 text-sm text-body',
+  listItemError: 'flex items-start gap-2 text-sm text-body',
+  listItemFeature: 'flex items-start gap-2 text-sm text-body',
   
   // List Item Icons (colored)
   iconSuccess: 'text-emerald-600',
   iconError: 'text-rose-500',
   iconFeature: 'text-purple-600',
-  iconNeutral: 'text-gray-400',
+  iconNeutral: 'text-faint',
   iconIndigo: 'text-indigo-600',
   
   // Metrics (etwas größer)
-  metricCard: 'bg-white border border-gray-200 rounded-xl p-3 text-center shadow-sm',
-  metricCardColored: 'bg-gray-50 border border-gray-200 rounded-xl p-3 text-center',
-  metricValue: 'text-xl font-bold text-gray-900',                                     // text-xl statt text-lg
-  metricValueLarge: 'text-2xl font-bold text-gray-900',
-  metricLabel: 'text-[10px] text-gray-500 uppercase font-medium mt-1',
+  metricCard: 'bg-surface border border-theme-border-default rounded-xl p-3 text-center shadow-sm',
+  metricCardColored: 'bg-surface-secondary border border-theme-border-default rounded-xl p-3 text-center',
+  metricValue: 'text-xl font-bold text-heading',                                     // text-xl statt text-lg
+  metricValueLarge: 'text-2xl font-bold text-heading',
+  metricLabel: 'text-[10px] text-muted uppercase font-medium mt-1',
   
   // Keywords & Tags (etwas größer)
-  tag: 'bg-white border border-gray-200 text-gray-700 px-2.5 py-1 rounded-lg text-xs',
+  tag: 'bg-surface border border-theme-border-default text-body px-2.5 py-1 rounded-lg text-xs',
   tagHighlight: 'bg-indigo-50 border border-indigo-200 text-indigo-700 px-2.5 py-1 rounded-lg text-xs font-medium',
-  tagAmber: 'bg-white border border-amber-200 text-amber-800 px-2.5 py-1 rounded-lg text-xs',
+  tagAmber: 'bg-surface border border-amber-200 text-amber-800 px-2.5 py-1 rounded-lg text-xs',
   
   // Keyword Rows
-  keywordRow: 'flex justify-between text-sm py-1.5 border-b border-gray-100 last:border-0',
+  keywordRow: 'flex justify-between text-sm py-1.5 border-b border-theme-border-subtle last:border-0',
   
   // Steps / Actions (größer)
   stepNumber: 'w-6 h-6 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold shrink-0',
-  stepText: 'text-sm text-gray-700',
+  stepText: 'text-sm text-body',
   
   // Subpage Items
-  subpageItem: 'text-sm text-gray-600 py-1.5 border-b border-gray-100 last:border-0',
+  subpageItem: 'text-sm text-secondary py-1.5 border-b border-theme-border-subtle last:border-0',
   
   // Footer
-  footer: 'text-xs text-gray-400 text-center mt-4',
+  footer: 'text-xs text-faint text-center mt-4',
   
   // Colors (for dynamic use)
   textPositive: 'text-emerald-600',
@@ -191,7 +191,7 @@ recommendBox: 'bg-white border border-gray-200 shadow-sm p-4 rounded-xl',
   textInfo: 'text-blue-600',
   textIndigo: 'text-indigo-600',
   textPurple: 'text-purple-600',
-  textMuted: 'text-gray-500',
+  textMuted: 'text-muted',
   
 } as const;
 
@@ -224,10 +224,10 @@ export const STATUS_COLORS = {
     border: 'border-blue-200',
   },
   gray: {
-    badge: 'bg-gray-400 text-white',
-    text: 'text-gray-600',
-    bg: 'bg-gray-50',
-    border: 'border-gray-200',
+    badge: 'bg-surface-tertiary text-white',
+    text: 'text-secondary',
+    bg: 'bg-surface-secondary',
+    border: 'border-theme-border-default',
   },
   indigo: {
     badge: 'bg-indigo-500 text-white',
@@ -295,7 +295,7 @@ Warnung-Box:
 
 Empfehlungs-Box (hell):
 <div class="${STYLES.recommendBox}">
-  <p class="text-sm text-gray-700">Empfehlung</p>
+  <p class="text-sm text-body">Empfehlung</p>
 </div>
 
 Badge positiv:
