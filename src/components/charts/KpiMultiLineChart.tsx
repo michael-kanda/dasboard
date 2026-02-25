@@ -68,8 +68,8 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
     const originalDate = payload[0].payload.date; 
     
     return (
-      <div className="bg-white px-4 py-3 rounded-lg shadow-lg border border-gray-200">
-        <p className="text-sm font-medium text-gray-900 mb-2">
+      <div className="bg-surface px-4 py-3 rounded-lg shadow-lg border border-theme-border-default">
+        <p className="text-sm font-medium text-heading mb-2">
           {format(new Date(originalDate), 'dd. MMM yyyy', { locale: de })}
         </p>
         <ul className="space-y-1">
@@ -146,8 +146,8 @@ export default function KpiMultiLineChart({ allChartData }: KpiMultiLineChartPro
 
 
   return (
-    <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6">
-      <h3 className="text-lg font-semibold text-gray-900 mb-6">KPI Trend</h3>
+    <div className="bg-surface rounded-lg shadow-md border border-theme-border-default p-6">
+      <h3 className="text-lg font-semibold text-heading mb-6">KPI Trend</h3>
       
       {/* 2. CHART-ANZEIGE */}
       {combinedData.length > 0 ? (
@@ -212,7 +212,7 @@ export default function KpiMultiLineChart({ allChartData }: KpiMultiLineChartPro
           </LineChart>
         </ResponsiveContainer>
       ) : (
-        <div className="h-[350px] flex items-center justify-center text-gray-500">
+        <div className="h-[350px] flex items-center justify-center text-muted">
           <p>Keine Chart-Daten verfügbar</p>
         </div>
       )}

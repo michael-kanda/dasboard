@@ -3,12 +3,12 @@
 
 import React, { useState, useCallback } from 'react';
 import { ConvertingPageData } from '@/lib/dashboard-shared';
-import { 
-  FileEarmarkText, 
-  Search, 
-  TagFill, 
-  ChevronDown, 
-  ChevronUp, 
+import {
+  FileEarmarkText,
+  Search,
+  TagFill,
+  ChevronDown,
+  ChevronUp,
   ArrowRight,
   XLg,
   ArrowRepeat,
@@ -44,18 +44,18 @@ interface Props {
   projectId?: string;
 }
 
-export default function LandingPageChart({ 
-  data, 
-  isLoading, 
+export default function LandingPageChart({
+  data,
+  isLoading,
   title = "Top Landingpages",
   dateRange = '30d',
   queryData,
   projectId
 }: Props) {
-  
+
   const [searchTerm, setSearchTerm] = useState('');
   const [expandedPaths, setExpandedPaths] = useState<Set<string>>(new Set());
-  
+
   // State für Folgepfade-Detail-Ansicht (Lightbox)
   const [showFollowUpDetail, setShowFollowUpDetail] = useState(false);
   const [selectedLandingPage, setSelectedLandingPage] = useState<string | null>(null);
@@ -65,7 +65,7 @@ export default function LandingPageChart({
 
   const getDateRangeString = (range: string) => {
     const end = new Date();
-    let start = subDays(end, 30); 
+    let start = subDays(end, 30);
 
     switch (range) {
       case '7d': start = subDays(end, 7); break;
@@ -94,10 +94,10 @@ export default function LandingPageChart({
   const getQueriesForPath = (path: string): Array<{ query: string; clicks: number; impressions: number }> => {
     if (!queryData) return [];
     if (queryData[path]) return queryData[path];
-    
+
     const withSlash = path.endsWith('/') ? path : `${path}/`;
     const withoutSlash = path.endsWith('/') ? path.slice(0, -1) : path;
-    
+
     return queryData[withSlash] || queryData[withoutSlash] || [];
   };
 
@@ -106,29 +106,29 @@ export default function LandingPageChart({
       setFollowUpError('Projekt-ID fehlt');
       return;
     }
-    
+
     setIsLoadingFollowUp(true);
     setFollowUpError(null);
     setSelectedLandingPage(landingPage);
     setShowFollowUpDetail(true);
-    
+
     try {
       const params = new URLSearchParams({
         projectId,
         dateRange,
         landingPage
       });
-      
+
       const response = await fetch(`/api/landing-page-followup?${params.toString()}`);
-      
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.error || `HTTP ${response.status}`);
       }
-      
+
       const result = await response.json();
       setFollowUpData(result.data);
-      
+
     } catch (err) {
       console.error('[LandingPageChart] Folgepfade Fehler:', err);
       setFollowUpError(err instanceof Error ? err.message : 'Unbekannter Fehler');
@@ -145,22 +145,22 @@ export default function LandingPageChart({
   };
 
   if (isLoading) {
-    return <div className="h-[50vh] w-full bg-gray-50 rounded-xl animate-pulse flex items-center justify-center text-gray-400">Lade Daten...</div>;
+    return <div className="h-[50vh] w-full bg-surface-secondary rounded-xl animate-pulse flex items-center justify-center text-faint">Lade Daten...</div>;
   }
 
   if (!data || data.length === 0) {
-    return <div className="h-[50vh] w-full bg-gray-50 rounded-xl flex items-center justify-center text-gray-400">Keine Daten verfügbar</div>;
+    return <div className="h-[50vh] w-full bg-surface-secondary rounded-xl flex items-center justify-center text-faint">Keine Daten verfügbar</div>;
   }
 
   const sortedData = [...data]
-    .filter(item => item.newUsers !== undefined && item.newUsers !== null) 
+    .filter(item => item.newUsers !== undefined && item.newUsers !== null)
     .filter(item => {
       const path = item.path?.toLowerCase() || '';
-      
+
       if (path.includes('danke') || path.includes('impressum') || path.includes('datenschutz')) {
         return false;
       }
-      
+
       if (searchTerm) {
         const searchLower = searchTerm.toLowerCase();
         const queries = getQueriesForPath(item.path);
@@ -175,48 +175,48 @@ export default function LandingPageChart({
     .sort((a, b) => (b.newUsers || 0) - (a.newUsers || 0))
     .slice(0, 50);
 
-  const maxNewUsers = sortedData.length > 0 
-    ? Math.max(...sortedData.map(p => p.newUsers || 0)) 
+  const maxNewUsers = sortedData.length > 0
+    ? Math.max(...sortedData.map(p => p.newUsers || 0))
     : 0;
-    
+
   const formattedDateRange = getDateRangeString(dateRange);
 
   return (
     <>
-      <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col max-h-[75vh]">
-        
+      <div className="bg-surface p-4 rounded-xl border border-theme-border-subtle shadow-sm flex flex-col max-h-[75vh]">
+
         {/* Header Bereich */}
-        <div className="mb-4 flex-shrink-0 border-b border-gray-50 pb-2">
-          
+        <div className="mb-4 flex-shrink-0 border-b border-theme-border-subtle pb-2">
+
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-baseline gap-3">
-              <h3 className="text-[18px] font-semibold text-gray-900 flex items-center gap-2">
+              <h3 className="text-[18px] font-semibold text-heading flex items-center gap-2">
                 <FileEarmarkText className="text-indigo-500" size={18} />
                 {title}
               </h3>
-              <span className="text-xs text-gray-400">Sortiert nach Neuen Nutzern</span>
+              <span className="text-xs text-faint">Sortiert nach Neuen Nutzern</span>
             </div>
-            
+
             <div className="relative">
-              <input 
-                type="text" 
-                placeholder="Seite oder Suchbegriff..." 
+              <input
+                type="text"
+                placeholder="Seite oder Suchbegriff..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-8 pr-3 py-1 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 w-56 text-gray-700 placeholder-gray-400"
+                className="pl-8 pr-3 py-1 text-sm border border-theme-border-default rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 w-56 text-body placeholder-faint"
               />
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" size={12} />
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-faint" size={12} />
             </div>
           </div>
-          
+
           <div className="ml-7 flex flex-wrap items-center justify-between gap-4 mt-1">
-            <div className="text-[11px] text-gray-500 flex items-center gap-2">
-              <span className="font-medium bg-gray-100 px-1.5 py-0.5 rounded text-gray-600">Quelle: GA4 + GSC</span>
-              <span className="text-gray-400">•</span>
+            <div className="text-[11px] text-muted flex items-center gap-2">
+              <span className="font-medium bg-surface-tertiary px-1.5 py-0.5 rounded text-secondary">Quelle: GA4 + GSC</span>
+              <span className="text-faint">•</span>
               <span>{formattedDateRange}</span>
               {queryData && (
                 <>
-                  <span className="text-gray-400">•</span>
+                  <span className="text-faint">•</span>
                   <span className="text-indigo-500 flex items-center gap-1">
                     <TagFill size={10} />
                     Mit Suchbegriffen
@@ -226,19 +226,19 @@ export default function LandingPageChart({
             </div>
 
             <div className="flex items-center gap-x-4">
-              <span className="text-[10px] text-gray-500 flex items-center gap-1.5">
+              <span className="text-[10px] text-muted flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-sky-500"></span>
                 Sessions
               </span>
-              <span className="text-[10px] text-gray-500 flex items-center gap-1.5">
+              <span className="text-[10px] text-muted flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-teal-500"></span>
                 Interaktionsrate
               </span>
-              <span className="text-[10px] text-gray-500 flex items-center gap-1.5">
+              <span className="text-[10px] text-muted flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-amber-500"></span>
                 CTR (GSC)
               </span>
-              <span className="text-[10px] text-gray-500 flex items-center gap-1.5">
+              <span className="text-[10px] text-muted flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-slate-400"></span>
                 Conversions
               </span>
@@ -248,7 +248,7 @@ export default function LandingPageChart({
 
         {/* Liste */}
         {sortedData.length === 0 ? (
-          <div className="flex-1 flex items-center justify-center text-gray-400 text-sm min-h-[200px]">
+          <div className="flex-1 flex items-center justify-center text-faint text-sm min-h-[200px]">
             {searchTerm ? 'Keine Landingpages für diese Suche gefunden' : 'Keine validen Daten'}
           </div>
         ) : (
@@ -260,42 +260,42 @@ export default function LandingPageChart({
                 const engagementRate = page.engagementRate || 0;
                 const conversions = page.conversions || 0;
                 const ctr = page.ctr;
-                
-                const barWidthPercent = maxNewUsers > 0 
-                  ? Math.max((newUsers / maxNewUsers) * 60, 2) 
+
+                const barWidthPercent = maxNewUsers > 0
+                  ? Math.max((newUsers / maxNewUsers) * 60, 2)
                   : 2;
 
                 const queries = getQueriesForPath(page.path);
                 const hasQueries = queries.length > 0;
                 const isExpanded = expandedPaths.has(page.path);
-                
+
                 const inlineQueries = queries.slice(0, 3);
                 const additionalQueries = queries.slice(3);
 
                 return (
                   <div key={i} className="group">
-                    <div 
-                      className={`flex items-center gap-3 py-2 hover:bg-gray-50 rounded-lg px-2 transition-colors ${hasQueries ? 'cursor-pointer' : ''}`}
+                    <div
+                      className={`flex items-center gap-3 py-2 hover:bg-surface-secondary rounded-lg px-2 transition-colors ${hasQueries ? 'cursor-pointer' : ''}`}
                       onClick={() => hasQueries && toggleExpanded(page.path)}
                     >
-                      
+
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                          <div className="text-[15px] font-medium text-gray-800 truncate" title={page.path}>
+                          <div className="text-[15px] font-medium text-strong truncate" title={page.path}>
                             {page.path}
                           </div>
                           {hasQueries && (
-                            <span className="text-gray-400 flex-shrink-0">
+                            <span className="text-faint flex-shrink-0">
                               {isExpanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
                             </span>
                           )}
                         </div>
-                        
+
                         {hasQueries && (
                           <div className="flex flex-wrap items-center gap-1.5 mb-1.5">
                             <TagFill size={10} className="text-indigo-400 flex-shrink-0" />
                             {inlineQueries.map((q, qi) => (
-                              <span 
+                              <span
                                 key={qi}
                                 className="inline-flex items-center text-[11px] text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded"
                                 title={`${q.clicks} Klicks, ${q.impressions} Impressionen`}
@@ -307,15 +307,15 @@ export default function LandingPageChart({
                               </span>
                             ))}
                             {additionalQueries.length > 0 && !isExpanded && (
-                              <span className="text-[10px] text-gray-400">
+                              <span className="text-[10px] text-faint">
                                 +{additionalQueries.length} weitere
                               </span>
                             )}
                           </div>
                         )}
-                        
-                        <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                          <div 
+
+                        <div className="h-1.5 bg-surface-tertiary rounded-full overflow-hidden">
+                          <div
                             className="h-full bg-emerald-500 rounded-full transition-all duration-500"
                             style={{ width: `${barWidthPercent}%` }}
                           />
@@ -338,7 +338,7 @@ export default function LandingPageChart({
                         <div className="bg-slate-400 text-white px-2 py-1.5 rounded-md text-[11px] font-medium whitespace-nowrap min-w-[65px] text-center shadow-sm">
                           {conversions} Conv.
                         </div>
-                        
+
                         {projectId && (
                           <button
                             onClick={(e) => {
@@ -357,10 +357,10 @@ export default function LandingPageChart({
 
                     {isExpanded && additionalQueries.length > 0 && (
                       <div className="ml-4 pl-4 border-l-2 border-indigo-100 py-2 mb-2">
-                        <div className="text-[10px] text-gray-500 mb-1.5">Weitere Suchbegriffe:</div>
+                        <div className="text-[10px] text-muted mb-1.5">Weitere Suchbegriffe:</div>
                         <div className="flex flex-wrap gap-1.5">
                           {additionalQueries.map((q, qi) => (
-                            <span 
+                            <span
                               key={qi}
                               className="inline-flex items-center text-[11px] text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded"
                               title={`${q.clicks} Klicks, ${q.impressions} Impressionen`}
@@ -384,23 +384,23 @@ export default function LandingPageChart({
 
       {/* --- NEU: Folgepfade Modal / Lightbox --- */}
       {showFollowUpDetail && (
-        <div 
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-gray-900/40 backdrop-blur-sm p-4 sm:p-6 animate-in fade-in duration-200"
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center overlay-backdrop backdrop-blur-sm p-4 sm:p-6 animate-in fade-in duration-200"
           onClick={(e) => {
             // Schließt das Modal, wenn man auf den abgedunkelten Hintergrund klickt
             if (e.target === e.currentTarget) closeFollowUpDetail();
           }}
         >
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl flex flex-col overflow-hidden max-h-[85vh] animate-in zoom-in-95 duration-200">
-            
+          <div className="bg-surface rounded-2xl shadow-2xl w-full max-w-3xl flex flex-col overflow-hidden max-h-[85vh] animate-in zoom-in-95 duration-200">
+
             {/* Modal Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gray-50/50 flex-shrink-0">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-theme-border-subtle bg-surface-secondary flex-shrink-0">
               <div className="flex items-center gap-3 overflow-hidden">
                 <div className="w-10 h-10 rounded-full bg-violet-100 flex items-center justify-center flex-shrink-0">
                   <Diagram3Fill className="text-violet-600" size={20} />
                 </div>
                 <div className="min-w-0">
-                  <h4 className="text-[16px] font-semibold text-gray-900">
+                  <h4 className="text-[16px] font-semibold text-heading">
                     Folgepfade Analyse
                   </h4>
                   {selectedLandingPage && (
@@ -414,7 +414,7 @@ export default function LandingPageChart({
                 {followUpData && (
                   <button
                     onClick={() => selectedLandingPage && loadFollowUpPaths(selectedLandingPage)}
-                    className="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                    className="p-2 text-faint hover:text-body hover:bg-surface-tertiary rounded-lg transition-colors"
                     title="Aktualisieren"
                   >
                     <ArrowRepeat size={18} />
@@ -422,7 +422,7 @@ export default function LandingPageChart({
                 )}
                 <button
                   onClick={closeFollowUpDetail}
-                  className="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                  className="p-2 text-faint hover:text-body hover:bg-surface-tertiary rounded-lg transition-colors"
                   title="Schließen"
                 >
                   <XLg size={18} />
@@ -431,13 +431,13 @@ export default function LandingPageChart({
             </div>
 
             {/* Modal Content */}
-            <div className="flex-1 overflow-y-auto p-6 bg-white custom-scrollbar">
-              
+            <div className="flex-1 overflow-y-auto p-6 bg-surface custom-scrollbar">
+
               {/* Loading State */}
               {isLoadingFollowUp && (
                 <div className="flex flex-col items-center justify-center py-12">
                   <div className="w-8 h-8 border-3 border-violet-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-                  <span className="text-gray-500 font-medium">Analysiere Nutzerverhalten...</span>
+                  <span className="text-muted font-medium">Analysiere Nutzerverhalten...</span>
                 </div>
               )}
 
@@ -448,7 +448,7 @@ export default function LandingPageChart({
                   <p className="text-red-500 text-sm mb-4">{followUpError}</p>
                   <button
                     onClick={() => selectedLandingPage && loadFollowUpPaths(selectedLandingPage)}
-                    className="px-4 py-2 bg-white text-red-600 text-sm font-medium rounded-lg border border-red-200 hover:bg-red-50 transition-colors"
+                    className="px-4 py-2 bg-surface text-red-600 text-sm font-medium rounded-lg border border-red-200 hover:bg-red-50 transition-colors"
                   >
                     Erneut versuchen
                   </button>
@@ -460,9 +460,9 @@ export default function LandingPageChart({
                 <div className="space-y-4">
                   {/* Summary Cards */}
                   <div className="grid grid-cols-2 gap-4 mb-6">
-                    <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
-                      <div className="text-xs text-gray-500 uppercase font-semibold tracking-wider mb-1">Einstiege</div>
-                      <div className="text-2xl font-bold text-gray-900">
+                    <div className="bg-surface-secondary rounded-xl p-4 border border-theme-border-subtle">
+                      <div className="text-xs text-muted uppercase font-semibold tracking-wider mb-1">Einstiege</div>
+                      <div className="text-2xl font-bold text-heading">
                         {followUpData.landingPageSessions.toLocaleString()}
                       </div>
                     </div>
@@ -475,10 +475,10 @@ export default function LandingPageChart({
                   </div>
 
                   {followUpData.followUpPaths.length === 0 ? (
-                    <div className="text-center py-12 bg-gray-50 rounded-xl border border-dashed border-gray-200">
-                      <div className="text-gray-400 mb-2">📉</div>
-                      <h5 className="text-gray-700 font-medium mb-1">Keine Folgepfade gefunden</h5>
-                      <p className="text-gray-500 text-sm max-w-md mx-auto">
+                    <div className="text-center py-12 bg-surface-secondary rounded-xl border border-dashed border-theme-border-default">
+                      <div className="text-faint mb-2">📉</div>
+                      <h5 className="text-body font-medium mb-1">Keine Folgepfade gefunden</h5>
+                      <p className="text-muted text-sm max-w-md mx-auto">
                         Nutzer verlassen die Website scheinbar direkt nach dem Besuch dieser Seite oder blockieren das Tracking.
                       </p>
                     </div>
@@ -490,35 +490,35 @@ export default function LandingPageChart({
                         const percentOfLandingPage = followUpData.landingPageSessions > 0
                           ? (fp.sessions / followUpData.landingPageSessions) * 100
                           : 0;
-                        
+
                         return (
-                          <div 
-                            key={idx} 
-                            className="flex items-center gap-4 p-3 bg-white border border-gray-100 rounded-xl hover:shadow-md transition-all group"
+                          <div
+                            key={idx}
+                            className="flex items-center gap-4 p-3 bg-surface border border-theme-border-subtle rounded-xl hover:shadow-md transition-all group"
                           >
                             <div className="w-8 h-8 bg-violet-50 text-violet-600 rounded-lg flex items-center justify-center text-sm font-bold flex-shrink-0 group-hover:bg-violet-500 group-hover:text-white transition-colors">
                               {idx + 1}
                             </div>
-                            
-                            <ArrowRight className="text-gray-300 flex-shrink-0" size={16} />
-                            
+
+                            <ArrowRight className="text-faint flex-shrink-0" size={16} />
+
                             <div className="flex-1 min-w-0 py-1">
-                              <div className="text-[15px] font-medium text-gray-800 truncate mb-1.5" title={fp.path}>
+                              <div className="text-[15px] font-medium text-strong truncate mb-1.5" title={fp.path}>
                                 {fp.path}
                               </div>
-                              <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                                <div 
+                              <div className="h-2 bg-surface-tertiary rounded-full overflow-hidden">
+                                <div
                                   className="h-full bg-gradient-to-r from-violet-400 to-violet-600 rounded-full"
                                   style={{ width: `${barWidth}%` }}
                                 />
                               </div>
                             </div>
-                            
+
                             <div className="flex items-center gap-2 flex-shrink-0 ml-2">
                               <div className="bg-violet-500 text-white px-3 py-1.5 rounded-lg text-xs font-semibold min-w-[80px] text-center shadow-sm">
                                 {fp.sessions.toLocaleString()} Sess.
                               </div>
-                              <div className="bg-gray-100 text-gray-700 px-3 py-1.5 rounded-lg text-xs font-medium min-w-[65px] text-center" title="Anteil der Landingpage-Besucher">
+                              <div className="bg-surface-tertiary text-body px-3 py-1.5 rounded-lg text-xs font-medium min-w-[65px] text-center" title="Anteil der Landingpage-Besucher">
                                 {percentOfLandingPage.toFixed(1)}%
                               </div>
                             </div>
@@ -530,15 +530,15 @@ export default function LandingPageChart({
                 </div>
               )}
             </div>
-            
-            {/* Modal Footer (Optional, macht es aber oft "runder") */}
+
+            {/* Modal Footer */}
             {followUpData && !isLoadingFollowUp && !followUpError && (
-              <div className="px-6 py-4 border-t border-gray-100 bg-gray-50/50 text-[11px] text-gray-500 flex items-center gap-2">
+              <div className="px-6 py-4 border-t border-theme-border-subtle bg-surface-secondary text-[11px] text-muted flex items-center gap-2">
                 <span className="text-xl">💡</span>
                 Die Prozentangabe rechts zeigt, wie viel Prozent der gesamten Einstiege auf diesen speziellen Folgepfad weitergeklickt haben.
               </div>
             )}
-            
+
           </div>
         </div>
       )}

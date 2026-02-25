@@ -52,11 +52,11 @@ const CustomTooltip = ({ active, payload }: CustomTooltipProps) => {
     }
     
     return (
-      <div className="bg-white px-3 py-2 rounded-lg shadow-lg border border-gray-200">
+      <div className="bg-surface px-3 py-2 rounded-lg shadow-lg border border-theme-border-default">
         <p className="text-sm font-semibold" style={{ color: data.fill }}>
           {data.name}
         </p>
-        <p className="text-xs text-gray-700">
+        <p className="text-xs text-body">
           Sitzungen: {data.value.toLocaleString('de-DE')} (
           {percentValue.toFixed(1)}%)
         </p>
@@ -92,7 +92,7 @@ const CustomLegend = (props: CustomLegendProps) => {
               className="w-3 h-3 rounded-full flex-shrink-0"
               style={{ backgroundColor: entry.color }}
             />
-            <span className="text-xs text-gray-700 truncate">
+            <span className="text-xs text-body truncate">
               {entry.value} ({entry.payload.value.toLocaleString('de-DE')} - {percent}%)
             </span>
           </li>
@@ -148,12 +148,12 @@ export default function KpiPieChart({
     return (
       <div
         className={cn(
-          'bg-white rounded-lg shadow-md border border-gray-200 p-6 flex flex-col h-[350px] justify-center items-center',
+          'bg-surface rounded-lg shadow-md border border-theme-border-default p-6 flex flex-col h-[350px] justify-center items-center',
           className
         )}
       >
         <ArrowRepeat className="animate-spin text-indigo-600 mb-2" size={24} />
-        <p className="text-sm text-gray-500">Lade {title}...</p>
+        <p className="text-sm text-muted">Lade {title}...</p>
       </div>
     );
   }
@@ -162,15 +162,15 @@ export default function KpiPieChart({
     return (
       <div
         className={cn(
-          'bg-white rounded-lg shadow-md border border-gray-200 p-6 flex flex-col h-[350px] justify-center items-center',
+          'bg-surface rounded-lg shadow-md border border-theme-border-default p-6 flex flex-col h-[350px] justify-center items-center',
           className
         )}
       >
-        <h3 className="text-lg font-semibold text-gray-900 mb-4 absolute top-6 left-6">{title}</h3>
+        <h3 className="text-lg font-semibold text-heading mb-4 absolute top-6 left-6">{title}</h3>
         <div className="flex flex-col items-center justify-center text-center text-red-700">
           <ExclamationTriangleFill className="text-red-500 w-8 h-8 mb-3" />
           <p className="text-sm font-semibold">Fehler bei GA4-Daten</p>
-          <p className="text-xs text-gray-500 mt-1" title={error}>
+          <p className="text-xs text-muted mt-1" title={error}>
             {title} konnten nicht geladen werden.
           </p>
         </div>
@@ -182,12 +182,12 @@ export default function KpiPieChart({
     return (
       <div
         className={cn(
-          'bg-white rounded-lg shadow-md border border-gray-200 p-6 flex flex-col h-[350px] justify-center items-center',
+          'bg-surface rounded-lg shadow-md border border-theme-border-default p-6 flex flex-col h-[350px] justify-center items-center',
           className
         )}
       >
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">{title}</h3>
-        <p className="text-sm text-gray-500 italic text-center">
+        <h3 className="text-lg font-semibold text-heading mb-4">{title}</h3>
+        <p className="text-sm text-muted italic text-center">
           Keine Daten für {title} verfügbar.
         </p>
       </div>
@@ -197,11 +197,11 @@ export default function KpiPieChart({
   return (
     <div
       className={cn(
-        'bg-white rounded-lg shadow-md border border-gray-200 p-6 flex flex-col h-[350px]',
+        'bg-surface rounded-lg shadow-md border border-theme-border-default p-6 flex flex-col h-[350px]',
         className
       )}
     >
-      <h3 className="text-lg font-semibold text-gray-900 mb-4 flex-shrink-0">
+      <h3 className="text-lg font-semibold text-heading mb-4 flex-shrink-0">
         {title}
       </h3>
       <div className="flex-grow min-h-0">

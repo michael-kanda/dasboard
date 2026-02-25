@@ -106,37 +106,37 @@ const CustomTooltip = ({ active, payload, totalValue }: CustomTooltipProps) => {
     const color = payload[0].fill || data.fill;
 
     return (
-      <div className="bg-white px-3 py-2 rounded-lg shadow-xl border border-gray-200 min-w-[160px]">
+      <div className="bg-surface px-3 py-2 rounded-lg shadow-xl border border-theme-border-default min-w-[160px]">
         {/* Header */}
-        <div className="flex items-center gap-2 mb-2 pb-2 border-b border-gray-100">
+        <div className="flex items-center gap-2 mb-2 pb-2 border-b border-theme-border-subtle">
           <div 
             className="w-2.5 h-2.5 rounded-full shadow-sm" 
             style={{ backgroundColor: color }}
           />
-          <span className="text-sm font-semibold text-gray-700">{data.name}</span>
+          <span className="text-sm font-semibold text-body">{data.name}</span>
         </div>
 
         {/* Standard Werte */}
         <div className="flex justify-between items-center mb-1 gap-4">
-          <span className="text-xs text-gray-500">Anteil:</span>
-          <span className="text-xs font-bold text-gray-900">{percentValue.toFixed(1)}%</span>
+          <span className="text-xs text-muted">Anteil:</span>
+          <span className="text-xs font-bold text-heading">{percentValue.toFixed(1)}%</span>
         </div>
         <div className="flex justify-between items-center mb-2 gap-4">
-          <span className="text-xs text-gray-500">Sitzungen:</span>
-          <span className="text-sm font-bold text-gray-900">
+          <span className="text-xs text-muted">Sitzungen:</span>
+          <span className="text-sm font-bold text-heading">
             {new Intl.NumberFormat('de-DE').format(data.value)}
           </span>
         </div>
 
         {/* Footer Bereich für Extra Metrics */}
-        <div className="mt-2 pt-2 border-t border-gray-100 bg-gray-50 -mx-3 px-3 py-1 space-y-1.5">
+        <div className="mt-2 pt-2 border-t border-theme-border-subtle bg-surface-secondary -mx-3 px-3 py-1 space-y-1.5">
           
           {/* 1. Interaktionsrate */}
           {data.subValue && (
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-1.5">
                 <GraphUp size={11} className="text-purple-500" />
-                <span className="text-[11px] font-medium text-gray-600">{data.subLabel}:</span>
+                <span className="text-[11px] font-medium text-secondary">{data.subLabel}:</span>
               </div>
               <span className="text-[11px] font-bold text-purple-700">
                 {data.subValue}
@@ -149,7 +149,7 @@ const CustomTooltip = ({ active, payload, totalValue }: CustomTooltipProps) => {
              <div className="flex justify-between items-center">
               <div className="flex items-center gap-1.5">
                 <CheckCircleFill size={11} className="text-emerald-600" />
-                <span className="text-[11px] font-medium text-gray-600">{data.subLabel2}:</span>
+                <span className="text-[11px] font-medium text-secondary">{data.subLabel2}:</span>
               </div>
               <span className="text-[11px] font-bold text-emerald-700">
                 {new Intl.NumberFormat('de-DE').format(data.subValue2)}
@@ -224,10 +224,10 @@ export default function TableauPieChart({
 
   if (isLoading) {
     return (
-      <div className={cn('bg-white rounded-lg shadow-sm border border-gray-200 p-6 flex flex-col h-[350px] animate-pulse', className)}>
-        <div className="h-6 bg-gray-200 rounded w-1/3 mb-4"></div>
+      <div className={cn('bg-surface rounded-lg shadow-sm border border-theme-border-default p-6 flex flex-col h-[350px] animate-pulse', className)}>
+        <div className="h-6 bg-surface-tertiary rounded w-1/3 mb-4"></div>
         <div className="flex-grow flex items-center justify-center">
-          <div className="w-48 h-48 bg-gray-200 rounded-full"></div>
+          <div className="w-48 h-48 bg-surface-tertiary rounded-full"></div>
         </div>
       </div>
     );
@@ -235,8 +235,8 @@ export default function TableauPieChart({
 
   if (error) {
      return (
-      <div className={cn('bg-white rounded-lg shadow-sm border border-gray-200 p-6 flex flex-col h-[350px]', className)}>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">{title}</h3>
+      <div className={cn('bg-surface rounded-lg shadow-sm border border-theme-border-default p-6 flex flex-col h-[350px]', className)}>
+        <h3 className="text-lg font-semibold text-heading mb-4">{title}</h3>
         <div className="flex-grow flex flex-col items-center justify-center text-red-500 gap-2">
           <ExclamationTriangleFill size={24} />
           <p className="text-sm font-medium text-center">{error}</p>
@@ -247,8 +247,8 @@ export default function TableauPieChart({
 
   if (!chartData || chartData.length === 0) {
     return (
-      <div className={cn('bg-white rounded-lg shadow-sm border border-gray-200 p-6 flex flex-col h-[350px]', className)}>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4 self-start">{title}</h3>
+      <div className={cn('bg-surface rounded-lg shadow-sm border border-theme-border-default p-6 flex flex-col h-[350px]', className)}>
+        <h3 className="text-lg font-semibold text-heading mb-4 self-start">{title}</h3>
         <div className="flex-grow">
            <NoDataState message="Keine Daten für diesen Zeitraum" />
         </div>
@@ -257,15 +257,15 @@ export default function TableauPieChart({
   }
 
   return (
-    <div className={cn('bg-white rounded-lg shadow-sm border border-gray-200 p-6 flex flex-col h-[350px] hover:shadow-md transition-shadow', className)}>
-      <h3 className="text-lg font-semibold text-gray-900 mb-1 flex-shrink-0">
+    <div className={cn('bg-surface rounded-lg shadow-sm border border-theme-border-default p-6 flex flex-col h-[350px] hover:shadow-md transition-shadow', className)}>
+      <h3 className="text-lg font-semibold text-heading mb-1 flex-shrink-0">
         {title}
       </h3>
-      <div className="flex items-center gap-2 text-xs text-gray-500 mb-2 flex-shrink-0">
-        <span className="bg-gray-100 px-1.5 py-0.5 rounded text-gray-600 font-medium">Quelle: GA4</span>
+      <div className="flex items-center gap-2 text-xs text-muted mb-2 flex-shrink-0">
+        <span className="bg-surface-tertiary px-1.5 py-0.5 rounded text-secondary font-medium">Quelle: GA4</span>
         {dateLabel && (
           <>
-            <span className="text-gray-300">•</span>
+            <span className="text-faint">•</span>
             <span>{dateLabel}</span>
           </>
         )}
@@ -300,7 +300,7 @@ export default function TableauPieChart({
               verticalAlign="bottom" 
               height={36} 
               iconType="circle"
-              formatter={(value) => <span className="text-xs text-gray-600 font-medium ml-1">{value}</span>}
+              formatter={(value) => <span className="text-xs text-secondary font-medium ml-1">{value}</span>}
             />
           </PieChart>
         </ResponsiveContainer>

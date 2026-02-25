@@ -66,8 +66,8 @@ const CustomTooltip = ({ active, payload, label, kpi1, kpi2 }: any) => {
     const dateLabel = label ? format(new Date(label), 'dd. MMMM yyyy', { locale: de }) : '';
     
     return (
-      <div className="bg-white px-3 py-2 rounded-lg shadow-xl border border-gray-200 text-sm z-50">
-        <p className="text-gray-400 font-medium mb-2 border-b border-gray-100 pb-1">{dateLabel}</p>
+      <div className="bg-surface px-3 py-2 rounded-lg shadow-xl border border-theme-border-default text-sm z-50">
+        <p className="text-faint font-medium mb-2 border-b border-theme-border-subtle pb-1">{dateLabel}</p>
         
         {payload.map((entry: any, index: number) => {
           const kpiKey = entry.dataKey === 'value' ? kpi1 : kpi2;
@@ -80,9 +80,9 @@ const CustomTooltip = ({ active, payload, label, kpi1, kpi2 }: any) => {
                   className="w-2 h-2 rounded-full" 
                   style={{ backgroundColor: entry.stroke || conf.color }}
                 />
-                <span className="text-gray-600 font-medium">{conf.label}:</span>
+                <span className="text-secondary font-medium">{conf.label}:</span>
               </div>
-              <span className="font-bold text-gray-900">
+              <span className="font-bold text-heading">
                 {formatValue(entry.value, kpiKey)}
               </span>
             </div>
@@ -151,17 +151,17 @@ export default function KpiTrendChart({
 
   if (isLoading) {
     return (
-      <div className={cn("bg-white rounded-lg shadow-sm border border-gray-200 p-6 h-[400px] animate-pulse flex items-center justify-center", className)}>
+      <div className={cn("bg-surface rounded-lg shadow-sm border border-theme-border-default p-6 h-[400px] animate-pulse flex items-center justify-center", className)}>
         <div className="flex flex-col items-center gap-2">
-          <div className="h-8 w-8 bg-gray-200 rounded-full animate-bounce"></div>
-          <span className="text-gray-400 text-sm">Lade Trend-Daten...</span>
+          <div className="h-8 w-8 bg-surface-tertiary rounded-full animate-bounce"></div>
+          <span className="text-faint text-sm">Lade Trend-Daten...</span>
         </div>
       </div>
     );
   }
 
   return (
-    <div className={cn("bg-white rounded-lg shadow-sm border border-gray-200 p-6 transition-all hover:shadow-md", className)}>
+    <div className={cn("bg-surface rounded-lg shadow-sm border border-theme-border-default p-6 transition-all hover:shadow-md", className)}>
       
       {/* HEADER & CONTROLS */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
@@ -169,7 +169,7 @@ export default function KpiTrendChart({
           <div className="p-2 bg-blue-50 rounded-lg text-blue-600">
             <CalendarEvent size={18} />
           </div>
-          <h3 className="text-lg font-semibold text-gray-900">
+          <h3 className="text-lg font-semibold text-heading">
             Verlauf & Analyse
           </h3>
         </div>
@@ -179,7 +179,7 @@ export default function KpiTrendChart({
             <select
               value={activeKpi}
               onChange={(e) => onKpiChange(e.target.value)}
-              className="appearance-none bg-gray-50 hover:bg-white border border-gray-200 hover:border-gray-300 text-gray-700 text-sm rounded-md focus:ring-blue-500 focus:border-blue-500 block w-full pl-3 pr-10 py-2 cursor-pointer transition-colors"
+              className="appearance-none bg-surface-secondary hover:bg-surface border border-theme-border-default hover:border-theme-border-default text-body text-sm rounded-md focus:ring-blue-500 focus:border-blue-500 block w-full pl-3 pr-10 py-2 cursor-pointer transition-colors"
             >
               {Object.keys(KPI_CONFIG).map((key) => (
                 <option key={key} value={key}>
@@ -187,19 +187,19 @@ export default function KpiTrendChart({
                 </option>
               ))}
             </select>
-            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-400 group-hover:text-blue-500 transition-colors">
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-faint group-hover:text-blue-500 transition-colors">
               <Filter size={12} />
             </div>
           </div>
 
           <div className="relative group">
-            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-faint">
               <ArrowLeftRight size={12} />
             </div>
             <select
               value={compareKpi}
               onChange={(e) => setCompareKpi(e.target.value)}
-              className="appearance-none bg-white border border-gray-200 hover:border-gray-300 text-gray-600 text-sm rounded-md focus:ring-purple-500 focus:border-purple-500 block w-full pl-9 pr-8 py-2 cursor-pointer transition-colors"
+              className="appearance-none bg-surface border border-theme-border-default hover:border-theme-border-default text-secondary text-sm rounded-md focus:ring-purple-500 focus:border-purple-500 block w-full pl-9 pr-8 py-2 cursor-pointer transition-colors"
             >
               <option value="none">Kein Vergleich</option>
               {Object.keys(KPI_CONFIG)
@@ -280,7 +280,7 @@ export default function KpiTrendChart({
                      if (!conf) return null;
 
                      return (
-                       <div key={index} className="flex items-center gap-2 text-xs font-medium text-gray-600 bg-gray-50 px-2 py-1 rounded-full border border-gray-100">
+                       <div key={index} className="flex items-center gap-2 text-xs font-medium text-secondary bg-surface-secondary px-2 py-1 rounded-full border border-theme-border-subtle">
                          <span 
                            className="w-2.5 h-2.5 rounded-full" 
                            style={{ backgroundColor: conf.color }}
