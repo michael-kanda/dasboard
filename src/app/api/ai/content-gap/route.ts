@@ -111,7 +111,7 @@ Antworte NUR mit dem HTML-Code der Liste. Keine Einleitung.
 
       4. <h3 class="${STYLES.h3}"><i class="bi bi-diagram-3"></i> Struktur & Technik Check</h3>
          Fehlt H2/H3? Ist der Title optimal?
-         Nutze <strong class="font-bold text-gray-900">Bezeichnung:</strong> am Anfang jedes Listenpunkts.
+         Nutze <strong class="font-bold text-heading">Bezeichnung:</strong> am Anfang jedes Listenpunkts.
 
       Antworte direkt mit dem HTML-Code. Keine Einleitung.
     `;
