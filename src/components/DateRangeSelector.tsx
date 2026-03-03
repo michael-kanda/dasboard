@@ -29,25 +29,58 @@ export default function DateRangeSelector({
   onChange, 
   className = '' 
 }: DateRangeSelectorProps) {
-  const options: DateRangeOption[] = ['30d', '3m', '6m', '12m', '18m', '24m' ];
+  const topRow: DateRangeOption[] = ['30d', '3m', '6m'];
+  const bottomRow: DateRangeOption[] = ['12m', '18m', '24m'];
+
+  const buttonClass = (option: DateRangeOption, row: DateRangeOption[], rowPosition: 'top' | 'bottom') => {
+    const isFirst = option === row[0];
+    const isLast = option === row[row.length - 1];
+
+    const roundedClasses =
+      rowPosition === 'top'
+        ? `${isFirst ? 'rounded-tl-lg' : ''} ${isLast ? 'rounded-tr-lg' : ''}`
+        : `${isFirst ? 'rounded-bl-lg' : ''} ${isLast ? 'rounded-br-lg' : ''}`;
+
+    const activeClass =
+      value === option
+        ? 'bg-[#188BDB] text-white'
+        : 'text-body hover:bg-surface-secondary';
+
+    const borderLeft = !isFirst ? 'border-l border-theme-border-default' : '';
+
+    return `px-3 py-1.5 text-xs font-medium transition-colors flex-1 ${roundedClasses} ${activeClass} ${borderLeft}`;
+  };
 
   return (
-    <div className={`inline-flex rounded-lg border border-theme-border-default bg-surface ${className}`}>
-      {options.map((option) => (
-        <button
-          key={option}
-          onClick={() => onChange(option)}
-          className={`px-4 py-2 text-sm font-medium transition-colors first:rounded-l-lg last:rounded-r-lg ${
-            value === option
-              ? 'bg-[#188BDB] text-white'
-              : 'text-body hover:bg-surface-secondary'
-          } ${
-            value !== option && option !== options[0] ? 'border-l border-theme-border-default' : ''
-          }`}
-        >
-          {rangeLabels[option]}
-        </button>
-      ))}
+    <div className={`inline-flex flex-col rounded-lg border border-theme-border-default bg-surface ${className}`}>
+      {/* Zeile 1: 30 Tage, 3 Monate, 6 Monate */}
+      <div className="flex">
+        {topRow.map((option) => (
+          <button
+            key={option}
+            onClick={() => onChange(option)}
+            className={buttonClass(option, topRow, 'top')}
+          >
+            {rangeLabels[option]}
+          </button>
+        ))}
+      </div>
+
+      {/* Trennlinie */}
+      <div className="border-t border-theme-border-default" />
+
+      {/* Zeile 2: 12 Monate, 18 Monate, 24 Monate */}
+      <div className="flex">
+        {bottomRow.map((option) => (
+          <button
+            key={option}
+            onClick={() => onChange(option)}
+            className={buttonClass(option, bottomRow, 'bottom')}
+          >
+            {rangeLabels[option]}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }
