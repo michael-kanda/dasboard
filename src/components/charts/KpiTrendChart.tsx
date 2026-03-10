@@ -18,7 +18,7 @@ import { ChartPoint, ActiveKpi } from '@/lib/dashboard-shared';
 import { ArrowLeftRight, CalendarEvent, Filter } from 'react-bootstrap-icons';
 import { cn } from '@/lib/utils';
 import { buildHolidayMap, type HolidayInfo } from '@/lib/holidays';
-import type { DailyWeather } from '@/lib/weather';
+import type { DailyWeather, WeatherIcon } from '@/lib/weather';
 
 // --- KONFIGURATION ---
 const KPI_CONFIG: Record<string, { label: string; color: string; gradientId: string }> = {
@@ -39,16 +39,106 @@ const WEEKDAY_SHORT: Record<number, string> = {
   0: 'So', 1: 'Mo', 2: 'Di', 3: 'Mi', 4: 'Do', 5: 'Fr', 6: 'Sa'
 };
 
-const COUNTRY_FLAG: Record<string, string> = {
-  DE: '🇩🇪',
-  AT: '🇦🇹'
+// --- INLINE SVG ICONS (14x14, stroke-based, passend zum Dashboard) ---
+const WeatherSvgIcon = ({ type }: { type: WeatherIcon }) => {
+  const size = 14;
+  const common = { width: size, height: size, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const };
+
+  switch (type) {
+    case 'sun':
+      return (
+        <svg {...common}>
+          <circle cx="12" cy="12" r="5" />
+          <line x1="12" y1="1" x2="12" y2="3" /><line x1="12" y1="21" x2="12" y2="23" />
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" /><line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+          <line x1="1" y1="12" x2="3" y2="12" /><line x1="21" y1="12" x2="23" y2="12" />
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" /><line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+        </svg>
+      );
+    case 'partly-cloudy':
+      return (
+        <svg {...common}>
+          <path d="M12 2v2M4.93 4.93l1.41 1.41M20 12h2M17.66 17.66l1.41 1.41M2 12h2M6.34 17.66l-1.41 1.41M17.07 4.93l1.41-1.41" />
+          <circle cx="12" cy="10" r="4" />
+          <path d="M8 16a5 5 0 0 1 8.54-3.54A4 4 0 0 1 20 16H8z" fill="currentColor" fillOpacity="0.1" />
+        </svg>
+      );
+    case 'cloudy':
+      return (
+        <svg {...common}>
+          <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z" />
+        </svg>
+      );
+    case 'fog':
+      return (
+        <svg {...common}>
+          <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z" opacity="0.4" />
+          <line x1="3" y1="20" x2="21" y2="20" /><line x1="3" y1="17" x2="21" y2="17" />
+        </svg>
+      );
+    case 'rain':
+      return (
+        <svg {...common}>
+          <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z" />
+          <line x1="8" y1="21" x2="8" y2="23" /><line x1="12" y1="21" x2="12" y2="23" /><line x1="16" y1="21" x2="16" y2="23" />
+        </svg>
+      );
+    case 'snow':
+      return (
+        <svg {...common}>
+          <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z" />
+          <line x1="8" y1="22" x2="8.01" y2="22" strokeWidth="3" /><line x1="12" y1="22" x2="12.01" y2="22" strokeWidth="3" /><line x1="16" y1="22" x2="16.01" y2="22" strokeWidth="3" />
+        </svg>
+      );
+    case 'thunderstorm':
+      return (
+        <svg {...common}>
+          <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z" />
+          <polyline points="13 16 11 21 15 21 13 24" fill="currentColor" fillOpacity="0.2" />
+        </svg>
+      );
+    default:
+      return (
+        <svg {...common}>
+          <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z" />
+        </svg>
+      );
+  }
 };
+
+const HolidayIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+    <line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" />
+    <line x1="3" y1="10" x2="21" y2="10" />
+    <path d="M12 14l-2 4h4l-2-4" fill="currentColor" fillOpacity="0.15" />
+  </svg>
+);
+
+const FlagDot = ({ country }: { country: string }) => {
+  const colors: Record<string, [string, string]> = {
+    DE: ['#000', '#DD0000'],  // Schwarz-Rot
+    AT: ['#ED2939', '#fff'],  // Rot-Weiß
+  };
+  const [c1, c2] = colors[country] || ['#888', '#ccc'];
+  return (
+    <span 
+      className="inline-block w-3 h-2 rounded-[1px] border border-black/10 overflow-hidden" 
+      title={country}
+      style={{ 
+        background: `linear-gradient(to bottom, ${c1} 50%, ${c2} 50%)` 
+      }} 
+    />
+  );
+};
+
+// --- Props & Helpers ---
 
 interface KpiTrendChartProps {
   activeKpi: ActiveKpi | string;
   onKpiChange: (kpi: string) => void;
   allChartData?: Record<string, ChartPoint[]>;
-  weatherData?: Record<string, DailyWeather>; // ✅ NEU
+  weatherData?: Record<string, DailyWeather>;
   isLoading?: boolean;
   className?: string;
 }
@@ -65,6 +155,8 @@ const formatValue = (value: number, kpi: string) => {
   return new Intl.NumberFormat('de-DE').format(value);
 };
 
+// --- CUSTOM TOOLTIP ---
+
 const CustomTooltip = ({ active, payload, label, kpi1, kpi2, holidayMap, weatherData }: any) => {
   if (active && payload && payload.length) {
     const dateObj = label ? new Date(label) : null;
@@ -77,34 +169,35 @@ const CustomTooltip = ({ active, payload, label, kpi1, kpi2, holidayMap, weather
     const weather: DailyWeather | undefined = weatherData?.[dateKey];
     
     return (
-      <div className="bg-surface px-3 py-2.5 rounded-lg shadow-xl border border-theme-border-default text-sm z-50 max-w-[300px]">
-        {/* Datum mit vollem Wochentag */}
-        <p className="text-faint font-medium mb-1.5 border-b border-theme-border-subtle pb-1.5">
+      <div className="bg-surface px-4 py-3 rounded-xl shadow-xl border border-theme-border-default text-sm z-50 min-w-[220px] max-w-[300px]">
+        {/* Datum */}
+        <p className="text-faint font-medium text-xs tracking-wide uppercase mb-2">
           {dateLabel}
         </p>
         
-        {/* Wetter + Feiertag Zeile */}
+        {/* Wetter & Feiertag — kompakte Zeile */}
         {(weather || holiday) && (
-          <div className="flex items-center gap-2 mb-2 flex-wrap">
-            {/* Wetter-Badge */}
+          <div className="flex items-center gap-3 mb-2.5 pb-2.5 border-b border-theme-border-subtle">
             {weather && (
-              <div className="inline-flex items-center gap-1.5 px-2 py-1 bg-sky-50 dark:bg-sky-950/30 rounded text-xs border border-sky-200 dark:border-sky-800">
-                <span className="text-base leading-none">{weather.emoji}</span>
-                <span className="text-sky-700 dark:text-sky-300 font-medium">
-                  {weather.tempMax}° / {weather.tempMin}°
+              <div className="flex items-center gap-1.5 text-secondary">
+                <WeatherSvgIcon type={weather.icon} />
+                <span className="text-xs font-medium text-body">
+                  {weather.tempMax}°<span className="text-faint mx-0.5">/</span>{weather.tempMin}°
                 </span>
               </div>
             )}
             
-            {/* Feiertags-Badge */}
             {holiday && (
-              <div className="inline-flex items-center gap-1.5 px-2 py-1 bg-amber-50 dark:bg-amber-950/30 rounded text-xs border border-amber-200 dark:border-amber-800">
-                <span className="text-amber-600 dark:text-amber-400 font-semibold">
-                  📅 {holiday.name}
+              <div className="flex items-center gap-1.5 text-secondary">
+                <HolidayIcon />
+                <span className="text-xs font-medium text-body truncate max-w-[130px]">
+                  {holiday.name}
                 </span>
-                <span className="text-amber-500 ml-auto">
-                  {holiday.countries.map((c: string) => COUNTRY_FLAG[c]).join(' ')}
-                </span>
+                <div className="flex items-center gap-0.5 ml-0.5">
+                  {holiday.countries.map((c: string) => (
+                    <FlagDot key={c} country={c} />
+                  ))}
+                </div>
               </div>
             )}
           </div>
@@ -116,15 +209,15 @@ const CustomTooltip = ({ active, payload, label, kpi1, kpi2, holidayMap, weather
           const conf = KPI_CONFIG[kpiKey] || { label: kpiKey, color: '#888' };
           
           return (
-            <div key={index} className="flex items-center gap-3 mb-1 last:mb-0">
-              <div className="flex items-center gap-2 min-w-[120px]">
+            <div key={index} className="flex items-center justify-between gap-4 mb-1.5 last:mb-0">
+              <div className="flex items-center gap-2">
                 <div 
-                  className="w-2 h-2 rounded-full" 
+                  className="w-2 h-2 rounded-full shrink-0" 
                   style={{ backgroundColor: entry.stroke || conf.color }}
                 />
-                <span className="text-secondary font-medium">{conf.label}:</span>
+                <span className="text-secondary text-xs">{conf.label}</span>
               </div>
-              <span className="font-bold text-heading">
+              <span className="font-semibold text-heading text-sm tabular-nums">
                 {formatValue(entry.value, kpiKey)}
               </span>
             </div>
@@ -135,6 +228,8 @@ const CustomTooltip = ({ active, payload, label, kpi1, kpi2, holidayMap, weather
   }
   return null;
 };
+
+// --- MAIN COMPONENT ---
 
 export default function KpiTrendChart({
   activeKpi,
@@ -182,7 +277,6 @@ export default function KpiTrendChart({
     );
   }, [allChartData, activeKpi, compareKpi]);
 
-  // Feiertags-Map einmal für den sichtbaren Zeitraum berechnen
   const holidayMap = useMemo(() => {
     if (chartData.length === 0) return new Map();
     const firstDate = chartData[0].date;
