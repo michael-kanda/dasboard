@@ -9,7 +9,7 @@ import {
   getGa4DimensionReport,
   getTopConvertingPages,
   getGscPageCtr, 
-  getQueriesByLandingPageObject, // ✅ NEU IMPORT
+  getQueriesByLandingPageObject,
   type AiTrafficData,
   type Ga4ExtendedData
 } from '@/lib/google-api';
@@ -19,12 +19,15 @@ import {
   ChartEntry, 
   ApiErrorStatus,
   ConvertingPageData,
-  LandingPageQueries // ✅ NEU IMPORT
+  LandingPageQueries
 } from '@/lib/dashboard-shared';
 import type { TopQueryData, ChartPoint } from '@/types/dashboard';
 
 // ✅ DEMO-DATEN IMPORT
 import { getDemoAnalyticsData } from '@/lib/demo-data';
+
+// ✅ NEU: Weather Import
+import { fetchWeatherData, weatherMapToObject } from '@/lib/weather';
 
 function getCacheDuration(dateRange: string): number {
   if (dateRange === '18m' || dateRange === '24m') return 72; // 3 Tage
@@ -77,7 +80,6 @@ export async function getOrFetchGoogleData(
   // ==========================================
   // ✅ DEMO-MODUS CHECK - GANZ OBEN!
   // ==========================================
-  // Check via Email (z.B. demo@example.com, demo-shop.de, etc.)
   const isDemo = user.email?.includes('demo') || user.domain?.includes('demo-shop');
   
   if (isDemo) {
@@ -151,7 +153,7 @@ start.setDate(end.getDate() - days);
   let deviceData: ChartEntry[] = [];
   let bingData: any[] = [];
   let apiErrors: ApiErrorStatus = {};
-  let landingPageQueries: LandingPageQueries = {}; // ✅ NEU
+  let landingPageQueries: LandingPageQueries = {};
 
   // --- GSC FETCH ---
   if (user.gsc_site_url) {
@@ -178,7 +180,6 @@ start.setDate(end.getDate() - days);
 
       topQueries = await getTopQueries(user.gsc_site_url, startDateStr, endDateStr);
       
-      // ✅ NEU: Landing Page Queries abrufen
       landingPageQueries = await getQueriesByLandingPageObject(user.gsc_site_url, startDateStr, endDateStr, 5);
       
     } catch (e: any) {
@@ -226,11 +227,10 @@ start.setDate(end.getDate() - days);
         console.warn('[AI Traffic] Fehler (ignoriert):', e);
       }
       
-// Top Converting Pages + GSC CTR
+      // Top Converting Pages + GSC CTR
       try {
         const rawPages = await getTopConvertingPages(propertyId, startDateStr, endDateStr);
         
-        // ✅ GSC CTR-Daten laden (falls GSC konfiguriert)
         let gscCtrData = new Map<string, number>();
         if (user.gsc_site_url) {
           gscCtrData = await getGscPageCtr(user.gsc_site_url, startDateStr, endDateStr);
@@ -245,7 +245,7 @@ start.setDate(end.getDate() - days);
           engagementRate: p.engagementRate, 
           sessions: p.sessions, 
           newUsers: p.newUsers,
-          ctr: gscCtrData.get(p.path)  // ✅ CTR aus GSC
+          ctr: gscCtrData.get(p.path)
         }));
       } catch (e) {
         console.warn('[GA4] Konnte Top-Pages nicht laden:', e);
@@ -280,6 +280,15 @@ start.setDate(end.getDate() - days);
       console.warn('[Bing] Fetch fehlgeschlagen (optional):', e);
       apiErrors.bing = e.message || 'Bing Fehler';
     }
+  }
+
+  // --- ✅ NEU: WETTER FETCH (parallel-safe, Fehler werden ignoriert) ---
+  let weatherData: Record<string, import('@/lib/weather').DailyWeather> = {};
+  try {
+    const weatherMap = await fetchWeatherData(user.domain, startDateStr, endDateStr);
+    weatherData = weatherMapToObject(weatherMap);
+  } catch (e) {
+    console.warn('[Weather] Fetch fehlgeschlagen (ignoriert):', e);
   }
 
   // AI Anteil berechnen
@@ -326,13 +335,14 @@ start.setDate(end.getDate() - days);
       paidSearch: currentData.paidSearch.daily || []
     },
     topQueries,
-    landingPageQueries, // ✅ NEU
+    landingPageQueries,
     topConvertingPages,
     aiTraffic,
     countryData,
     channelData,
     deviceData,
     bingData,
+    weatherData, // ✅ NEU
     apiErrors: Object.keys(apiErrors).length > 0 ? apiErrors : undefined
   };
 
