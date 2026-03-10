@@ -115,22 +115,7 @@ const HolidayIcon = () => (
   </svg>
 );
 
-const FlagDot = ({ country }: { country: string }) => {
-  const colors: Record<string, [string, string]> = {
-    DE: ['#000', '#DD0000'],  // Schwarz-Rot
-    AT: ['#ED2939', '#fff'],  // Rot-Weiß
-  };
-  const [c1, c2] = colors[country] || ['#888', '#ccc'];
-  return (
-    <span 
-      className="inline-block w-3 h-2 rounded-[1px] border border-black/10 overflow-hidden" 
-      title={country}
-      style={{ 
-        background: `linear-gradient(to bottom, ${c1} 50%, ${c2} 50%)` 
-      }} 
-    />
-  );
-};
+// (FlagDot entfernt – wir nutzen einfache Text-Labels)
 
 // --- Props & Helpers ---
 
@@ -193,11 +178,9 @@ const CustomTooltip = ({ active, payload, label, kpi1, kpi2, holidayMap, weather
                 <span className="text-xs font-medium text-body truncate max-w-[130px]">
                   {holiday.name}
                 </span>
-                <div className="flex items-center gap-0.5 ml-0.5">
-                  {holiday.countries.map((c: string) => (
-                    <FlagDot key={c} country={c} />
-                  ))}
-                </div>
+                <span className="text-[10px] font-semibold text-faint tracking-wide ml-1">
+                  {holiday.countries.join(' · ')}
+                </span>
               </div>
             )}
           </div>
