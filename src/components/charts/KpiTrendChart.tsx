@@ -18,33 +18,27 @@ import { ChartPoint, ActiveKpi } from '@/lib/dashboard-shared';
 import { ArrowLeftRight, CalendarEvent, Filter } from 'react-bootstrap-icons';
 import { cn } from '@/lib/utils';
 import { buildHolidayMap, type HolidayInfo } from '@/lib/holidays';
+import type { DailyWeather } from '@/lib/weather';
 
 // --- KONFIGURATION ---
 const KPI_CONFIG: Record<string, { label: string; color: string; gradientId: string }> = {
-  // Traffic
   impressions: { label: 'Impressionen', color: '#8b5cf6', gradientId: 'gradPurple' }, 
   clicks: { label: 'Google Klicks', color: '#3b82f6', gradientId: 'gradBlue' },       
   newUsers: { label: 'Neue Besucher', color: '#6366f1', gradientId: 'gradIndigo' }, 
   totalUsers: { label: 'Besucher', color: '#0ea5e9', gradientId: 'gradSky' },     
   sessions: { label: 'Sessions', color: '#06b6d4', gradientId: 'gradCyan' },       
-  
   aiTraffic: { label: 'KI-Traffic', color: '#7c3aed', gradientId: 'gradAi' },
-
-  // Engagement
   engagementRate: { label: 'Interaktionsrate', color: '#ec4899', gradientId: 'gradPink' },
   conversions: { label: 'Conversions', color: '#10b981', gradientId: 'gradEmerald' },   
   avgEngagementTime: { label: 'Ø Verweildauer', color: '#f59e0b', gradientId: 'gradAmber' },
   bounceRate: { label: 'Absprungrate', color: '#f43f5e', gradientId: 'gradRose' },
-  
   paidSearch: { label: 'Paid Search', color: '#14b8a6', gradientId: 'gradTeal' },
 };
 
-// Wochentag-Kürzel auf Deutsch
 const WEEKDAY_SHORT: Record<number, string> = {
   0: 'So', 1: 'Mo', 2: 'Di', 3: 'Mi', 4: 'Do', 5: 'Fr', 6: 'Sa'
 };
 
-// Flaggen-Emoji für Tooltip
 const COUNTRY_FLAG: Record<string, string> = {
   DE: '🇩🇪',
   AT: '🇦🇹'
@@ -54,11 +48,11 @@ interface KpiTrendChartProps {
   activeKpi: ActiveKpi | string;
   onKpiChange: (kpi: string) => void;
   allChartData?: Record<string, ChartPoint[]>;
+  weatherData?: Record<string, DailyWeather>; // ✅ NEU
   isLoading?: boolean;
   className?: string;
 }
 
-// Helper: Prüfen ob KPI ein Prozentwert ist
 const isPercentageKpi = (kpi: string) => ['engagementRate', 'bounceRate'].includes(kpi);
 
 const formatValue = (value: number, kpi: string) => {
@@ -71,36 +65,52 @@ const formatValue = (value: number, kpi: string) => {
   return new Intl.NumberFormat('de-DE').format(value);
 };
 
-const CustomTooltip = ({ active, payload, label, kpi1, kpi2, holidayMap }: any) => {
+const CustomTooltip = ({ active, payload, label, kpi1, kpi2, holidayMap, weatherData }: any) => {
   if (active && payload && payload.length) {
     const dateObj = label ? new Date(label) : null;
     const dateLabel = dateObj 
       ? format(dateObj, 'EEEE, dd. MMMM yyyy', { locale: de }) 
       : '';
     
-    // Feiertag nachschlagen
     const dateKey = dateObj ? dateObj.toISOString().split('T')[0] : '';
     const holiday: HolidayInfo | undefined = holidayMap?.get(dateKey);
+    const weather: DailyWeather | undefined = weatherData?.[dateKey];
     
     return (
-      <div className="bg-surface px-3 py-2 rounded-lg shadow-xl border border-theme-border-default text-sm z-50 max-w-[280px]">
+      <div className="bg-surface px-3 py-2.5 rounded-lg shadow-xl border border-theme-border-default text-sm z-50 max-w-[300px]">
         {/* Datum mit vollem Wochentag */}
-        <p className="text-faint font-medium mb-1 border-b border-theme-border-subtle pb-1">
+        <p className="text-faint font-medium mb-1.5 border-b border-theme-border-subtle pb-1.5">
           {dateLabel}
         </p>
         
-        {/* Feiertags-Badge */}
-        {holiday && (
-          <div className="flex items-center gap-1.5 mb-2 px-1.5 py-1 bg-amber-50 dark:bg-amber-950/30 rounded text-xs border border-amber-200 dark:border-amber-800">
-            <span className="text-amber-600 dark:text-amber-400 font-semibold">
-              📅 {holiday.name}
-            </span>
-            <span className="text-amber-500 dark:text-amber-500 ml-auto">
-              {holiday.countries.map(c => COUNTRY_FLAG[c]).join(' ')}
-            </span>
+        {/* Wetter + Feiertag Zeile */}
+        {(weather || holiday) && (
+          <div className="flex items-center gap-2 mb-2 flex-wrap">
+            {/* Wetter-Badge */}
+            {weather && (
+              <div className="inline-flex items-center gap-1.5 px-2 py-1 bg-sky-50 dark:bg-sky-950/30 rounded text-xs border border-sky-200 dark:border-sky-800">
+                <span className="text-base leading-none">{weather.emoji}</span>
+                <span className="text-sky-700 dark:text-sky-300 font-medium">
+                  {weather.tempMax}° / {weather.tempMin}°
+                </span>
+              </div>
+            )}
+            
+            {/* Feiertags-Badge */}
+            {holiday && (
+              <div className="inline-flex items-center gap-1.5 px-2 py-1 bg-amber-50 dark:bg-amber-950/30 rounded text-xs border border-amber-200 dark:border-amber-800">
+                <span className="text-amber-600 dark:text-amber-400 font-semibold">
+                  📅 {holiday.name}
+                </span>
+                <span className="text-amber-500 ml-auto">
+                  {holiday.countries.map((c: string) => COUNTRY_FLAG[c]).join(' ')}
+                </span>
+              </div>
+            )}
           </div>
         )}
         
+        {/* KPI-Werte */}
         {payload.map((entry: any, index: number) => {
           const kpiKey = entry.dataKey === 'value' ? kpi1 : kpi2;
           const conf = KPI_CONFIG[kpiKey] || { label: kpiKey, color: '#888' };
@@ -130,6 +140,7 @@ export default function KpiTrendChart({
   activeKpi,
   onKpiChange,
   allChartData,
+  weatherData,
   isLoading,
   className
 }: KpiTrendChartProps) {
@@ -171,7 +182,7 @@ export default function KpiTrendChart({
     );
   }, [allChartData, activeKpi, compareKpi]);
 
-  // ✅ NEU: Feiertags-Map einmal für den sichtbaren Zeitraum berechnen
+  // Feiertags-Map einmal für den sichtbaren Zeitraum berechnen
   const holidayMap = useMemo(() => {
     if (chartData.length === 0) return new Map();
     const firstDate = chartData[0].date;
@@ -189,7 +200,6 @@ export default function KpiTrendChart({
     return String(val);
   };
 
-  // ✅ NEU: X-Achsen-Formatter mit Wochentag
   const formatXAxisTick = (date: string) => {
     const d = new Date(date);
     const weekday = WEEKDAY_SHORT[d.getDay()];
@@ -277,7 +287,6 @@ export default function KpiTrendChart({
             
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
             
-            {/* ✅ UPDATED: Wochentag im Tick */}
             <XAxis
               dataKey="date"
               tickFormatter={formatXAxisTick}
@@ -309,13 +318,13 @@ export default function KpiTrendChart({
               />
             )}
 
-            {/* ✅ UPDATED: Tooltip mit holidayMap */}
             <Tooltip 
               content={
                 <CustomTooltip 
                   kpi1={activeKpi} 
                   kpi2={compareKpi !== 'none' ? compareKpi : undefined}
                   holidayMap={holidayMap}
+                  weatherData={weatherData}
                 />
               } 
             />
