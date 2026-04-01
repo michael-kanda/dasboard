@@ -1146,3 +1146,125 @@ export async function getLandingPageFollowUpPaths(
     };
   }
 }
+
+// ═══════════════════════════════════════════════════════
+// DATEI 1: src/lib/google-api.ts  (ANHÄNGEN am Ende der Datei)
+// ═══════════════════════════════════════════════════════
+
+// ── Types ──
+export interface GoogleAdsRow {
+  campaign: string;
+  adGroup: string;
+  keyword: string;
+  searchQuery: string;
+  landingPage: string;
+  cost: number;
+  clicks: number;
+  cpc: number;
+  roas: number;
+  conversions: number;
+  sessions: number;
+}
+
+export interface GoogleAdsData {
+  rows: GoogleAdsRow[];
+  totals: {
+    cost: number;
+    clicks: number;
+    avgCpc: number;
+    roas: number;
+    conversions: number;
+    sessions: number;
+  };
+}
+
+// ── Fetcher ──
+
+/**
+ * Holt Google Ads Performance-Daten über die GA4 Data API.
+ * Voraussetzung: Google Ads ist mit der GA4-Property verlinkt.
+ */
+export async function getGoogleAdsReport(
+  propertyId: string,
+  startDate: string,
+  endDate: string
+): Promise<GoogleAdsData> {
+  const { BetaAnalyticsDataClient } = await import(
+    '@google-analytics/data'
+  );
+
+  const client = new BetaAnalyticsDataClient();
+
+  const [response] = await client.runReport({
+    property: `properties/${propertyId}`,
+    dateRanges: [{ startDate, endDate }],
+    dimensions: [
+      { name: 'sessionGoogleAdsCampaignName' },
+      { name: 'sessionGoogleAdsAdGroupName' },
+      { name: 'sessionGoogleAdsKeyword' },
+      { name: 'sessionGoogleAdsQuery' },
+      { name: 'landingPagePlusQueryString' },
+    ],
+    metrics: [
+      { name: 'advertiserAdCost' },
+      { name: 'advertiserAdClicks' },
+      { name: 'advertiserAdCostPerClick' },
+      { name: 'returnOnAdSpend' },
+      { name: 'conversions' },
+      { name: 'sessions' },
+    ],
+    orderBys: [
+      { metric: { metricName: 'advertiserAdCost' }, desc: true },
+    ],
+    limit: 500,
+    // Filter: Nur Zeilen mit tatsächlichen Ads-Daten (nicht "(not set)")
+    dimensionFilter: {
+      filter: {
+        fieldName: 'sessionGoogleAdsCampaignName',
+        stringFilter: {
+          matchType: 'FULL_REGEXP' as any,
+          value: '^(?!\\(not set\\)$).+',
+        },
+      },
+    },
+  });
+
+  const rows: GoogleAdsRow[] = (response.rows || []).map((row) => {
+    const dims = row.dimensionValues || [];
+    const mets = row.metricValues || [];
+
+    return {
+      campaign: dims[0]?.value || '(not set)',
+      adGroup: dims[1]?.value || '(not set)',
+      keyword: dims[2]?.value || '(not set)',
+      searchQuery: dims[3]?.value || '(not set)',
+      landingPage: dims[4]?.value || '(not set)',
+      cost: parseFloat(mets[0]?.value || '0'),
+      clicks: parseInt(mets[1]?.value || '0', 10),
+      cpc: parseFloat(mets[2]?.value || '0'),
+      roas: parseFloat(mets[3]?.value || '0'),
+      conversions: parseFloat(mets[4]?.value || '0'),
+      sessions: parseInt(mets[5]?.value || '0', 10),
+    };
+  });
+
+  // Totals berechnen
+  const totals = rows.reduce(
+    (acc, r) => ({
+      cost: acc.cost + r.cost,
+      clicks: acc.clicks + r.clicks,
+      avgCpc: 0, // wird unten berechnet
+      roas: 0,   // wird unten berechnet
+      conversions: acc.conversions + r.conversions,
+      sessions: acc.sessions + r.sessions,
+    }),
+    { cost: 0, clicks: 0, avgCpc: 0, roas: 0, conversions: 0, sessions: 0 }
+  );
+
+  totals.avgCpc = totals.clicks > 0 ? totals.cost / totals.clicks : 0;
+  // ROAS = Revenue / Cost  → wir nehmen den gewichteten Durchschnitt
+  const totalRevenue = rows.reduce((sum, r) => sum + r.roas * r.cost, 0);
+  totals.roas = totals.cost > 0 ? totalRevenue / totals.cost : 0;
+
+  return { rows, totals };
+}
