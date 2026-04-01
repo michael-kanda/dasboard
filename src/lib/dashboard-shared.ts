@@ -9,7 +9,7 @@ import type {
 } from '@/types/dashboard';
 
 import type { AiTrafficData } from '@/types/ai-traffic';
-import type { DailyWeather } from '@/lib/weather'; // ✅ NEU
+import type { DailyWeather } from '@/lib/weather';
 
 // Re-exportiere die Basis-Typen
 export type { KpiDatum, ChartPoint, TopQueryData, AiTrafficData };
@@ -89,6 +89,33 @@ export interface ConvertingPageData {
   ctr?: number;
 }
 
+// ✅ NEU: Google Ads Types
+export interface GoogleAdsRow {
+  campaign: string;
+  adGroup: string;
+  keyword: string;
+  searchQuery: string;
+  landingPage: string;
+  cost: number;
+  clicks: number;
+  cpc: number;
+  roas: number;
+  conversions: number;
+  sessions: number;
+}
+
+export interface GoogleAdsData {
+  rows: GoogleAdsRow[];
+  totals: {
+    cost: number;
+    clicks: number;
+    avgCpc: number;
+    roas: number;
+    conversions: number;
+    sessions: number;
+  };
+}
+
 export interface ProjectDashboardData {
   kpis?: {
     clicks?: KpiDatum;
@@ -121,8 +148,11 @@ export interface ProjectDashboardData {
   bingData?: BingDataPoint[];
   landingPageQueries?: LandingPageQueries;
 
-  // ✅ NEU: Wetterdaten pro Tag (serialisiert als Object statt Map)
+  // Wetterdaten pro Tag (serialisiert als Object statt Map)
   weatherData?: Record<string, DailyWeather>;
+
+  // ✅ NEU: Google Ads Performance-Daten
+  googleAdsData?: GoogleAdsData;
 
   countryData?: ChartEntry[];
   channelData?: ChartEntry[];
