@@ -20,7 +20,7 @@ interface GoogleAdsWidgetProps {
 }
 
 type SortField = 'cost' | 'clicks' | 'cpc' | 'roas' | 'conversions' | 'sessions';
-type ViewMode = 'campaign' | 'keyword' | 'landingpage' | 'searchquery';
+type ViewMode = 'campaign' | 'adgroup' | 'searchquery' | 'landingpage';
 
 // ── Hilfsfunktionen ──
 
@@ -55,6 +55,7 @@ function aggregateBy(rows: GoogleAdsRow[], field: keyof GoogleAdsRow): Aggregate
 
   for (const row of rows) {
     const key = String(row[field]) || '(not set)';
+    if (key === '–') continue; // Platzhalter überspringen
     const existing = map.get(key) || { cost: 0, clicks: 0, conversions: 0, sessions: 0, revenue: 0, subRows: [] };
     existing.cost += row.cost;
     existing.clicks += row.clicks;
@@ -88,15 +89,21 @@ export default function GoogleAdsWidget({ data, isLoading, dateRange }: GoogleAd
 
   const { totals } = data;
 
-  const fieldMap: Record<ViewMode, keyof GoogleAdsRow> = {
-    campaign: 'campaign',
-    keyword: 'keyword',
-    landingpage: 'landingPage',
-    searchquery: 'searchQuery',
+  // View-Mode → welche Rows + welches Feld
+  const viewConfig: Record<ViewMode, { source: 'ads' | 'lp'; field: keyof GoogleAdsRow }> = {
+    campaign:    { source: 'ads', field: 'campaign' },
+    adgroup:     { source: 'ads', field: 'adGroup' },
+    searchquery: { source: 'ads', field: 'searchQuery' },
+    landingpage: { source: 'lp',  field: 'landingPage' },
   };
 
   const tableData = useMemo(() => {
-    let aggregated = aggregateBy(data.rows, fieldMap[viewMode]);
+    const config = viewConfig[viewMode];
+    const sourceRows = config.source === 'lp'
+      ? (data.landingPageRows || [])
+      : data.rows;
+
+    let aggregated = aggregateBy(sourceRows, config.field);
 
     if (searchTerm.trim()) {
       const term = searchTerm.toLowerCase();
@@ -112,7 +119,7 @@ export default function GoogleAdsWidget({ data, isLoading, dateRange }: GoogleAd
     });
 
     return aggregated;
-  }, [data.rows, viewMode, sortField, sortAsc, searchTerm]);
+  }, [data.rows, data.landingPageRows, viewMode, sortField, sortAsc, searchTerm]);
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -132,10 +139,15 @@ export default function GoogleAdsWidget({ data, isLoading, dateRange }: GoogleAd
 
   const viewModeLabels: Record<ViewMode, string> = {
     campaign: 'Kampagnen',
-    keyword: 'Keywords',
-    landingpage: 'Landingpages',
+    adgroup: 'Anzeigengruppen',
     searchquery: 'Suchanfragen',
+    landingpage: 'Landingpages',
   };
+
+  // Welche Spalten im Landingpage-View ausblenden (kein CPC/ROAS aus Call 2)
+  const isLpView = viewMode === 'landingpage';
+
+  const hasAnyData = data.rows.length > 0 || (data.landingPageRows || []).length > 0;
 
   // Skeleton
   if (isLoading) {
@@ -152,7 +164,7 @@ export default function GoogleAdsWidget({ data, isLoading, dateRange }: GoogleAd
   }
 
   // Keine Daten
-  if (!data.rows.length) {
+  if (!hasAnyData) {
     return (
       <div className="card-glass p-6">
         <h3 className="text-base font-semibold text-strong mb-2">Google Ads</h3>
@@ -223,23 +235,28 @@ export default function GoogleAdsWidget({ data, isLoading, dateRange }: GoogleAd
               <th className="text-left px-4 py-2.5 font-semibold text-muted w-[30%]">
                 {viewModeLabels[viewMode]}
               </th>
-              {[
-                { field: 'cost' as SortField, label: 'Kosten' },
-                { field: 'clicks' as SortField, label: 'Klicks' },
-                { field: 'cpc' as SortField, label: 'CPC' },
-                { field: 'roas' as SortField, label: 'ROAS' },
-                { field: 'conversions' as SortField, label: 'Conv.' },
-                { field: 'sessions' as SortField, label: 'Sitzungen' },
-              ].map(({ field, label }) => (
-                <th
-                  key={field}
-                  onClick={() => handleSort(field)}
-                  className="text-right px-3 py-2.5 font-semibold text-muted cursor-pointer hover:text-strong transition-colors whitespace-nowrap"
-                >
-                  {label}
-                  <SortIcon field={field} />
+              <th onClick={() => handleSort('cost')} className="text-right px-3 py-2.5 font-semibold text-muted cursor-pointer hover:text-strong transition-colors whitespace-nowrap">
+                Kosten<SortIcon field="cost" />
+              </th>
+              <th onClick={() => handleSort('clicks')} className="text-right px-3 py-2.5 font-semibold text-muted cursor-pointer hover:text-strong transition-colors whitespace-nowrap">
+                Klicks<SortIcon field="clicks" />
+              </th>
+              {!isLpView && (
+                <th onClick={() => handleSort('cpc')} className="text-right px-3 py-2.5 font-semibold text-muted cursor-pointer hover:text-strong transition-colors whitespace-nowrap">
+                  CPC<SortIcon field="cpc" />
                 </th>
-              ))}
+              )}
+              {!isLpView && (
+                <th onClick={() => handleSort('roas')} className="text-right px-3 py-2.5 font-semibold text-muted cursor-pointer hover:text-strong transition-colors whitespace-nowrap">
+                  ROAS<SortIcon field="roas" />
+                </th>
+              )}
+              <th onClick={() => handleSort('conversions')} className="text-right px-3 py-2.5 font-semibold text-muted cursor-pointer hover:text-strong transition-colors whitespace-nowrap">
+                Conv.<SortIcon field="conversions" />
+              </th>
+              <th onClick={() => handleSort('sessions')} className="text-right px-3 py-2.5 font-semibold text-muted cursor-pointer hover:text-strong transition-colors whitespace-nowrap">
+                Sitzungen<SortIcon field="sessions" />
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -250,12 +267,13 @@ export default function GoogleAdsWidget({ data, isLoading, dateRange }: GoogleAd
                 isExpanded={expandedRow === row.label}
                 onToggle={() => setExpandedRow(expandedRow === row.label ? null : row.label)}
                 viewMode={viewMode}
+                isLpView={isLpView}
               />
             ))}
 
             {tableData.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-4 py-8 text-center text-sm text-muted">
+                <td colSpan={isLpView ? 5 : 7} className="px-4 py-8 text-center text-sm text-muted">
                   Keine Ergebnisse für &quot;{searchTerm}&quot;
                 </td>
               </tr>
@@ -283,11 +301,13 @@ function TableRow({
   isExpanded,
   onToggle,
   viewMode,
+  isLpView,
 }: {
   row: AggregatedRow;
   isExpanded: boolean;
   onToggle: () => void;
   viewMode: ViewMode;
+  isLpView: boolean;
 }) {
   const hasSubRows = (row.subRows?.length || 0) > 1;
 
@@ -311,12 +331,14 @@ function TableRow({
         </td>
         <td className="text-right px-3 py-2.5 text-strong font-semibold">{formatCurrency(row.cost)}</td>
         <td className="text-right px-3 py-2.5 text-body">{formatNumber(row.clicks)}</td>
-        <td className="text-right px-3 py-2.5 text-body">{formatCurrency(row.cpc)}</td>
-        <td className="text-right px-3 py-2.5">
-          <span className={`font-semibold ${row.roas >= 3 ? 'text-emerald-500' : row.roas >= 1 ? 'text-amber-500' : 'text-red-500'}`}>
-            {row.roas.toFixed(2)}x
-          </span>
-        </td>
+        {!isLpView && <td className="text-right px-3 py-2.5 text-body">{formatCurrency(row.cpc)}</td>}
+        {!isLpView && (
+          <td className="text-right px-3 py-2.5">
+            <span className={`font-semibold ${row.roas >= 3 ? 'text-emerald-500' : row.roas >= 1 ? 'text-amber-500' : 'text-red-500'}`}>
+              {row.roas.toFixed(2)}x
+            </span>
+          </td>
+        )}
         <td className="text-right px-3 py-2.5 text-body">{formatNumber(row.conversions)}</td>
         <td className="text-right px-3 py-2.5 text-body">{formatNumber(row.sessions)}</td>
       </tr>
@@ -324,17 +346,17 @@ function TableRow({
       {isExpanded && hasSubRows && row.subRows?.map((sub, i) => {
         const subLabel = viewMode === 'campaign'
           ? sub.adGroup
-          : viewMode === 'keyword'
+          : viewMode === 'adgroup'
             ? sub.campaign
             : viewMode === 'landingpage'
-              ? sub.keyword
+              ? sub.campaign
               : sub.campaign;
         const subDimLabel = viewMode === 'campaign'
           ? 'Anzeigengruppe'
-          : viewMode === 'keyword'
+          : viewMode === 'adgroup'
             ? 'Kampagne'
             : viewMode === 'landingpage'
-              ? 'Keyword'
+              ? 'Kampagne'
               : 'Kampagne';
 
         return (
@@ -345,12 +367,14 @@ function TableRow({
             </td>
             <td className="text-right px-3 py-2 text-muted">{formatCurrency(sub.cost)}</td>
             <td className="text-right px-3 py-2 text-muted">{formatNumber(sub.clicks)}</td>
-            <td className="text-right px-3 py-2 text-muted">{formatCurrency(sub.cpc)}</td>
-            <td className="text-right px-3 py-2">
-              <span className={`${sub.roas >= 3 ? 'text-emerald-500/70' : sub.roas >= 1 ? 'text-amber-500/70' : 'text-red-500/70'}`}>
-                {sub.roas.toFixed(2)}x
-              </span>
-            </td>
+            {!isLpView && <td className="text-right px-3 py-2 text-muted">{formatCurrency(sub.cpc)}</td>}
+            {!isLpView && (
+              <td className="text-right px-3 py-2">
+                <span className={`${sub.roas >= 3 ? 'text-emerald-500/70' : sub.roas >= 1 ? 'text-amber-500/70' : 'text-red-500/70'}`}>
+                  {sub.roas.toFixed(2)}x
+                </span>
+              </td>
+            )}
             <td className="text-right px-3 py-2 text-muted">{formatNumber(sub.conversions)}</td>
             <td className="text-right px-3 py-2 text-muted">{formatNumber(sub.sessions)}</td>
           </tr>
