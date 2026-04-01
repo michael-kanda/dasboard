@@ -1217,7 +1217,7 @@ export async function getGoogleAdsReport(
       orderBys: [
         { metric: { metricName: 'advertiserAdCost' }, desc: true },
       ],
-      limit: 500,
+      limit: '500',
       dimensionFilter: {
         filter: {
           fieldName: 'sessionGoogleAdsCampaignName',
