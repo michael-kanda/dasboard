@@ -290,6 +290,100 @@ Top-Quellen: ${data.aiTraffic.topAiSources?.slice(0, 3).map(s => `${s.source} ($
 `;
   }
 
+  // =========================================================================
+  // ✅ NEU: Google Ads / SEA Daten
+  // =========================================================================
+  let googleAdsSection = '';
+
+  const gAds = data.googleAdsData;
+  if (gAds && gAds.rows.length > 0) {
+    const t = gAds.totals;
+    const ir = t.sessions > 0 ? ((t.engagedSessions ?? 0) / t.sessions * 100).toFixed(1) : '0';
+
+    // Kampagnen mit echten Conversions (aus Lookup-Map, ohne Thresholding)
+    const campaignMap = new Map<string, { cost: number; clicks: number; sessions: number }>();
+    for (const row of gAds.rows) {
+      const key = row.campaign || '(not set)';
+      if (key === '–') continue;
+      const existing = campaignMap.get(key) || { cost: 0, clicks: 0, sessions: 0 };
+      existing.cost += row.cost;
+      existing.clicks += row.clicks;
+      existing.sessions += row.sessions;
+      campaignMap.set(key, existing);
+    }
+    const campaigns = Array.from(campaignMap.entries())
+      .sort(([, a], [, b]) => b.cost - a.cost)
+      .slice(0, 5)
+      .map(([name, c]) => {
+        const conv = gAds.conversionsByCampaign?.[name] ?? 0;
+        const cpc = c.clicks > 0 ? (c.cost / c.clicks).toFixed(2) : '0.00';
+        return `- ${name}: ${c.cost.toFixed(2)}€ Kosten, ${c.clicks} Klicks, CPC ${cpc}€, ${conv} Conv., ${c.sessions} Sessions`;
+      })
+      .join('\n');
+
+    // Anzeigengruppen mit echten Conversions
+    const adGroupMap = new Map<string, { cost: number; clicks: number; sessions: number }>();
+    for (const row of gAds.rows) {
+      const key = row.adGroup || '(not set)';
+      if (key === '–') continue;
+      const existing = adGroupMap.get(key) || { cost: 0, clicks: 0, sessions: 0 };
+      existing.cost += row.cost;
+      existing.clicks += row.clicks;
+      existing.sessions += row.sessions;
+      adGroupMap.set(key, existing);
+    }
+    const adGroups = Array.from(adGroupMap.entries())
+      .sort(([, a], [, b]) => b.cost - a.cost)
+      .slice(0, 5)
+      .map(([name, a]) => {
+        const conv = gAds.conversionsByAdGroup?.[name] ?? 0;
+        const cpc = a.clicks > 0 ? (a.cost / a.clicks).toFixed(2) : '0.00';
+        return `- ${name}: ${a.cost.toFixed(2)}€ Kosten, ${a.clicks} Klicks, CPC ${cpc}€, ${conv} Conv., ${a.sessions} Sessions`;
+      })
+      .join('\n');
+
+    // Top Suchanfragen (nur Kosten, Klicks, CPC — keine Conversions wegen Thresholding)
+    const queryMap = new Map<string, { cost: number; clicks: number; sessions: number }>();
+    for (const row of gAds.rows) {
+      const key = row.searchQuery || '(not set)';
+      if (key === '–') continue;
+      const existing = queryMap.get(key) || { cost: 0, clicks: 0, sessions: 0 };
+      existing.cost += row.cost;
+      existing.clicks += row.clicks;
+      existing.sessions += row.sessions;
+      queryMap.set(key, existing);
+    }
+    const topQueries = Array.from(queryMap.entries())
+      .sort(([, a], [, b]) => b.clicks - a.clicks)
+      .slice(0, 10)
+      .map(([q, d]) => {
+        const cpc = d.clicks > 0 ? (d.cost / d.clicks).toFixed(2) : '0.00';
+        return `- "${q}": ${d.clicks} Klicks, CPC ${cpc}€, ${d.sessions} Sessions`;
+      })
+      .join('\n');
+
+    googleAdsSection = `
+=== GOOGLE ADS / SEA PERFORMANCE ===
+Gesamtausgaben: ${t.cost.toFixed(2)}€
+Klicks: ${fmt(t.clicks)}
+Ø CPC: ${t.avgCpc.toFixed(2)}€
+Conversions: ${fmt(t.conversions)}
+Sessions: ${fmt(t.sessions)}
+Interaktionsrate: ${ir}%
+
+KAMPAGNEN (Top 5 nach Kosten):
+${campaigns}
+
+ANZEIGENGRUPPEN (Top 5 nach Kosten):
+${adGroups}
+
+TOP SUCHANFRAGEN (Top 10 nach Klicks, keine Conversions wegen GA4 Datenschutz-Thresholding):
+${topQueries}
+
+HINWEIS: Conversions sind nur auf Kampagnen- und Anzeigengruppen-Ebene zuverlaessig. Auf Suchanfragen-Ebene kuerzt Google die Daten aus Datenschutzgruenden.
+`;
+  }
+
   // Wetter- und Feiertagskontext
   const weatherSection = buildWeatherContext(data.weatherData);
   const holidaySection = buildHolidayContext(dateRange, country || 'AT');
@@ -318,7 +412,7 @@ ${topPages}
 
 === TRAFFIC-KANAELE ===
 ${channels}
-${weatherSection}${holidaySection}`.trim();
+${googleAdsSection}${weatherSection}${holidaySection}`.trim();
 }
 
 // ============================================================================
@@ -356,6 +450,17 @@ function generateSuggestedQuestions(data: ProjectDashboardData, aiTrafficDetail?
   
   if (data.topQueries?.some(q => q.position >= 4 && q.position <= 10)) {
     questions.push('Welche Keywords sollte ich priorisieren?');
+  }
+
+  // ✅ NEU: Google Ads / SEA Fragen
+  if (data.googleAdsData && data.googleAdsData.rows.length > 0) {
+    const adTotals = data.googleAdsData.totals;
+    if (adTotals.clicks > 0) {
+      questions.push('Wie performen meine Google Ads Kampagnen?');
+    }
+    if (adTotals.conversions > 0 && adTotals.clicks > 0) {
+      questions.push('Welche Anzeigengruppen haben die besten Conversions?');
+    }
   }
 
   // ✅ NEU: Wetter- & Feiertags-Fragen
@@ -508,6 +613,7 @@ REGELN:
 8. Bei Wetter-Fragen: Korreliere Wetterdaten mit Traffic-Schwankungen (z.B. Hitzetage vs. Sessions)
 9. Bei Feiertags-Fragen: Erklaere wie Feiertage den Traffic beeinflussen (B2B sinkt, B2C variiert)
 10. Wenn Traffic-Einbrueche sichtbar sind, pruefe ob Wetter oder Feiertage eine Erklaerung bieten
+11. Bei Google Ads / SEA Fragen: Analysiere Kampagnen, Anzeigengruppen, CPC und Conversions. Conversions sind nur auf Kampagnen- und Anzeigengruppen-Ebene zuverlaessig — bei Suchanfragen kuerzt Google die Daten (Thresholding). Weise auf hohe CPCs oder ineffiziente Anzeigengruppen hin.
 
 ${isAdmin ? `
 ADMIN-MODUS AKTIV:
@@ -515,12 +621,14 @@ ADMIN-MODUS AKTIV:
 - Erwaehne auch negative Trends offen
 - Schlage auch komplexere SEO-Massnahmen vor
 - Analysiere KI-Traffic im Detail (Quellen, Landingpages, Conversions)
+- Bei Google Ads: Analysiere CPC-Effizienz, Conversion-Kosten und Optimierungspotenzial pro Anzeigengruppe
 ` : `
 KUNDEN-MODUS AKTIV:
 - Erklaere Fachbegriffe kurz
 - Fokussiere auf positive Entwicklungen, aber sei ehrlich
 - Halte Empfehlungen einfach umsetzbar
 - Bei KI-Traffic: Erklaere es als "Ihre Inhalte werden von KI-Assistenten empfohlen"
+- Bei Google Ads: Zeige verstaendlich auf, welche Kampagnen gut laufen und wo Budget gespart werden kann
 `}`;
 
     // 7. Stream-Response
