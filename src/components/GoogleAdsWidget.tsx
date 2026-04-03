@@ -127,7 +127,7 @@ function aggregateBy(rows: GoogleAdsRow[], field: keyof GoogleAdsRow): Aggregate
     existing.clicks += row.clicks;
     existing.conversions += row.conversions;
     existing.sessions += row.sessions;
-    existing.engagedSessions += row.engagedSessions;
+    existing.engagedSessions += row.engagedSessions ?? 0;
     existing.subRows.push(row);
     map.set(key, existing);
   }
@@ -158,7 +158,7 @@ export default function GoogleAdsWidget({ data, isLoading, dateRange }: GoogleAd
 
   // Interaktionsrate für Totals: engagedSessions / sessions × 100
   const totalsInteractionRate =
-    totals.sessions > 0 ? (totals.engagedSessions / totals.sessions) * 100 : 0;
+    totals.sessions > 0 ? ((totals.engagedSessions ?? 0) / totals.sessions) * 100 : 0;
 
   // View-Mode → welche Rows + welches Feld
   const viewConfig: Record<ViewMode, { source: 'ads' | 'lp'; field: keyof GoogleAdsRow }> = {
@@ -451,7 +451,7 @@ function TableRow({
 
   // Interaktionsrate pro Sub-Row
   const getSubInteractionRate = (sub: GoogleAdsRow): number =>
-    sub.sessions > 0 ? (sub.engagedSessions / sub.sessions) * 100 : 0;
+    sub.sessions > 0 ? ((sub.engagedSessions ?? 0) / sub.sessions) * 100 : 0;
 
   return (
     <>
