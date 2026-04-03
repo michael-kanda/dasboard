@@ -166,7 +166,8 @@ export default function GoogleAdsWidget({ data, isLoading, dateRange }: GoogleAd
     let aggregated = aggregateBy(sourceRows, config.field);
 
     // Echte Conversions aus Lookup-Maps einsetzen (1-Dimension-Calls,
-    // kein GA4 Thresholding). Nur für Kampagnen und Anzeigengruppen.
+    // kein GA4 Thresholding). Nur für Kampagnen und Anzeigengruppen —
+    // Suchanfragen zeigen keine Conversions (wegen GA4 Thresholding zu unzuverlässig).
     if (viewMode === 'campaign' && data.conversionsByCampaign) {
       for (const row of aggregated) {
         if (data.conversionsByCampaign[row.label] !== undefined) {
@@ -179,13 +180,8 @@ export default function GoogleAdsWidget({ data, isLoading, dateRange }: GoogleAd
           row.conversions = data.conversionsByAdGroup[row.label];
         }
       }
-    } else if (viewMode === 'searchquery' && data.conversionsByQuery) {
-      for (const row of aggregated) {
-        if (data.conversionsByQuery[row.label] !== undefined) {
-          row.conversions = data.conversionsByQuery[row.label];
-        }
-      }
     }
+    // Kein conversionsByQuery-Override mehr — Suchanfragen zeigen keine Conversions
 
     if (searchTerm.trim()) {
       const term = searchTerm.toLowerCase();
@@ -201,7 +197,7 @@ export default function GoogleAdsWidget({ data, isLoading, dateRange }: GoogleAd
     });
 
     return aggregated;
-  }, [data.rows, data.landingPageRows, data.conversionsByCampaign, data.conversionsByAdGroup, data.conversionsByQuery, viewMode, sortField, sortAsc, searchTerm]);
+  }, [data.rows, data.landingPageRows, data.conversionsByCampaign, data.conversionsByAdGroup, viewMode, sortField, sortAsc, searchTerm]);
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -225,7 +221,7 @@ export default function GoogleAdsWidget({ data, isLoading, dateRange }: GoogleAd
     searchquery: 'Suchanfragen',
   };
 
-  // Conversions bei Suchanfragen ausblenden (GA4 Thresholding)
+  // Conversions ausblenden: in der Suchanfragen-Ansicht (Hauptzeilen)
   const hideConv = viewMode === 'searchquery';
 
   const hasAnyData = data.rows.length > 0 || (data.landingPageRows || []).length > 0;
@@ -261,7 +257,7 @@ export default function GoogleAdsWidget({ data, isLoading, dateRange }: GoogleAd
     <div className="card-glass overflow-hidden">
       {/* ── KPI-Header ── */}
       <div className="p-4 sm:p-6 border-b border-theme-border-subtle">
-        <h3 className="text-base font-semibold text-strong mb-1 flex items-center gap-2">
+        <h3 className="text-lg font-semibold text-strong mb-1 flex items-center gap-2">
           <CurrencyDollar size={18} className="text-amber-500" />
           Google Ads Performance
         </h3>
@@ -342,22 +338,18 @@ export default function GoogleAdsWidget({ data, isLoading, dateRange }: GoogleAd
               >
                 Klicks<SortIcon field="clicks" />
               </th>
-              {(
-                <th
-                  onClick={() => handleSort('cpc')}
-                  className="text-right px-3 py-2.5 font-semibold text-muted cursor-pointer hover:text-strong transition-colors whitespace-nowrap"
-                >
-                  CPC<SortIcon field="cpc" />
-                </th>
-              )}
-              {(
-                <th
-                  onClick={() => handleSort('interactionRate')}
-                  className="text-right px-3 py-2.5 font-semibold text-muted cursor-pointer hover:text-strong transition-colors whitespace-nowrap"
-                >
-                  Inter.-Rate<SortIcon field="interactionRate" />
-                </th>
-              )}
+              <th
+                onClick={() => handleSort('cpc')}
+                className="text-right px-3 py-2.5 font-semibold text-muted cursor-pointer hover:text-strong transition-colors whitespace-nowrap"
+              >
+                CPC<SortIcon field="cpc" />
+              </th>
+              <th
+                onClick={() => handleSort('interactionRate')}
+                className="text-right px-3 py-2.5 font-semibold text-muted cursor-pointer hover:text-strong transition-colors whitespace-nowrap"
+              >
+                Inter.-Rate<SortIcon field="interactionRate" />
+              </th>
               {!hideConv && (
               <th
                 onClick={() => handleSort('conversions')}
@@ -385,6 +377,7 @@ export default function GoogleAdsWidget({ data, isLoading, dateRange }: GoogleAd
                 }
                 viewMode={viewMode}
                 hideConv={hideConv}
+                conversionsByAdGroup={data.conversionsByAdGroup}
               />
             ))}
 
@@ -446,20 +439,41 @@ function TableRow({
   onToggle,
   viewMode,
   hideConv,
+  conversionsByAdGroup,
 }: {
   row: AggregatedRow;
   isExpanded: boolean;
   onToggle: () => void;
   viewMode: ViewMode;
   hideConv: boolean;
+  conversionsByAdGroup?: Record<string, number>;
 }) {
-  // ── FIX: SubRows nach der nächsten Dimension aggregieren ──
   const nextDim = getNextDimension(viewMode);
+
+  // Conversions in SubRows ausblenden, wenn SubRows = Suchanfragen
+  // campaign → subRows = Anzeigengruppen → Conversions zeigen
+  // adgroup  → subRows = Suchanfragen   → Conversions NICHT zeigen
+  const hideSubConv = viewMode === 'adgroup';
 
   const aggregatedSubRows = useMemo(() => {
     if (!nextDim || !row.subRows || row.subRows.length <= 1) return [];
-    return aggregateBy(row.subRows, nextDim.field);
-  }, [row.subRows, nextDim]);
+
+    const subAgg = aggregateBy(row.subRows, nextDim.field);
+
+    // Echte Conversions für Anzeigengruppen-SubRows einsetzen
+    // (nur wenn Kampagne aufgeklappt → SubRows = Anzeigengruppen)
+    if (viewMode === 'campaign' && conversionsByAdGroup) {
+      for (const sub of subAgg) {
+        if (conversionsByAdGroup[sub.label] !== undefined) {
+          sub.conversions = conversionsByAdGroup[sub.label];
+        }
+      }
+    }
+    // Kein Conversion-Override für Suchanfragen-SubRows nötig,
+    // da wir Conversions dort komplett ausblenden
+
+    return subAgg;
+  }, [row.subRows, nextDim, viewMode, conversionsByAdGroup]);
 
   const hasSubRows = aggregatedSubRows.length > 1;
 
@@ -487,26 +501,22 @@ function TableRow({
           {formatCurrency(row.cost)}
         </td>
         <td className="text-right px-3 py-2.5 text-body">{formatNumber(row.clicks)}</td>
-        {(
-          <td className="text-right px-3 py-2.5 text-body">{formatCurrency(row.cpc)}</td>
-        )}
-        {(
-          <td className="text-right px-3 py-2.5">
-            <span
-              className={`font-semibold ${
-                row.interactionRate >= 80
-                  ? 'text-emerald-500'
-                  : row.interactionRate >= 50
-                  ? 'text-amber-500'
-                  : row.interactionRate > 0
-                  ? 'text-red-500'
-                  : 'text-muted'
-              }`}
-            >
-              {formatInteractionRate(row.interactionRate)}
-            </span>
-          </td>
-        )}
+        <td className="text-right px-3 py-2.5 text-body">{formatCurrency(row.cpc)}</td>
+        <td className="text-right px-3 py-2.5">
+          <span
+            className={`font-semibold ${
+              row.interactionRate >= 80
+                ? 'text-emerald-500'
+                : row.interactionRate >= 50
+                ? 'text-amber-500'
+                : row.interactionRate > 0
+                ? 'text-red-500'
+                : 'text-muted'
+            }`}
+          >
+            {formatInteractionRate(row.interactionRate)}
+          </span>
+        </td>
         {!hideConv && (
         <td className="text-right px-3 py-2.5 text-body">{formatNumber(row.conversions)}</td>
         )}
@@ -527,27 +537,23 @@ function TableRow({
             </td>
             <td className="text-right px-3 py-2 text-muted">{formatCurrency(sub.cost)}</td>
             <td className="text-right px-3 py-2 text-muted">{formatNumber(sub.clicks)}</td>
-            {(
-              <td className="text-right px-3 py-2 text-muted">{formatCurrency(sub.cpc)}</td>
-            )}
-            {(
-              <td className="text-right px-3 py-2">
-                <span
-                  className={`${
-                    sub.interactionRate >= 80
-                      ? 'text-emerald-500/70'
-                      : sub.interactionRate >= 50
-                      ? 'text-amber-500/70'
-                      : sub.interactionRate > 0
-                      ? 'text-red-500/70'
-                      : 'text-muted'
-                  }`}
-                >
-                  {formatInteractionRate(sub.interactionRate)}
-                </span>
-              </td>
-            )}
-            {!hideConv && (
+            <td className="text-right px-3 py-2 text-muted">{formatCurrency(sub.cpc)}</td>
+            <td className="text-right px-3 py-2">
+              <span
+                className={`${
+                  sub.interactionRate >= 80
+                    ? 'text-emerald-500/70'
+                    : sub.interactionRate >= 50
+                    ? 'text-amber-500/70'
+                    : sub.interactionRate > 0
+                    ? 'text-red-500/70'
+                    : 'text-muted'
+                }`}
+              >
+                {formatInteractionRate(sub.interactionRate)}
+              </span>
+            </td>
+            {!hideConv && !hideSubConv && (
             <td className="text-right px-3 py-2 text-muted">{formatNumber(sub.conversions)}</td>
             )}
             <td className="text-right px-3 py-2 text-muted">{formatNumber(sub.sessions)}</td>
