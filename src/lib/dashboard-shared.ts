@@ -102,6 +102,7 @@ export interface GoogleAdsRow {
   roas: number;
   conversions: number;
   sessions: number;
+  engagedSessions: number;
 }
 
 export interface GoogleAdsData {
@@ -116,6 +117,7 @@ export interface GoogleAdsData {
     roas: number;
     conversions: number;
     sessions: number;
+    engagedSessions: number;
   };
 }
 
