@@ -38,10 +38,8 @@ function formatNumber(value: number): string {
 }
 
 /**
- * FIX #1: Conversions mit Dezimalstellen anzeigen.
- * GA4 liefert häufig Bruchzahlen (z. B. 0,47 oder 1,23 bei
- * datengetriebener Attribution). formatNumber() rundet auf Ganzzahlen,
- * was zu falschen Summen führt.
+ * Conversions mit Dezimalstellen anzeigen.
+ * GA4 liefert häufig Bruchzahlen bei datengetriebener Attribution.
  */
 function formatConversions(value: number): string {
   return new Intl.NumberFormat('de-DE', {
@@ -51,9 +49,8 @@ function formatConversions(value: number): string {
 }
 
 /**
- * FIX #2: Interaktionsrate statt ROAS.
- * Berechnet als (Klicks / Sitzungen) × 100.
- * Zeigt "–" wenn keine Sitzungen vorhanden.
+ * Interaktionsrate = engagedSessions / sessions × 100
+ * Das ist die echte GA4-Interaktionsrate (Engagement Rate).
  */
 function formatInteractionRate(value: number): string {
   if (value <= 0 || !isFinite(value)) return '–';
@@ -61,21 +58,7 @@ function formatInteractionRate(value: number): string {
 }
 
 /**
- * FIX #3: Datum formatieren für Sub-Rows (DD.MM.YYYY).
- */
-function formatDate(dateStr: string | undefined): string {
-  if (!dateStr) return '';
-  // Erwartetes Format: YYYY-MM-DD oder YYYYMMDD
-  const cleaned = dateStr.replace(/-/g, '');
-  if (cleaned.length === 8) {
-    return `${cleaned.slice(6, 8)}.${cleaned.slice(4, 6)}.${cleaned.slice(0, 4)}`;
-  }
-  return dateStr;
-}
-
-/**
- * Zeitraum aus dateRange-Prop berechnen und als DD.MM.YYYY – DD.MM.YYYY formatieren.
- * DateRangeOption ist ein String wie '30d', '3m', '6m' etc.
+ * Zeitraum aus DateRangeOption berechnen (DD.MM.YYYY – DD.MM.YYYY).
  */
 function formatDateRange(dateRange?: DateRangeOption): string {
   if (!dateRange) return '';
@@ -124,6 +107,7 @@ function aggregateBy(rows: GoogleAdsRow[], field: keyof GoogleAdsRow): Aggregate
       clicks: number;
       conversions: number;
       sessions: number;
+      engagedSessions: number;
       subRows: GoogleAdsRow[];
     }
   >();
@@ -136,12 +120,14 @@ function aggregateBy(rows: GoogleAdsRow[], field: keyof GoogleAdsRow): Aggregate
       clicks: 0,
       conversions: 0,
       sessions: 0,
+      engagedSessions: 0,
       subRows: [],
     };
     existing.cost += row.cost;
     existing.clicks += row.clicks;
     existing.conversions += row.conversions;
     existing.sessions += row.sessions;
+    existing.engagedSessions += row.engagedSessions;
     existing.subRows.push(row);
     map.set(key, existing);
   }
@@ -151,8 +137,8 @@ function aggregateBy(rows: GoogleAdsRow[], field: keyof GoogleAdsRow): Aggregate
     cost: agg.cost,
     clicks: agg.clicks,
     cpc: agg.clicks > 0 ? agg.cost / agg.clicks : 0,
-    // FIX #2: Interaktionsrate statt ROAS
-    interactionRate: agg.sessions > 0 ? (agg.clicks / agg.sessions) * 100 : 0,
+    // Interaktionsrate = engagedSessions / sessions × 100
+    interactionRate: agg.sessions > 0 ? (agg.engagedSessions / agg.sessions) * 100 : 0,
     conversions: agg.conversions,
     sessions: agg.sessions,
     subRows: agg.subRows,
@@ -170,9 +156,9 @@ export default function GoogleAdsWidget({ data, isLoading, dateRange }: GoogleAd
 
   const { totals } = data;
 
-  // FIX #2: Interaktionsrate für Totals berechnen
+  // Interaktionsrate für Totals: engagedSessions / sessions × 100
   const totalsInteractionRate =
-    totals.sessions > 0 ? (totals.clicks / totals.sessions) * 100 : 0;
+    totals.sessions > 0 ? (totals.engagedSessions / totals.sessions) * 100 : 0;
 
   // View-Mode → welche Rows + welches Feld
   const viewConfig: Record<ViewMode, { source: 'ads' | 'lp'; field: keyof GoogleAdsRow }> = {
@@ -229,12 +215,12 @@ export default function GoogleAdsWidget({ data, isLoading, dateRange }: GoogleAd
     landingpage: 'Landingpages',
   };
 
-  // Im Landingpage-View keine Interaktionsrate (GA4 liefert keine auf LP-Ebene)
+  // Im Landingpage-View keine Interaktionsrate / CPC
   const isLpView = viewMode === 'landingpage';
 
   const hasAnyData = data.rows.length > 0 || (data.landingPageRows || []).length > 0;
 
-  // FIX #3: Zeitraum-String vorbereiten
+  // Zeitraum-String
   const dateRangeStr = formatDateRange(dateRange);
 
   // Skeleton
@@ -273,7 +259,7 @@ export default function GoogleAdsWidget({ data, isLoading, dateRange }: GoogleAd
           Google Ads Performance
         </h3>
 
-        {/* FIX #3: Quelle und Zeitraum unter dem Titel */}
+        {/* Quelle und Zeitraum */}
         <p className="text-xs text-muted mb-4">
           Quelle: GA4{dateRangeStr && <> &nbsp;·&nbsp; {dateRangeStr}</>}
         </p>
@@ -282,19 +268,13 @@ export default function GoogleAdsWidget({ data, isLoading, dateRange }: GoogleAd
           <KpiMini label="Ad Spend"    value={formatCurrency(totals.cost)} />
           <KpiMini label="Klicks"      value={formatNumber(totals.clicks)} />
           <KpiMini label="Ø CPC"       value={formatCurrency(totals.avgCpc)} />
-          {/* FIX #2: Interaktionsrate statt ROAS */}
           <KpiMini
             label="Interaktionsrate"
             value={formatInteractionRate(totalsInteractionRate)}
             highlight={totalsInteractionRate >= 80}
             dimmed={totalsInteractionRate <= 0}
-            tooltip={
-              totalsInteractionRate <= 0
-                ? 'Interaktionsrate nicht verfügbar – keine Sitzungsdaten vorhanden'
-                : 'Klicks / Sitzungen × 100'
-            }
+            tooltip="Engagierte Sitzungen / Sitzungen × 100 (GA4 Engagement Rate)"
           />
-          {/* FIX #1: Conversions mit Dezimalstellen */}
           <KpiMini label="Conversions" value={formatConversions(totals.conversions)} />
           <KpiMini label="Sitzungen"   value={formatNumber(totals.sessions)} />
         </div>
@@ -366,7 +346,6 @@ export default function GoogleAdsWidget({ data, isLoading, dateRange }: GoogleAd
                   CPC<SortIcon field="cpc" />
                 </th>
               )}
-              {/* FIX #2: Interaktionsrate statt ROAS */}
               {!isLpView && (
                 <th
                   onClick={() => handleSort('interactionRate')}
@@ -409,7 +388,7 @@ export default function GoogleAdsWidget({ data, isLoading, dateRange }: GoogleAd
                   colSpan={isLpView ? 5 : 7}
                   className="px-4 py-8 text-center text-sm text-muted"
                 >
-                  Keine Ergebnisse für &quot;{searchTerm}&quot;
+                  Keine Ergebnisse{searchTerm ? <> für &quot;{searchTerm}&quot;</> : ''}
                 </td>
               </tr>
             )}
@@ -470,9 +449,9 @@ function TableRow({
 }) {
   const hasSubRows = (row.subRows?.length || 0) > 1;
 
-  // Interaktionsrate pro Sub-Row berechnen
+  // Interaktionsrate pro Sub-Row
   const getSubInteractionRate = (sub: GoogleAdsRow): number =>
-    sub.sessions > 0 ? (sub.clicks / sub.sessions) * 100 : 0;
+    sub.sessions > 0 ? (sub.engagedSessions / sub.sessions) * 100 : 0;
 
   return (
     <>
@@ -501,7 +480,6 @@ function TableRow({
         {!isLpView && (
           <td className="text-right px-3 py-2.5 text-body">{formatCurrency(row.cpc)}</td>
         )}
-        {/* FIX #2: Interaktionsrate statt ROAS */}
         {!isLpView && (
           <td className="text-right px-3 py-2.5">
             <span
@@ -519,7 +497,6 @@ function TableRow({
             </span>
           </td>
         )}
-        {/* FIX #1: Conversions mit Dezimalstellen */}
         <td className="text-right px-3 py-2.5 text-body">{formatConversions(row.conversions)}</td>
         <td className="text-right px-3 py-2.5 text-body">{formatNumber(row.sessions)}</td>
       </tr>
@@ -527,59 +504,47 @@ function TableRow({
       {isExpanded &&
         hasSubRows &&
         row.subRows?.map((sub, i) => {
-          /*
-           * FIX #4: Anzeigengruppen → Anzeigen (statt Kampagne)
-           * FIX #5: Datum in Sub-Rows anzeigen
+          /**
+           * Sub-Row Labels je nach View-Mode:
+           *
+           * Kampagnen       → Anzeigengruppe (sub.adGroup)
+           * Anzeigengruppen → Suchanfrage (sub.searchQuery)
+           *   Hinweis: GA4 Data API liefert keine Anzeigen-Namen,
+           *   Suchanfragen sind die nächstbeste Aufschlüsselung
+           * Suchanfragen    → Kampagne (sub.campaign)
+           * Landingpages    → Kampagne (sub.campaign)
            */
           const subLabel =
             viewMode === 'campaign'
               ? sub.adGroup
               : viewMode === 'adgroup'
-              ? (sub as any).ad || (sub as any).adName || sub.searchQuery || '–'
-              : viewMode === 'landingpage'
-              ? sub.campaign
+              ? sub.searchQuery
               : sub.campaign;
 
           const subDimLabel =
             viewMode === 'campaign'
               ? 'Anzeigengruppe'
               : viewMode === 'adgroup'
-              ? 'Anzeige'
-              : viewMode === 'landingpage'
-              ? 'Kampagne'
+              ? 'Suchanfrage'
               : 'Kampagne';
-
-          // FIX #5: Datum aus Sub-Row lesen
-          const subDate = formatDate((sub as any).date);
 
           const subIR = getSubInteractionRate(sub);
 
           return (
             <tr key={i} className="border-b border-theme-border-subtle bg-surface/30">
               <td className="pl-10 pr-4 py-2 text-muted">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span>
-                    <span className="text-[10px] uppercase tracking-wider text-faint mr-1.5">
-                      {subDimLabel}:
-                    </span>
-                    <span className="truncate" title={subLabel}>
-                      {subLabel}
-                    </span>
-                  </span>
-                  {/* FIX #5: Datum anzeigen */}
-                  {subDate && (
-                    <span className="text-[10px] text-faint whitespace-nowrap">
-                      · {subDate}
-                    </span>
-                  )}
-                </div>
+                <span className="text-[10px] uppercase tracking-wider text-faint mr-1.5">
+                  {subDimLabel}:
+                </span>
+                <span className="truncate" title={subLabel}>
+                  {subLabel}
+                </span>
               </td>
               <td className="text-right px-3 py-2 text-muted">{formatCurrency(sub.cost)}</td>
               <td className="text-right px-3 py-2 text-muted">{formatNumber(sub.clicks)}</td>
               {!isLpView && (
                 <td className="text-right px-3 py-2 text-muted">{formatCurrency(sub.cpc)}</td>
               )}
-              {/* FIX #2: Interaktionsrate in Sub-Rows */}
               {!isLpView && (
                 <td className="text-right px-3 py-2">
                   <span
@@ -597,7 +562,6 @@ function TableRow({
                   </span>
                 </td>
               )}
-              {/* FIX #1: Conversions mit Dezimalstellen */}
               <td className="text-right px-3 py-2 text-muted">{formatConversions(sub.conversions)}</td>
               <td className="text-right px-3 py-2 text-muted">{formatNumber(sub.sessions)}</td>
             </tr>
