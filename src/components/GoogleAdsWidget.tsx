@@ -74,7 +74,8 @@ function formatDate(dateStr: string | undefined): string {
 }
 
 /**
- * Zeitraum aus dateRange-Prop formatieren (DD.MM.YYYY – DD.MM.YYYY).
+ * Zeitraum aus dateRange-Prop berechnen und als DD.MM.YYYY – DD.MM.YYYY formatieren.
+ * DateRangeOption ist ein String wie '30d', '3m', '6m' etc.
  */
 function formatDateRange(dateRange?: DateRangeOption): string {
   if (!dateRange) return '';
@@ -84,11 +85,19 @@ function formatDateRange(dateRange?: DateRangeOption): string {
       month: '2-digit',
       year: 'numeric',
     });
-    const from = dateRange.from ? fmt.format(new Date(dateRange.from)) : '';
-    const to = dateRange.to ? fmt.format(new Date(dateRange.to)) : '';
-    if (from && to) return `${from} – ${to}`;
-    if (from) return `ab ${from}`;
-    return '';
+
+    const to = new Date();
+    const from = new Date();
+
+    if (dateRange.endsWith('d')) {
+      const days = parseInt(dateRange, 10);
+      from.setDate(from.getDate() - days);
+    } else if (dateRange.endsWith('m')) {
+      const months = parseInt(dateRange, 10);
+      from.setMonth(from.getMonth() - months);
+    }
+
+    return `${fmt.format(from)} – ${fmt.format(to)}`;
   } catch {
     return '';
   }
