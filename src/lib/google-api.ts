@@ -1146,6 +1146,10 @@ export interface GoogleAdsData {
     sessions: number;
     engagedSessions: number;
   };
+  /** Echte Conversions pro Kampagne (1-Dimension-Call, kein Thresholding) */
+  conversionsByCampaign?: Record<string, number>;
+  /** Echte Conversions pro Anzeigengruppe (1-Dimension-Call, kein Thresholding) */
+  conversionsByAdGroup?: Record<string, number>;
 }
 
 /**
@@ -1264,50 +1268,56 @@ export async function getGoogleAdsReport(
   });
 
   // ═════════════════════════════════════════
-  // CALL 1b: Conversions pro Kampagne (1 Dimension)
+  // CALL 1b + 1c: Echte Conversions pro Dimension (je 1 Dimension)
   //
-  // Call 1 (3 Dimensionen) liefert wegen GA4 Thresholding oft 0 Conversions.
-  // Mit nur 1 Dimension kommen die echten Werte durch.
-  // Conversions werden anschließend proportional (nach Sessions) auf die
-  // Rows verteilt, damit Kampagnen-/Anzeigengruppen-Aggregation stimmt.
+  // Call 1 (3 Dimensionen) liefert wegen GA4 Thresholding 0 Conversions.
+  // Separate 1-Dimension-Calls liefern die echten, unverfälschten Werte.
   // ═════════════════════════════════════════
+  const conversionsByCampaign: Record<string, number> = {};
+  const conversionsByAdGroup: Record<string, number> = {};
+
   try {
-    const convResponse = await analytics.properties.runReport({
-      property: formattedPropertyId,
-      requestBody: {
-        dateRanges: [{ startDate, endDate }],
-        dimensions: [{ name: 'sessionGoogleAdsCampaignName' }],
-        metrics: [{ name: 'conversions' }],
-        dimensionFilter: adsFilter,
-      },
-    });
+    const [convByCamp, convByAg] = await Promise.all([
+      analytics.properties.runReport({
+        property: formattedPropertyId,
+        requestBody: {
+          dateRanges: [{ startDate, endDate }],
+          dimensions: [{ name: 'sessionGoogleAdsCampaignName' }],
+          metrics: [{ name: 'conversions' }],
+          dimensionFilter: adsFilter,
+        },
+      }),
+      analytics.properties.runReport({
+        property: formattedPropertyId,
+        requestBody: {
+          dateRanges: [{ startDate, endDate }],
+          dimensions: [{ name: 'sessionGoogleAdsAdGroupName' }],
+          metrics: [{ name: 'conversions' }],
+          dimensionFilter: adsFilter,
+        },
+      }),
+    ]);
 
-    const campaignConv = new Map<string, number>();
-    for (const row of convResponse.data.rows || []) {
-      const campaign = row.dimensionValues?.[0]?.value || '(not set)';
-      const conv = parseFloat(row.metricValues?.[0]?.value || '0');
-      campaignConv.set(campaign, conv);
+    for (const row of convByCamp.data.rows || []) {
+      const name = row.dimensionValues?.[0]?.value || '(not set)';
+      conversionsByCampaign[name] = parseFloat(row.metricValues?.[0]?.value || '0');
+    }
+    for (const row of convByAg.data.rows || []) {
+      const name = row.dimensionValues?.[0]?.value || '(not set)';
+      conversionsByAdGroup[name] = parseFloat(row.metricValues?.[0]?.value || '0');
     }
 
-    // Conversions proportional nach Sessions auf Rows verteilen
-    for (const [campaign, conv] of campaignConv) {
-      const campaignRows = rows.filter(r => r.campaign === campaign);
-      const totalSess = campaignRows.reduce((s, r) => s + r.sessions, 0);
-      for (const r of campaignRows) {
-        r.conversions = totalSess > 0 ? (r.sessions / totalSess) * conv : 0;
-      }
-    }
-
-    console.log(`[Google Ads] Call 1b → Conversions pro Kampagne: ${JSON.stringify(Object.fromEntries(campaignConv))}`);
+    console.log(`[Google Ads] Call 1b/1c → Conv. by Campaign: ${JSON.stringify(conversionsByCampaign)} | by AdGroup: ${JSON.stringify(conversionsByAdGroup)}`);
   } catch (e) {
-    console.warn('[Google Ads] Call 1b fehlgeschlagen (ignoriert):', e);
+    console.warn('[Google Ads] Conv-Lookup fehlgeschlagen (ignoriert):', e);
   }
 
   // ═════════════════════════════════════════
   // CALL 2: Landingpages (1 Dimension)
   //
-  // Nutzt landingPagePlusQueryString als einzige Dimension.
-  // Der Kampagnenname-Filter bleibt als dimensionFilter aktiv.
+  // Filter: sessionMedium = 'cpc' statt sessionGoogleAdsCampaignName,
+  // da GA4 bei Kombination von Ads-Kampagnen-Filter + LP-Dimension
+  // oft 0 Ergebnisse liefert.
   // ═════════════════════════════════════════
   let landingPageRows: GoogleAdsRow[] = [];
 
@@ -1329,7 +1339,12 @@ export async function getGoogleAdsReport(
         ],
         orderBys: [{ metric: { metricName: 'sessions' }, desc: true }],
         limit: '200',
-        dimensionFilter: adsFilter,
+        dimensionFilter: {
+          filter: {
+            fieldName: 'sessionMedium',
+            stringFilter: { matchType: 'EXACT' as const, value: 'cpc' },
+          },
+        },
       },
     });
 
@@ -1372,5 +1387,5 @@ export async function getGoogleAdsReport(
     engagedSessions: totalEngagedSessions,
   };
 
-  return { rows, landingPageRows, totals };
+  return { rows, landingPageRows, totals, conversionsByCampaign, conversionsByAdGroup };
 }
