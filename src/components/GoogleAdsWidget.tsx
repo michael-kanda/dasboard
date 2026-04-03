@@ -151,6 +151,22 @@ export default function GoogleAdsWidget({ data, isLoading, dateRange }: GoogleAd
 
     let aggregated = aggregateBy(sourceRows, config.field);
 
+    // Echte Conversions aus Lookup-Maps einsetzen (1-Dimension-Calls,
+    // kein GA4 Thresholding). Nur für Kampagnen und Anzeigengruppen.
+    if (viewMode === 'campaign' && data.conversionsByCampaign) {
+      for (const row of aggregated) {
+        if (data.conversionsByCampaign[row.label] !== undefined) {
+          row.conversions = data.conversionsByCampaign[row.label];
+        }
+      }
+    } else if (viewMode === 'adgroup' && data.conversionsByAdGroup) {
+      for (const row of aggregated) {
+        if (data.conversionsByAdGroup[row.label] !== undefined) {
+          row.conversions = data.conversionsByAdGroup[row.label];
+        }
+      }
+    }
+
     if (searchTerm.trim()) {
       const term = searchTerm.toLowerCase();
       aggregated = aggregated.filter((row) =>
@@ -165,7 +181,7 @@ export default function GoogleAdsWidget({ data, isLoading, dateRange }: GoogleAd
     });
 
     return aggregated;
-  }, [data.rows, data.landingPageRows, viewMode, sortField, sortAsc, searchTerm]);
+  }, [data.rows, data.landingPageRows, data.conversionsByCampaign, data.conversionsByAdGroup, viewMode, sortField, sortAsc, searchTerm]);
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
