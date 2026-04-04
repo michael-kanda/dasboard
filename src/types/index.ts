@@ -13,6 +13,7 @@ export interface User {
   semrush_project_id?: string | null;
   semrush_tracking_id?: string | null;
   semrush_tracking_id_02?: string | null;
+  google_ads_sheet_id?: string | null;
   
   // Admin & Ersteller
   createdByAdminId?: string;
