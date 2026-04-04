@@ -17,6 +17,7 @@ interface UserRow {
   semrush_project_id: string | null;
   semrush_tracking_id: string | null;
   semrush_tracking_id_02: string | null;
+  google_ads_sheet_id: string | null;
 }
 
 export async function GET(
@@ -64,7 +65,8 @@ export async function GET(
       SELECT
         id::text as id, email, role, domain,
         gsc_site_url, ga4_property_id,
-        semrush_project_id, semrush_tracking_id, semrush_tracking_id_02
+        semrush_project_id, semrush_tracking_id, semrush_tracking_id_02,
+        google_ads_sheet_id
       FROM users
       WHERE id::text = ${projectId}
     `;
@@ -89,6 +91,7 @@ export async function GET(
         semrush_project_id: project.semrush_project_id || undefined,
         semrush_tracking_id: project.semrush_tracking_id || undefined,
         semrush_tracking_id_02: project.semrush_tracking_id_02 || undefined,
+        google_ads_sheet_id: project.google_ads_sheet_id || undefined,
       };
       
       // TypeScript beschwert sich, weil getOrFetchGoogleData(Partial<User>) aufgerufen wird,
