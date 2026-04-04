@@ -38,15 +38,6 @@ function formatNumber(value: number): string {
 }
 
 /**
- * Interaktionsrate = engagedSessions / sessions × 100.
- * Zeigt "–" wenn keine Daten vorhanden.
- */
-function formatInteractionRate(value: number): string {
-  if (value <= 0 || !isFinite(value)) return '–';
-  return `${value.toFixed(1)} %`;
-}
-
-/**
  * Zeitraum aus DateRangeOption berechnen.
  */
 function formatDateRange(dateRange?: DateRangeOption): string {
@@ -159,15 +150,6 @@ export default function GoogleAdsWidget({ data, isLoading, dateRange }: GoogleAd
 
   const { totals } = data;
   const isSheet = data.source === 'sheet';
-
-  // Interaktionsrate für Totals
-  // Sheet: Klicks / Impressionen (echte Google Ads Interaktionsrate)
-  // GA4: engagedSessions / sessions
-  const totalsInteractionRate = isSheet
-    ? ((totals as any).interactionRate ?? 0)
-    : totals.sessions > 0
-    ? ((totals as any).engagedSessions ?? 0) / totals.sessions * 100
-    : 0;
 
   // Zeitraum-String
   const dateRangeStr = formatDateRange(dateRange);
@@ -330,17 +312,10 @@ export default function GoogleAdsWidget({ data, isLoading, dateRange }: GoogleAd
         <p className="text-xs text-muted mb-4">
           Quelle: {isSheet ? 'Google Ads' : 'GA4'}{dateRangeStr && <> &nbsp;·&nbsp; {dateRangeStr}</>}
         </p>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
           <KpiMini label="Ad Spend"    value={formatCurrency(totals.cost)} />
           <KpiMini label="Klicks"      value={formatNumber(totals.clicks)} />
           <KpiMini label="Ø CPC"       value={formatCurrency(totals.avgCpc)} />
-          <KpiMini
-            label="Interaktionsrate"
-            value={formatInteractionRate(totalsInteractionRate)}
-            highlight={isSheet ? totalsInteractionRate >= 15 : totalsInteractionRate >= 80}
-            dimmed={totalsInteractionRate <= 0}
-            tooltip={isSheet ? 'Klicks / Impressionen × 100' : 'Engagierte Sitzungen / Sitzungen × 100'}
-          />
           <KpiMini label="Conversions" value={formatNumber(totals.conversions)} />
           {isSheet
             ? <KpiMini label="Impressionen" value={formatNumber((totals as any).impressions ?? 0)} />
@@ -415,12 +390,6 @@ export default function GoogleAdsWidget({ data, isLoading, dateRange }: GoogleAd
               >
                 CPC<SortIcon field="cpc" />
               </th>
-              <th
-                onClick={() => handleSort('interactionRate')}
-                className="text-right px-3 py-2.5 font-semibold text-muted cursor-pointer hover:text-strong transition-colors whitespace-nowrap"
-              >
-                Inter.-Rate<SortIcon field="interactionRate" />
-              </th>
               {!hideConv && (
               <th
                 onClick={() => handleSort('conversions')}
@@ -459,7 +428,7 @@ export default function GoogleAdsWidget({ data, isLoading, dateRange }: GoogleAd
             {tableData.length === 0 && (
               <tr>
                 <td
-                  colSpan={5 + (hideConv ? 0 : 1) + (isSheet ? 0 : 1)}
+                  colSpan={4 + (hideConv ? 0 : 1) + (isSheet ? 0 : 1)}
                   className="px-4 py-8 text-center text-sm text-muted"
                 >
                   Keine Ergebnisse für &quot;{searchTerm}&quot;
@@ -571,12 +540,6 @@ function TableRow({
 
   const hasSubRows = aggregatedSubRows.length > 1;
 
-  // Interaktionsrate-Schwellenwerte:
-  // Sheet (CTR): >= 15% gut, >= 8% ok
-  // GA4 (Engagement): >= 80% gut, >= 50% ok
-  const rateGood = isSheet ? 15 : 80;
-  const rateOk = isSheet ? 8 : 50;
-
   return (
     <>
       <tr
@@ -602,21 +565,6 @@ function TableRow({
         </td>
         <td className="text-right px-3 py-2.5 text-body">{formatNumber(row.clicks)}</td>
         <td className="text-right px-3 py-2.5 text-body">{formatCurrency(row.cpc)}</td>
-        <td className="text-right px-3 py-2.5">
-          <span
-            className={`font-semibold ${
-              row.interactionRate >= rateGood
-                ? 'text-emerald-500'
-                : row.interactionRate >= rateOk
-                ? 'text-amber-500'
-                : row.interactionRate > 0
-                ? 'text-red-500'
-                : 'text-muted'
-            }`}
-          >
-            {formatInteractionRate(row.interactionRate)}
-          </span>
-        </td>
         {!hideConv && (
         <td className="text-right px-3 py-2.5 text-body">{formatNumber(row.conversions)}</td>
         )}
@@ -640,21 +588,6 @@ function TableRow({
             <td className="text-right px-3 py-2 text-muted">{formatCurrency(sub.cost)}</td>
             <td className="text-right px-3 py-2 text-muted">{formatNumber(sub.clicks)}</td>
             <td className="text-right px-3 py-2 text-muted">{formatCurrency(sub.cpc)}</td>
-            <td className="text-right px-3 py-2">
-              <span
-                className={`${
-                  sub.interactionRate >= rateGood
-                    ? 'text-emerald-500/70'
-                    : sub.interactionRate >= rateOk
-                    ? 'text-amber-500/70'
-                    : sub.interactionRate > 0
-                    ? 'text-red-500/70'
-                    : 'text-muted'
-                }`}
-              >
-                {formatInteractionRate(sub.interactionRate)}
-              </span>
-            </td>
             {!hideConv && (
             <td className="text-right px-3 py-2 text-muted">
               {hideSubConv ? '–' : formatNumber(sub.conversions)}
