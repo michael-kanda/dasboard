@@ -20,7 +20,7 @@ interface GoogleAdsWidgetProps {
 }
 
 type SortField = 'cost' | 'clicks' | 'cpc' | 'interactionRate' | 'conversions' | 'sessions';
-type ViewMode = 'campaign' | 'adgroup' | 'searchquery';
+type ViewMode = 'campaign' | 'adgroup' | 'ads' | 'searchquery';
 
 // ── Hilfsfunktionen ──
 
@@ -78,6 +78,7 @@ function aggregateBy(rows: GoogleAdsRow[], field: keyof GoogleAdsRow): Aggregate
     {
       cost: number;
       clicks: number;
+      impressions: number;
       conversions: number;
       sessions: number;
       engagedSessions: number;
@@ -91,6 +92,7 @@ function aggregateBy(rows: GoogleAdsRow[], field: keyof GoogleAdsRow): Aggregate
     const existing = map.get(key) || {
       cost: 0,
       clicks: 0,
+      impressions: 0,
       conversions: 0,
       sessions: 0,
       engagedSessions: 0,
@@ -98,6 +100,7 @@ function aggregateBy(rows: GoogleAdsRow[], field: keyof GoogleAdsRow): Aggregate
     };
     existing.cost += row.cost;
     existing.clicks += row.clicks;
+    existing.impressions += row.impressions ?? 0;
     existing.conversions += row.conversions;
     existing.sessions += row.sessions;
     existing.engagedSessions += row.engagedSessions ?? 0;
@@ -110,7 +113,13 @@ function aggregateBy(rows: GoogleAdsRow[], field: keyof GoogleAdsRow): Aggregate
     cost: agg.cost,
     clicks: agg.clicks,
     cpc: agg.clicks > 0 ? agg.cost / agg.clicks : 0,
-    interactionRate: agg.sessions > 0 ? (agg.engagedSessions / agg.sessions) * 100 : 0,
+    // Sheet-Daten: impressions-basiert (Klicks/Impressionen)
+    // GA4-Daten: session-basiert (Engaged/Sessions)
+    interactionRate: agg.impressions > 0
+      ? (agg.clicks / agg.impressions) * 100
+      : agg.sessions > 0
+      ? (agg.engagedSessions / agg.sessions) * 100
+      : 0,
     conversions: agg.conversions,
     sessions: agg.sessions,
     subRows: agg.subRows,
@@ -125,7 +134,9 @@ function getNextDimension(viewMode: ViewMode): { field: keyof GoogleAdsRow; labe
     case 'campaign':
       return { field: 'adGroup', label: 'Anzeigengruppe' };
     case 'adgroup':
-      return { field: 'searchQuery', label: 'Suchanfrage' };
+      return { field: 'adName', label: 'Anzeige' };
+    case 'ads':
+      return null; // Anzeigen haben kein weiteres Drill-Down
     default:
       // Suchanfragen haben kein weiteres Drill-Down
       return null;
@@ -142,42 +153,90 @@ export default function GoogleAdsWidget({ data, isLoading, dateRange }: GoogleAd
   const [searchTerm, setSearchTerm] = useState('');
 
   const { totals } = data;
+  const isSheet = data.source === 'sheet';
 
   // Interaktionsrate für Totals
-  const totalsInteractionRate =
-    totals.sessions > 0 ? ((totals as any).engagedSessions ?? 0) / totals.sessions * 100 : 0;
+  // Sheet: Klicks / Impressionen (echte Google Ads Interaktionsrate)
+  // GA4: engagedSessions / sessions
+  const totalsInteractionRate = isSheet
+    ? ((totals as any).interactionRate ?? 0)
+    : totals.sessions > 0
+    ? ((totals as any).engagedSessions ?? 0) / totals.sessions * 100
+    : 0;
 
   // Zeitraum-String
   const dateRangeStr = formatDateRange(dateRange);
 
   // View-Mode → welche Rows + welches Feld
-  const viewConfig: Record<ViewMode, { source: 'ads' | 'lp'; field: keyof GoogleAdsRow }> = {
-    campaign:    { source: 'ads', field: 'campaign' },
-    adgroup:     { source: 'ads', field: 'adGroup' },
-    searchquery: { source: 'ads', field: 'searchQuery' },
+  // Bei Sheet-Daten: separate Arrays pro Ebene (kein Thresholding)
+  // Bei GA4-Daten: ein gemeinsames rows-Array, das aggregiert wird
+  const viewConfig: Record<ViewMode, { field: keyof GoogleAdsRow }> = {
+    campaign:    { field: 'campaign' },
+    adgroup:     { field: 'adGroup' },
+    ads:         { field: 'adName' },
+    searchquery: { field: 'searchQuery' },
   };
+
+  function getSourceRows(mode: ViewMode): GoogleAdsRow[] {
+    if (isSheet) {
+      switch (mode) {
+        case 'campaign':    return data.campaignRows || data.rows;
+        case 'adgroup':     return data.adGroupRows || data.rows;
+        case 'ads':         return data.adRows || [];
+        case 'searchquery': return data.searchQueryRows || data.rows;
+      }
+    }
+    return data.rows;
+  }
 
   const tableData = useMemo(() => {
     const config = viewConfig[viewMode];
-    const sourceRows = config.source === 'lp'
-      ? (data.landingPageRows || [])
-      : data.rows;
+    const sourceRows = getSourceRows(viewMode);
 
     let aggregated = aggregateBy(sourceRows, config.field);
 
-    // Echte Conversions aus Lookup-Maps einsetzen (1-Dimension-Calls,
-    // kein GA4 Thresholding). Nur für Kampagnen und Anzeigengruppen —
-    // Suchanfragen zeigen keine Conversions (wegen GA4 Thresholding zu unzuverlässig).
-    if (viewMode === 'campaign' && data.conversionsByCampaign) {
-      for (const row of aggregated) {
-        if (data.conversionsByCampaign[row.label] !== undefined) {
-          row.conversions = data.conversionsByCampaign[row.label];
+    // GA4-Modus: Lookup-Overrides für Conversions und Metriken
+    // (bei Sheet-Daten nicht nötig — die Werte stimmen bereits)
+    if (!isSheet) {
+      if (viewMode === 'campaign' && data.conversionsByCampaign) {
+        for (const row of aggregated) {
+          if (data.conversionsByCampaign[row.label] !== undefined) {
+            row.conversions = data.conversionsByCampaign[row.label];
+          }
+        }
+      } else if (viewMode === 'adgroup' && data.conversionsByAdGroup) {
+        for (const row of aggregated) {
+          if (data.conversionsByAdGroup[row.label] !== undefined) {
+            row.conversions = data.conversionsByAdGroup[row.label];
+          }
         }
       }
-    } else if (viewMode === 'adgroup' && data.conversionsByAdGroup) {
-      for (const row of aggregated) {
-        if (data.conversionsByAdGroup[row.label] !== undefined) {
-          row.conversions = data.conversionsByAdGroup[row.label];
+
+      if (viewMode === 'campaign' && data.metricsByCampaign) {
+        for (const row of aggregated) {
+          const lookup = data.metricsByCampaign[row.label];
+          if (lookup) {
+            row.cost = lookup.cost;
+            row.clicks = lookup.clicks;
+            row.cpc = lookup.clicks > 0 ? lookup.cost / lookup.clicks : 0;
+            row.sessions = lookup.sessions;
+            row.interactionRate = lookup.sessions > 0
+              ? (lookup.engagedSessions / lookup.sessions) * 100
+              : 0;
+          }
+        }
+      } else if (viewMode === 'adgroup' && data.metricsByAdGroup) {
+        for (const row of aggregated) {
+          const lookup = data.metricsByAdGroup[row.label];
+          if (lookup) {
+            row.cost = lookup.cost;
+            row.clicks = lookup.clicks;
+            row.cpc = lookup.clicks > 0 ? lookup.cost / lookup.clicks : 0;
+            row.sessions = lookup.sessions;
+            row.interactionRate = lookup.sessions > 0
+              ? (lookup.engagedSessions / lookup.sessions) * 100
+              : 0;
+          }
         }
       }
     }
@@ -197,7 +256,7 @@ export default function GoogleAdsWidget({ data, isLoading, dateRange }: GoogleAd
     });
 
     return aggregated;
-  }, [data.rows, data.landingPageRows, data.conversionsByCampaign, data.conversionsByAdGroup, viewMode, sortField, sortAsc, searchTerm]);
+  }, [data.rows, data.landingPageRows, data.conversionsByCampaign, data.conversionsByAdGroup, data.metricsByCampaign, data.metricsByAdGroup, data.campaignRows, data.adGroupRows, data.adRows, data.searchQueryRows, data.source, viewMode, sortField, sortAsc, searchTerm]);
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -218,13 +277,15 @@ export default function GoogleAdsWidget({ data, isLoading, dateRange }: GoogleAd
   const viewModeLabels: Record<ViewMode, string> = {
     campaign: 'Kampagnen',
     adgroup: 'Anzeigengruppen',
+    ads: 'Anzeigen',
     searchquery: 'Suchanfragen',
   };
 
-  // Conversions ausblenden: in der Suchanfragen-Ansicht (Hauptzeilen)
-  const hideConv = viewMode === 'searchquery';
+  // Conversions ausblenden: in der Suchanfragen-Ansicht (nur bei GA4 — Sheet-Daten haben echte Conversions)
+  const hideConv = !isSheet && viewMode === 'searchquery';
 
-  const hasAnyData = data.rows.length > 0 || (data.landingPageRows || []).length > 0;
+  const hasAnyData = data.rows.length > 0 || (data.landingPageRows || []).length > 0
+    || (data.campaignRows || []).length > 0 || (data.adRows || []).length > 0;
 
   // Skeleton
   if (isLoading) {
@@ -262,7 +323,7 @@ export default function GoogleAdsWidget({ data, isLoading, dateRange }: GoogleAd
           Google Ads Performance
         </h3>
         <p className="text-xs text-muted mb-4">
-          Quelle: GA4{dateRangeStr && <> &nbsp;·&nbsp; {dateRangeStr}</>}
+          Quelle: {isSheet ? 'Google Ads' : 'GA4'}{dateRangeStr && <> &nbsp;·&nbsp; {dateRangeStr}</>}
         </p>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           <KpiMini label="Ad Spend"    value={formatCurrency(totals.cost)} />
@@ -271,19 +332,24 @@ export default function GoogleAdsWidget({ data, isLoading, dateRange }: GoogleAd
           <KpiMini
             label="Interaktionsrate"
             value={formatInteractionRate(totalsInteractionRate)}
-            highlight={totalsInteractionRate >= 80}
+            highlight={isSheet ? totalsInteractionRate >= 15 : totalsInteractionRate >= 80}
             dimmed={totalsInteractionRate <= 0}
-            tooltip="Engagierte Sitzungen / Sitzungen × 100"
+            tooltip={isSheet ? 'Klicks / Impressionen × 100' : 'Engagierte Sitzungen / Sitzungen × 100'}
           />
           <KpiMini label="Conversions" value={formatNumber(totals.conversions)} />
-          <KpiMini label="Sitzungen"   value={formatNumber(totals.sessions)} />
+          {isSheet
+            ? <KpiMini label="Impressionen" value={formatNumber((totals as any).impressions ?? 0)} />
+            : <KpiMini label="Sitzungen"    value={formatNumber(totals.sessions)} />
+          }
         </div>
       </div>
 
       {/* ── Toolbar ── */}
       <div className="px-4 sm:px-6 py-3 flex flex-wrap items-center gap-3 border-b border-theme-border-subtle bg-surface/50">
         <div className="flex rounded-lg border border-theme-border-subtle overflow-hidden">
-          {(Object.keys(viewModeLabels) as ViewMode[]).map((mode) => (
+          {(Object.keys(viewModeLabels) as ViewMode[])
+            .filter((mode) => mode !== 'ads' || isSheet) // "Anzeigen" nur bei Sheet-Daten
+            .map((mode) => (
             <button
               key={mode}
               onClick={() => {
@@ -358,12 +424,14 @@ export default function GoogleAdsWidget({ data, isLoading, dateRange }: GoogleAd
                 Conv.<SortIcon field="conversions" />
               </th>
               )}
+              {!isSheet && (
               <th
                 onClick={() => handleSort('sessions')}
                 className="text-right px-3 py-2.5 font-semibold text-muted cursor-pointer hover:text-strong transition-colors whitespace-nowrap"
               >
                 Sitzungen<SortIcon field="sessions" />
               </th>
+              )}
             </tr>
           </thead>
           <tbody>
@@ -377,14 +445,16 @@ export default function GoogleAdsWidget({ data, isLoading, dateRange }: GoogleAd
                 }
                 viewMode={viewMode}
                 hideConv={hideConv}
+                isSheet={isSheet}
                 conversionsByAdGroup={data.conversionsByAdGroup}
+                metricsByAdGroup={data.metricsByAdGroup}
               />
             ))}
 
             {tableData.length === 0 && (
               <tr>
                 <td
-                  colSpan={hideConv ? 6 : 7}
+                  colSpan={5 + (hideConv ? 0 : 1) + (isSheet ? 0 : 1)}
                   className="px-4 py-8 text-center text-sm text-muted"
                 >
                   Keine Ergebnisse für &quot;{searchTerm}&quot;
@@ -439,43 +509,68 @@ function TableRow({
   onToggle,
   viewMode,
   hideConv,
+  isSheet,
   conversionsByAdGroup,
+  metricsByAdGroup,
 }: {
   row: AggregatedRow;
   isExpanded: boolean;
   onToggle: () => void;
   viewMode: ViewMode;
   hideConv: boolean;
+  isSheet: boolean;
   conversionsByAdGroup?: Record<string, number>;
+  metricsByAdGroup?: Record<string, { cost: number; clicks: number; sessions: number; engagedSessions: number }>;
 }) {
   const nextDim = getNextDimension(viewMode);
 
-  // Conversions in SubRows ausblenden, wenn SubRows = Suchanfragen
-  // campaign → subRows = Anzeigengruppen → Conversions zeigen
-  // adgroup  → subRows = Suchanfragen   → Conversions NICHT zeigen
-  const hideSubConv = viewMode === 'adgroup';
+  // Conversions in SubRows ausblenden, wenn SubRows = Suchanfragen (nur GA4)
+  // Sheet-Daten haben immer echte Conversions
+  const hideSubConv = !isSheet && viewMode === 'adgroup';
 
   const aggregatedSubRows = useMemo(() => {
     if (!nextDim || !row.subRows || row.subRows.length <= 1) return [];
 
     const subAgg = aggregateBy(row.subRows, nextDim.field);
 
-    // Echte Conversions für Anzeigengruppen-SubRows einsetzen
-    // (nur wenn Kampagne aufgeklappt → SubRows = Anzeigengruppen)
-    if (viewMode === 'campaign' && conversionsByAdGroup) {
-      for (const sub of subAgg) {
-        if (conversionsByAdGroup[sub.label] !== undefined) {
-          sub.conversions = conversionsByAdGroup[sub.label];
+    // GA4-Modus: Lookup-Overrides (nicht nötig bei Sheet-Daten)
+    if (!isSheet) {
+      // Echte Conversions für Anzeigengruppen-SubRows einsetzen
+      if (viewMode === 'campaign' && conversionsByAdGroup) {
+        for (const sub of subAgg) {
+          if (conversionsByAdGroup[sub.label] !== undefined) {
+            sub.conversions = conversionsByAdGroup[sub.label];
+          }
+        }
+      }
+
+      // Echte Metriken für Anzeigengruppen-SubRows einsetzen
+      if (viewMode === 'campaign' && metricsByAdGroup) {
+        for (const sub of subAgg) {
+          const lookup = metricsByAdGroup[sub.label];
+          if (lookup) {
+            sub.cost = lookup.cost;
+            sub.clicks = lookup.clicks;
+            sub.cpc = lookup.clicks > 0 ? lookup.cost / lookup.clicks : 0;
+            sub.sessions = lookup.sessions;
+            sub.interactionRate = lookup.sessions > 0
+              ? (lookup.engagedSessions / lookup.sessions) * 100
+              : 0;
+          }
         }
       }
     }
-    // Kein Conversion-Override für Suchanfragen-SubRows nötig,
-    // da wir Conversions dort komplett ausblenden
 
     return subAgg;
-  }, [row.subRows, nextDim, viewMode, conversionsByAdGroup]);
+  }, [row.subRows, nextDim, viewMode, isSheet, conversionsByAdGroup, metricsByAdGroup]);
 
   const hasSubRows = aggregatedSubRows.length > 1;
+
+  // Interaktionsrate-Schwellenwerte:
+  // Sheet (CTR): >= 15% gut, >= 8% ok
+  // GA4 (Engagement): >= 80% gut, >= 50% ok
+  const rateGood = isSheet ? 15 : 80;
+  const rateOk = isSheet ? 8 : 50;
 
   return (
     <>
@@ -505,9 +600,9 @@ function TableRow({
         <td className="text-right px-3 py-2.5">
           <span
             className={`font-semibold ${
-              row.interactionRate >= 80
+              row.interactionRate >= rateGood
                 ? 'text-emerald-500'
-                : row.interactionRate >= 50
+                : row.interactionRate >= rateOk
                 ? 'text-amber-500'
                 : row.interactionRate > 0
                 ? 'text-red-500'
@@ -520,7 +615,9 @@ function TableRow({
         {!hideConv && (
         <td className="text-right px-3 py-2.5 text-body">{formatNumber(row.conversions)}</td>
         )}
+        {!isSheet && (
         <td className="text-right px-3 py-2.5 text-body">{formatNumber(row.sessions)}</td>
+        )}
       </tr>
 
       {isExpanded &&
@@ -541,9 +638,9 @@ function TableRow({
             <td className="text-right px-3 py-2">
               <span
                 className={`${
-                  sub.interactionRate >= 80
+                  sub.interactionRate >= rateGood
                     ? 'text-emerald-500/70'
-                    : sub.interactionRate >= 50
+                    : sub.interactionRate >= rateOk
                     ? 'text-amber-500/70'
                     : sub.interactionRate > 0
                     ? 'text-red-500/70'
@@ -558,7 +655,9 @@ function TableRow({
               {hideSubConv ? '–' : formatNumber(sub.conversions)}
             </td>
             )}
+            {!isSheet && (
             <td className="text-right px-3 py-2 text-muted">{formatNumber(sub.sessions)}</td>
+            )}
           </tr>
         ))}
     </>

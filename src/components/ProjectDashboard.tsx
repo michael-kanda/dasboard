@@ -152,8 +152,9 @@ export default function ProjectDashboard({
 
   const hasAiTraffic = (data.aiTraffic?.totalSessions ?? 0) > 0;
 
-  // ✅ NEU: Google Ads Prüfung
-  const hasGoogleAdsData = (data.googleAdsData?.rows?.length ?? 0) > 0;
+  // ✅ Google Ads Prüfung (GA4-Rows ODER Sheet-Rows)
+  const hasGoogleAdsData = (data.googleAdsData?.rows?.length ?? 0) > 0
+    || (data.googleAdsData?.campaignRows?.length ?? 0) > 0;
   const shouldRenderGoogleAds = hasGoogleAdsData && (isAdmin || isGoogleAdsVisible);
 
   return (
