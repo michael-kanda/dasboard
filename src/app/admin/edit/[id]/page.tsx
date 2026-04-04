@@ -43,6 +43,7 @@ async function getUserData(id: string): Promise<UserWithAssignments | null> {
         COALESCE(semrush_project_id, '') as semrush_project_id,
         COALESCE(semrush_tracking_id, '') as semrush_tracking_id,
         COALESCE(semrush_tracking_id_02, '') as semrush_tracking_id_02,
+        COALESCE(google_ads_sheet_id, '') as google_ads_sheet_id,
         favicon_url,
         project_start_date,
         project_duration_months,
