@@ -13,7 +13,7 @@ import {
   BoxArrowRight, BoxArrowInRight, HddNetwork, Magic,
   ChevronLeft, ChevronRight, SunFill, MoonStarsFill,
   ChevronDown, ChevronUp,
-  BarChartFill, GraphUpArrow, Robot, FileEarmarkText, PieChartFill, Search
+  BarChartFill, GraphUpArrow, Robot, FileEarmarkText, PieChartFill, Search, Google
 } from 'react-bootstrap-icons';
 
 // ═══════════════════════════════════════════════════════
@@ -35,6 +35,7 @@ const DASHBOARD_SECTIONS = [
   { id: 'section-ki-traffic',   label: 'KI-Traffic',            icon: <Robot size={13} /> },
   { id: 'section-landingpages', label: 'Top Landingpages',      icon: <FileEarmarkText size={13} /> },
   { id: 'section-zugriffe',     label: 'Zugriffe nach Quelle',  icon: <PieChartFill size={13} /> },
+  { id: 'section-google-ads',   label: 'Google Ads Performance', icon: <Google size={13} /> },
   { id: 'section-semrush',      label: 'Semrush Keywords',      icon: <Search size={13} /> },
 ];
 
