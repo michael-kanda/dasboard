@@ -80,7 +80,7 @@ export async function POST(req: NextRequest) {
     // ==========================================
 
     const body = await req.json();
-    const { projectId, dateRange } = body;
+    const { projectId, dateRange, googleAdsData } = body;
     const userRole = session.user.role;
 
     if (!projectId || !dateRange) {
@@ -178,6 +178,42 @@ export async function POST(req: NextRequest) {
       .map((c: any) => `${c.name} (${fmt(c.value)})`)
       .join(', ') || 'Keine Kanal-Daten';
 
+    // ✅ NEU: Google Ads Daten (aus Frontend/Sheet)
+    let googleAdsSection = '';
+    if (googleAdsData?.totals) {
+      const adsTotals = googleAdsData.totals;
+      const fmtCur = (v: number) => v?.toFixed(2).replace('.', ',') + ' €';
+      
+      googleAdsSection = `
+      ===== GOOGLE ADS (Bezahlte Werbung) =====
+      Gesamtkosten: ${fmtCur(adsTotals.cost || 0)}
+      Klicks (Ads): ${fmt(adsTotals.clicks || 0)}
+      Ø CPC: ${fmtCur(adsTotals.cpc || 0)}
+      Conversions (Ads): ${fmt(adsTotals.conversions || 0)}
+      CTR/Interaktionsrate: ${(adsTotals.interactionRate || 0).toFixed(1)}%`;
+      
+      // Kampagnen-Breakdown
+      const campaigns = googleAdsData.campaignRows || [];
+      if (campaigns.length > 0) {
+        // Aggregiere nach Kampagnenname
+        const campMap = new Map<string, { cost: number; clicks: number; conversions: number }>();
+        for (const r of campaigns) {
+          const key = r.campaign || '(unbekannt)';
+          const existing = campMap.get(key) || { cost: 0, clicks: 0, conversions: 0 };
+          existing.cost += r.cost || 0;
+          existing.clicks += r.clicks || 0;
+          existing.conversions += r.conversions || 0;
+          campMap.set(key, existing);
+        }
+        
+        googleAdsSection += `\n\n      KAMPAGNEN:`;
+        for (const [name, v] of campMap) {
+          const campCpc = v.clicks > 0 ? v.cost / v.clicks : 0;
+          googleAdsSection += `\n      - ${name}: ${fmtCur(v.cost)} | ${v.clicks} Klicks | CPC ${fmtCur(campCpc)} | ${v.conversions} Conv.`;
+        }
+      }
+    }
+
     // ✅ NEU: KI-Traffic Analyse mit Quellen und Top-Seiten
     const aiTrafficSources = data.aiTraffic?.topAiSources
       ?.slice(0, 5)
@@ -240,10 +276,11 @@ export async function POST(req: NextRequest) {
       - Perplexity = KI-Suchmaschine hat diese Seite als Quelle zitiert
       - Gemini/Bard = Google's KI hat auf diese Inhalte verwiesen
       - Copilot = Microsoft's KI-Assistent hat hierher verlinkt
+      ${googleAdsSection}
     `;
 
     // --- CACHE LOGIK ---
-    const cacheInputString = `${summaryData}|ROLE:${userRole}|V6_WITH_AI_TRAFFIC`;
+    const cacheInputString = `${summaryData}|ROLE:${userRole}|V7_WITH_ADS`;
     const inputHash = createHash(cacheInputString);
 
     const { rows: cacheRows } = await sql`
@@ -329,6 +366,10 @@ export async function POST(req: NextRequest) {
         3. <h4...>KI-Traffic Status:</h4>
            Zeige: Gesamt-Sessions, Top 3 Quellen (ChatGPT, Perplexity, etc.), Trend.
            Nutze das lila Design: ${aiTrafficTemplate}
+        ${googleAdsSection ? `3b. <h4...>Google Ads:</h4>
+           <ul...>
+             <li...>Kosten, Klicks, CPC, Conversions als KPI-Liste.
+           </ul...>` : ''}
         4. VISUAL ENDING: ${visualSuccessTemplate}
         
         SPALTE 2 (Analyse):
@@ -342,6 +383,12 @@ export async function POST(req: NextRequest) {
            - Welche KI-Plattformen bringen Traffic?
            - Ist der KI-Anteil am Gesamttraffic steigend/fallend?
            - Konkrete Empfehlungen zur Verbesserung der KI-Sichtbarkeit (strukturierte Daten, FAQ-Seiten, etc.)
+        ${googleAdsSection ? `6. <h4...>Google Ads Performance:</h4>
+           Analysiere die GOOGLE ADS Daten:
+           - ROI-Bewertung: Kosten vs. Conversions
+           - CPC-Effizienz pro Kampagne
+           - Welche Kampagnen performen gut/schlecht?
+           - Empfehlungen zur Budget-Optimierung` : ''}
       `;
     } else {
       // === KUNDEN MODUS ===
@@ -356,6 +403,10 @@ export async function POST(req: NextRequest) {
              <li...>Conversions (Erreichte Ziele) & Engagement.
              <li...>KI-Sichtbarkeit: Füge hinzu: <br><span class="text-xs text-purple-600 block mt-0.5">🤖 Ihre Inhalte werden von KI-Assistenten (ChatGPT, Gemini, Perplexity) gefunden und empfohlen!</span>
            </ul...>
+        ${googleAdsSection ? `2b. <h4...>Ihre Google Werbung (Überblick):</h4>
+           <ul...>
+             <li...>Investition und erzielte Klicks/Conversions - kundenfreundlich formuliert.
+           </ul...>` : ''}
         3. VISUAL ENDING: ${visualSuccessTemplate}
         
         SPALTE 2 (Performance Analyse):
@@ -369,6 +420,11 @@ export async function POST(req: NextRequest) {
            - "${fmt(data.aiTraffic?.totalUsers || 0)} Besucher kamen über KI-Assistenten wie ChatGPT"
            - "Das bedeutet: Wenn Menschen KI-Tools nach [Branche/Thema] fragen, werden SIE empfohlen!"
            - "Dieser Trend wächst stark - wir positionieren Sie optimal dafür."
+        ${googleAdsSection ? `6. <h4...>Ihre Google Werbung:</h4>
+           Erkläre dem Kunden verständlich und positiv:
+           - Wie viel wurde investiert und was kam dabei heraus (Conversions)
+           - Welche Kampagnen besonders gut funktioniert haben
+           - "Ihre Werbung arbeitet für Sie" - positiver Rahmen` : ''}
       `;
     }
 
