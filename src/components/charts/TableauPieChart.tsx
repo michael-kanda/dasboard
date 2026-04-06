@@ -45,12 +45,14 @@ const getDateRangeLabel = (dateRange?: string): string => {
       startDate.setDate(today.getDate() - 7);
       break;
     case '28d':
+    case '30d':
       startDate = new Date(today);
-      startDate.setDate(today.getDate() - 28);
+      startDate.setDate(today.getDate() - (dateRange === '30d' ? 30 : 28));
       break;
+    case '3m':
     case '90d':
       startDate = new Date(today);
-      startDate.setDate(today.getDate() - 90);
+      startDate.setMonth(today.getMonth() - 3);
       break;
     case '6m':
       startDate = new Date(today);
@@ -60,9 +62,17 @@ const getDateRangeLabel = (dateRange?: string): string => {
       startDate = new Date(today);
       startDate.setFullYear(today.getFullYear() - 1);
       break;
+    case '18m':
+      startDate = new Date(today);
+      startDate.setMonth(today.getMonth() - 18);
+      break;
+    case '24m':
+      startDate = new Date(today);
+      startDate.setFullYear(today.getFullYear() - 2);
+      break;
     default:
       startDate = new Date(today);
-      startDate.setDate(today.getDate() - 28);
+      startDate.setDate(today.getDate() - 30);
   }
   
   return `${formatDate(startDate)} - ${formatDate(endDate)}`;
