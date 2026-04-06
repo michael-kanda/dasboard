@@ -59,10 +59,33 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { userId, isEnabled } = body;
+    const { userId, isEnabled, bulkDisable, bulkEnable } = body;
+
+    // NEU: Bulk-Aktionen nur für SUPERADMIN
+    if (bulkDisable || bulkEnable) {
+      if (session.user.role !== 'SUPERADMIN') {
+        return NextResponse.json({ message: 'Nur Superadmins können Bulk-Aktionen ausführen' }, { status: 403 });
+      }
+      const newState = bulkEnable === true;
+      await sql`
+        UPDATE users 
+        SET data_max_enabled = ${newState}
+        WHERE role != 'SUPERADMIN'
+      `;
+      console.log(`[DataMax] Bulk ${newState ? 'aktiviert' : 'deaktiviert'} für alle Non-Superadmins`);
+      return NextResponse.json({ success: true, bulk: true, isEnabled: newState });
+    }
 
     if (!userId) {
       return NextResponse.json({ message: 'User ID required' }, { status: 400 });
+    }
+
+    // Prüfe ob Ziel-User SUPERADMIN ist
+    const { rows: targetUser } = await sql`
+      SELECT role FROM users WHERE id = ${userId}::uuid
+    `;
+    if (targetUser[0]?.role === 'SUPERADMIN') {
+      return NextResponse.json({ message: 'Superadmins können nicht deaktiviert werden' }, { status: 403 });
     }
 
     // Update DB
