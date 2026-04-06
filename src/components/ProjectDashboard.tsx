@@ -212,6 +212,7 @@ export default function ProjectDashboard({
               dateRange={dateRange}
               chartRef={chartRef}
               kpis={exportKpis}
+              googleAdsData={data.googleAdsData}
             />
           </div>
         )}
