@@ -18,6 +18,7 @@ interface Props {
     change?: number;
     unit?: string;
   }>;
+  googleAdsData?: any; // ✅ Google Ads Daten (aus Sheet)
 }
 
 export default function AiAnalysisWidget({ 
@@ -25,7 +26,8 @@ export default function AiAnalysisWidget({
   domain, // ✅
   dateRange, 
   chartRef,
-  kpis
+  kpis,
+  googleAdsData, // ✅ Google Ads Daten
 }: Props) {
   // Content States
   const [statusContent, setStatusContent] = useState('');
@@ -98,10 +100,17 @@ export default function AiAnalysisWidget({
     abortControllerRef.current = new AbortController();
 
     try {
+      // ✅ Google Ads: Nur Totals + Top-Kampagnen mitsenden (Payload klein halten)
+      const adsPayload = googleAdsData?.totals ? {
+        totals: googleAdsData.totals,
+        campaignRows: (googleAdsData.campaignRows || googleAdsData.rows || []).slice(0, 20),
+        source: googleAdsData.source,
+      } : undefined;
+
       const response = await fetch('/api/ai/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ projectId, dateRange }),
+        body: JSON.stringify({ projectId, dateRange, googleAdsData: adsPayload }),
         signal: abortControllerRef.current.signal
       });
 
