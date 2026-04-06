@@ -113,6 +113,8 @@ export default function SystemHealthPage() {
   };
 
   const toggleKiTool = async (userId: string, currentEnabled: boolean) => {
+    const user = kiToolUsers.find(u => u.id === userId);
+    if (user?.role === 'SUPERADMIN') return alert('Superadmins können nicht gesperrt werden.');
     const newState = currentEnabled === false ? true : false; 
     setTogglingKiId(userId);
     try {
@@ -128,6 +130,8 @@ export default function SystemHealthPage() {
 
   // NEU: DataMax Toggle
   const toggleDataMax = async (userId: string, currentEnabled?: boolean) => {
+    const user = dataMaxUsers.find(u => u.id === userId);
+    if (user?.role === 'SUPERADMIN') return alert('Superadmins können nicht gesperrt werden.');
     // Default ist true (wenn undefined). Also togglen wir basierend darauf.
     const isCurrentlyEnabled = currentEnabled !== false;
     const newState = !isCurrentlyEnabled;
@@ -142,6 +146,70 @@ export default function SystemHealthPage() {
       if (res.ok) await fetchDataMaxStatus();
       else alert((await res.json()).message || 'Fehler');
     } catch (e) { alert('Verbindungsfehler'); } finally { setTogglingDataMaxId(null); }
+  };
+
+  // NEU: Alle KI-Tool sperren (außer SUPERADMIN)
+  const bulkDisableKiTool = async () => {
+    const nonSuperadmins = kiToolUsers.filter(u => u.role !== 'SUPERADMIN' && u.ki_tool_enabled !== false);
+    if (nonSuperadmins.length === 0) return alert('Keine User zum Sperren vorhanden.');
+    if (!confirm(`KI-Tool für ${nonSuperadmins.length} User deaktivieren? (Superadmins ausgenommen)`)) return;
+    setIsLoadingKiTool(true);
+    try {
+      await fetch('/api/admin/ki-tool-settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bulkDisable: true })
+      });
+      await fetchKiToolStatus();
+    } catch (e) { alert('Fehler'); } finally { setIsLoadingKiTool(false); }
+  };
+
+  // NEU: Alle KI-Tool freigeben
+  const bulkEnableKiTool = async () => {
+    const disabled = kiToolUsers.filter(u => u.ki_tool_enabled === false);
+    if (disabled.length === 0) return alert('Alle User haben bereits Zugriff.');
+    if (!confirm(`KI-Tool für ${disabled.length} User wieder aktivieren?`)) return;
+    setIsLoadingKiTool(true);
+    try {
+      await fetch('/api/admin/ki-tool-settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bulkEnable: true })
+      });
+      await fetchKiToolStatus();
+    } catch (e) { alert('Fehler'); } finally { setIsLoadingKiTool(false); }
+  };
+
+  // NEU: Alle DataMax sperren (außer SUPERADMIN)
+  const bulkDisableDataMax = async () => {
+    const nonSuperadmins = dataMaxUsers.filter(u => u.role !== 'SUPERADMIN' && u.data_max_enabled !== false);
+    if (nonSuperadmins.length === 0) return alert('Keine User zum Sperren vorhanden.');
+    if (!confirm(`DataMax Chat für ${nonSuperadmins.length} User deaktivieren? (Superadmins ausgenommen)`)) return;
+    setIsLoadingDataMax(true);
+    try {
+      await fetch('/api/admin/datamax-settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bulkDisable: true })
+      });
+      await fetchDataMaxStatus();
+    } catch (e) { alert('Fehler'); } finally { setIsLoadingDataMax(false); }
+  };
+
+  // NEU: Alle DataMax freigeben
+  const bulkEnableDataMax = async () => {
+    const disabled = dataMaxUsers.filter(u => u.data_max_enabled === false);
+    if (disabled.length === 0) return alert('Alle User haben bereits Zugriff.');
+    if (!confirm(`DataMax Chat für ${disabled.length} User wieder aktivieren?`)) return;
+    setIsLoadingDataMax(true);
+    try {
+      await fetch('/api/admin/datamax-settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bulkEnable: true })
+      });
+      await fetchDataMaxStatus();
+    } catch (e) { alert('Fehler'); } finally { setIsLoadingDataMax(false); }
   };
 
   const handleClearCache = async () => {
@@ -255,7 +323,7 @@ export default function SystemHealthPage() {
                         <span className={`font-medium truncate block ${user.maintenance_mode ? 'text-red-900' : 'text-gray-900'}`}>{user.email}</span>
                         <div className="flex items-center gap-2 text-xs text-gray-500">
                           {user.domain && <span>{user.domain}</span>}
-                          <span className={`px-1.5 py-0.5 rounded ${user.role === 'ADMIN' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'}`}>{user.role}</span>
+                          <span className={`px-1.5 py-0.5 rounded ${user.role === 'SUPERADMIN' ? 'bg-amber-100 text-amber-800 font-bold' : user.role === 'ADMIN' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'}`}>{user.role}</span>
                           {user.maintenance_mode && <span className="text-red-600 font-bold uppercase">GESPERRT</span>}
                         </div>
                       </div>
@@ -295,6 +363,25 @@ export default function SystemHealthPage() {
                 <ArrowRepeat className={isLoadingKiTool ? 'animate-spin' : ''} /> Aktualisieren
               </button>
             </div>
+
+            {/* NEU: Bulk Actions */}
+            <div className="flex gap-2 mb-4">
+              <button
+                onClick={bulkDisableKiTool}
+                disabled={isLoadingKiTool}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider bg-red-100 hover:bg-red-200 text-red-700 transition-all disabled:opacity-50"
+              >
+                <ToggleOff size={14} /> Alle sperren
+              </button>
+              <button
+                onClick={bulkEnableKiTool}
+                disabled={isLoadingKiTool}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider bg-green-100 hover:bg-green-200 text-green-700 transition-all disabled:opacity-50"
+              >
+                <ToggleOn size={14} /> Alle freigeben
+              </button>
+              <span className="text-[10px] text-gray-400 self-center ml-1">Superadmins ausgenommen</span>
+            </div>
             
             <div className="mb-4 relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
@@ -316,18 +403,20 @@ export default function SystemHealthPage() {
                       <span className="font-medium text-gray-900 truncate block">{user.email}</span>
                       <div className="flex items-center gap-2 text-xs text-gray-500">
                         {user.domain && <span>{user.domain}</span>}
-                        <span className={`px-1.5 py-0.5 rounded ${user.role === 'ADMIN' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'}`}>{user.role}</span>
+                        <span className={`px-1.5 py-0.5 rounded ${user.role === 'SUPERADMIN' ? 'bg-amber-100 text-amber-800 font-bold' : user.role === 'ADMIN' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'}`}>{user.role}</span>
                       </div>
                     </div>
                   </div>
                   <button
                     onClick={() => toggleKiTool(user.id, user.ki_tool_enabled !== false)}
-                    disabled={togglingKiId === user.id}
+                    disabled={togglingKiId === user.id || user.role === 'SUPERADMIN'}
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all disabled:opacity-50 ${
+                      user.role === 'SUPERADMIN' ? 'bg-gray-50 text-gray-400 cursor-not-allowed' :
                       user.ki_tool_enabled === false ? 'bg-green-100 hover:bg-green-200 text-green-700' : 'bg-gray-100 hover:bg-gray-200 text-gray-600'
                     }`}
                   >
-                    {togglingKiId === user.id ? <ArrowRepeat className="animate-spin" size={14} /> : (
+                    {user.role === 'SUPERADMIN' ? <><ShieldLock size={14} /> Geschützt</> :
+                    togglingKiId === user.id ? <ArrowRepeat className="animate-spin" size={14} /> : (
                       user.ki_tool_enabled === false ? <><ToggleOn size={16} /> Aktivieren</> : <><ToggleOff size={16} /> Deaktivieren</>
                     )}
                   </button>
@@ -354,6 +443,25 @@ export default function SystemHealthPage() {
                 <ArrowRepeat className={isLoadingDataMax ? 'animate-spin' : ''} /> Aktualisieren
               </button>
             </div>
+
+            {/* NEU: Bulk Actions */}
+            <div className="flex gap-2 mb-4">
+              <button
+                onClick={bulkDisableDataMax}
+                disabled={isLoadingDataMax}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider bg-red-100 hover:bg-red-200 text-red-700 transition-all disabled:opacity-50"
+              >
+                <ToggleOff size={14} /> Alle sperren
+              </button>
+              <button
+                onClick={bulkEnableDataMax}
+                disabled={isLoadingDataMax}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider bg-green-100 hover:bg-green-200 text-green-700 transition-all disabled:opacity-50"
+              >
+                <ToggleOn size={14} /> Alle freigeben
+              </button>
+              <span className="text-[10px] text-gray-400 self-center ml-1">Superadmins ausgenommen</span>
+            </div>
             
             <div className="mb-4 relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
@@ -375,18 +483,20 @@ export default function SystemHealthPage() {
                       <span className="font-medium text-gray-900 truncate block">{user.email}</span>
                       <div className="flex items-center gap-2 text-xs text-gray-500">
                         {user.domain && <span>{user.domain}</span>}
-                        <span className={`px-1.5 py-0.5 rounded ${user.role === 'ADMIN' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'}`}>{user.role}</span>
+                        <span className={`px-1.5 py-0.5 rounded ${user.role === 'SUPERADMIN' ? 'bg-amber-100 text-amber-800 font-bold' : user.role === 'ADMIN' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'}`}>{user.role}</span>
                       </div>
                     </div>
                   </div>
                   <button
                     onClick={() => toggleDataMax(user.id, user.data_max_enabled)}
-                    disabled={togglingDataMaxId === user.id}
+                    disabled={togglingDataMaxId === user.id || user.role === 'SUPERADMIN'}
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all disabled:opacity-50 ${
+                      user.role === 'SUPERADMIN' ? 'bg-gray-50 text-gray-400 cursor-not-allowed' :
                       user.data_max_enabled === false ? 'bg-green-100 hover:bg-green-200 text-green-700' : 'bg-gray-100 hover:bg-gray-200 text-gray-600'
                     }`}
                   >
-                    {togglingDataMaxId === user.id ? <ArrowRepeat className="animate-spin" size={14} /> : (
+                    {user.role === 'SUPERADMIN' ? <><ShieldLock size={14} /> Geschützt</> :
+                    togglingDataMaxId === user.id ? <ArrowRepeat className="animate-spin" size={14} /> : (
                       user.data_max_enabled === false ? <><ToggleOn size={16} /> Aktivieren</> : <><ToggleOff size={16} /> Deaktivieren</>
                     )}
                   </button>
