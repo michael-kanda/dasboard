@@ -302,7 +302,7 @@ export default function GoogleAdsWidget({ data, isLoading, dateRange }: GoogleAd
   }
 
   return (
-    <div className="card-glass overflow-hidden">
+    <div className="bg-surface rounded-xl border border-theme-border-default overflow-hidden">
       {/* ── KPI-Header ── */}
       <div className="p-4 sm:p-6 border-b border-theme-border-subtle">
         <h3 className="text-lg font-semibold text-strong mb-1 flex items-center gap-2">
@@ -325,7 +325,7 @@ export default function GoogleAdsWidget({ data, isLoading, dateRange }: GoogleAd
       </div>
 
       {/* ── Toolbar ── */}
-      <div className="px-4 sm:px-6 py-3 flex flex-wrap items-center gap-3 border-b border-theme-border-subtle bg-surface/50">
+      <div className="px-4 sm:px-6 py-3 flex flex-wrap items-center gap-3 border-b border-theme-border-subtle bg-surface">
         <div className="flex rounded-lg border border-theme-border-subtle overflow-hidden">
           {(Object.keys(viewModeLabels) as ViewMode[])
             .filter((mode) => mode !== 'ads' || isSheet) // "Anzeigen" nur bei Sheet-Daten
@@ -368,7 +368,7 @@ export default function GoogleAdsWidget({ data, isLoading, dateRange }: GoogleAd
       <div className="overflow-x-auto">
         <table className="w-full text-xs">
           <thead>
-            <tr className="border-b border-theme-border-subtle bg-surface-secondary/50">
+            <tr className="border-b border-theme-border-subtle bg-surface-secondary">
               <th className="text-left px-4 py-2.5 font-semibold text-muted w-[30%]">
                 {viewModeLabels[viewMode]}
               </th>
