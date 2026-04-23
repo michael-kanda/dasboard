@@ -106,7 +106,7 @@ Request test access at [designare.at/data-peak-dashboard](https://designare.at/d
 
 ## 👤 Author · Autor
 
-**Michael KandA** — Komplize für Web & KI · Accomplice for Web & AI
+**Michael Kanda** — Komplize für Web & KI · Accomplice for Web & AI
 
 WordPress ohne Ballast, Code ohne Kompromisse, KI mit Verstand.
 WordPress without bloat, code without compromise, AI with common sense.
