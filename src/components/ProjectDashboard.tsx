@@ -26,12 +26,25 @@ import ProjectTimelineWidget from '@/components/ProjectTimelineWidget';
 import AiAnalysisWidget from '@/components/AiAnalysisWidget';
 import LandingPageChart from '@/components/charts/LandingPageChart';
 import { aggregateLandingPages } from '@/lib/utils';
-
-// ✅ DataMax Chat Import
 import { DataMaxChat } from '@/components/datamax';
-
-// ✅ NEU: Google Ads Widget
 import GoogleAdsWidget from '@/components/GoogleAdsWidget';
+
+// 🔍 DIAGNOSTIK – nur Server-Side ausführen, später wieder entfernen
+if (typeof window === 'undefined') {
+  const _components = {
+    TableauKpiGrid, TableauPieChart, KpiTrendChart, AiTrafficCard,
+    AiTrafficDetailWidgetV2, TopQueriesList, SemrushTopKeywords,
+    SemrushTopKeywords02, GlobalHeader, ProjectTimelineWidget,
+    AiAnalysisWidget, LandingPageChart, DataMaxChat, GoogleAdsWidget,
+  };
+  for (const [name, comp] of Object.entries(_components)) {
+    if (typeof comp === 'undefined') {
+      console.error(`[DASHBOARD-DEBUG] >>> ${name} is UNDEFINED on server <<<`);
+    } else {
+      console.log(`[DASHBOARD-DEBUG] ${name}: ${typeof comp}`);
+    }
+  }
+}
 
 interface ProjectDashboardProps {
   data: ProjectDashboardData;
