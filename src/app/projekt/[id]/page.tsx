@@ -77,10 +77,13 @@ export default async function ProjectPage({
   params: { id: string },
   searchParams: { range?: string }
 }) {
+  console.log('[PAGE-TRACE] ProjectPage ENTRY');
+  
   const projectId = params.id;
   const dateRange = (searchParams.range as DateRangeOption) || '30d';
 
   const session = await auth();
+  console.log('[PAGE-TRACE] after auth, role=', session?.user?.role, 'projectId=', projectId);
 
   if (!session?.user) {
     redirect('/login');
@@ -90,9 +93,12 @@ export default async function ProjectPage({
     redirect('/');
   }
 
+  console.log('[PAGE-TRACE] before loadData');
   const data = await loadData(projectId, dateRange);
+  console.log('[PAGE-TRACE] after loadData, hasData=', !!data, 'hasDashboardData=', !!data?.dashboardData);
 
   if (!data || !data.dashboardData) {
+    console.log('[PAGE-TRACE] returning early: no data');
     return (
       <div className="flex justify-center items-center min-h-screen bg-surface-secondary">
         <p className="text-muted">Projekt nicht gefunden oder keine Daten verfügbar.</p>
@@ -106,8 +112,20 @@ export default async function ProjectPage({
   const timelineActive = projectUser.project_timeline_active === true;
   const isDataMaxEnabled = projectUser.data_max_enabled !== false;
 
-  return (
-    <Suspense fallback={<DashboardSkeleton />}>
+  console.log('[PAGE-TRACE] computed flags: timelineActive=', timelineActive, 'isDataMaxEnabled=', isDataMaxEnabled);
+  console.log('[PAGE-TRACE] about to create JSX elements');
+
+  let skeletonEl, dashboardEl, suspenseEl;
+  try {
+    skeletonEl = <DashboardSkeleton />;
+    console.log('[PAGE-TRACE] ✓ created DashboardSkeleton element');
+  } catch (e) {
+    console.error('[PAGE-TRACE] ✗ FAILED creating DashboardSkeleton element:', e);
+    throw e;
+  }
+  
+  try {
+    dashboardEl = (
       <ProjectDashboard
         data={dashboardData}
         isLoading={false}
@@ -127,6 +145,25 @@ export default async function ProjectPage({
         showGoogleAds={projectUser.settings_show_google_ads === true}
         dataMaxEnabled={isDataMaxEnabled}
       />
-    </Suspense>
-  );
+    );
+    console.log('[PAGE-TRACE] ✓ created ProjectDashboard element');
+  } catch (e) {
+    console.error('[PAGE-TRACE] ✗ FAILED creating ProjectDashboard element:', e);
+    throw e;
+  }
+  
+  try {
+    suspenseEl = (
+      <Suspense fallback={skeletonEl}>
+        {dashboardEl}
+      </Suspense>
+    );
+    console.log('[PAGE-TRACE] ✓ created Suspense element');
+  } catch (e) {
+    console.error('[PAGE-TRACE] ✗ FAILED creating Suspense element:', e);
+    throw e;
+  }
+  
+  console.log('[PAGE-TRACE] returning JSX tree');
+  return suspenseEl;
 }
