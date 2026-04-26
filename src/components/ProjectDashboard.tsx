@@ -46,6 +46,14 @@ if (typeof window === 'undefined') {
   }
 }
 
+// 🔍 TRACE-Helper: gibt null zurück, loggt nur server-side
+const Trace = ({ at }: { at: string }) => {
+  if (typeof window === 'undefined') {
+    console.log(`[TRACE] →${at}`);
+  }
+  return null;
+};
+
 interface ProjectDashboardProps {
   data: ProjectDashboardData;
   isLoading: boolean;
@@ -201,6 +209,7 @@ export default function ProjectDashboard({
       )}
       
       <div className="flex-grow w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <Trace at="GlobalHeader" />
         <GlobalHeader 
           domain={domain}
           projectId={projectId}
@@ -210,6 +219,7 @@ export default function ProjectDashboard({
           userEmail={userEmail}
         />
         
+        <Trace at="ProjectTimelineWidget?" />
         {projectId && projectTimelineActive && (
           <div className="mb-6 print-timeline">
             <ProjectTimelineWidget projectId={projectId} />
@@ -217,6 +227,7 @@ export default function ProjectDashboard({
         )}
 
         {/* AI WIDGET */}
+        <Trace at="AiAnalysisWidget?" />
         {projectId && (
           <div id="section-ai-analyse" className="mt-8 scroll-mt-20 print:hidden">
             <AiAnalysisWidget 
@@ -231,6 +242,7 @@ export default function ProjectDashboard({
         )}
 
         {/* KPI GRID */}
+        <Trace at="TableauKpiGrid?" />
         <div id="section-kpis" className="mt-8 scroll-mt-20 print-kpi-grid">
           {extendedKpis && (
             <TableauKpiGrid
@@ -243,6 +255,7 @@ export default function ProjectDashboard({
           )}
         </div>
 
+        <Trace at="KpiTrendChart" />
         <div id="section-verlauf" className="mt-8 scroll-mt-20 print-trend-chart" ref={chartRef}>
           <KpiTrendChart 
             activeKpi={activeKpi}
@@ -253,6 +266,7 @@ export default function ProjectDashboard({
         </div>
         
         {/* KI-Traffic Sektion mit Toggle für Detail-Ansicht */}
+        <Trace at="AiTrafficCard" />
         <div id="section-ki-traffic" className="grid grid-cols-1 xl:grid-cols-3 gap-6 mt-8 scroll-mt-20 print-traffic-grid">
           <div className="xl:col-span-1 print-ai-card">
             <AiTrafficCard 
@@ -274,6 +288,7 @@ export default function ProjectDashboard({
             />
           </div>
           
+          <Trace at="TopQueriesList" />
           <div className="xl:col-span-2 print-queries-list">
             <TopQueriesList 
               queries={data.topQueries ?? []} 
@@ -286,6 +301,7 @@ export default function ProjectDashboard({
         </div>
 
         {/* KI-Traffic Detail-Ansicht (ausklappbar) */}
+        <Trace at="AiTrafficDetailWidgetV2?" />
         {showAiTrafficDetail && hasAiTraffic && (
           <div className="mt-8 animate-in slide-in-from-top-4 duration-300 print:hidden">
             <AiTrafficDetailWidgetV2 
@@ -295,6 +311,7 @@ export default function ProjectDashboard({
           </div>
         )}
 
+        <Trace at="LandingPageChart?" />
         {shouldRenderChart && (
           <div id="section-landingpages" className={`mt-8 scroll-mt-20 transition-all duration-300 ${!isLandingPagesVisible && isAdmin ? 'opacity-70 grayscale-[0.5]' : ''}`}>
             {isAdmin && (
@@ -329,6 +346,7 @@ export default function ProjectDashboard({
         )}
 
         {/* PIE CHARTS */}
+        <Trace at="TableauPieCharts" />
         <div id="section-zugriffe" className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8 scroll-mt-20 print-pie-grid">
           <TableauPieChart 
             data={data.channelData} 
@@ -354,6 +372,7 @@ export default function ProjectDashboard({
         </div>
 
         {/* ✅ NEU: GOOGLE ADS SEKTION */}
+        <Trace at="GoogleAdsWidget?" />
         {shouldRenderGoogleAds && (
           <div id="section-google-ads" className={`mt-8 scroll-mt-20 transition-all duration-300 ${!isGoogleAdsVisible && isAdmin ? 'opacity-70 grayscale-[0.5]' : ''}`}>
             {isAdmin && (
@@ -384,6 +403,7 @@ export default function ProjectDashboard({
           </div>
         )}
 
+        <Trace at="Semrush?" />
         {hasSemrushConfig && (
           <div id="section-semrush" className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8 scroll-mt-20 print-semrush-grid">
             {hasKampagne1Config && <div className="card-glass p-4 sm:p-6"><SemrushTopKeywords projectId={projectId} /></div>}
@@ -391,12 +411,16 @@ export default function ProjectDashboard({
           </div>
         )}
 
+        <Trace at="ENDE-MainContent" />
       </div>
 
       {/* DataMax Chat - Floating Button unten rechts (Conditional) */}
+      <Trace at="DataMaxChat?" />
       {dataMaxEnabled && (
         <DataMaxChat projectId={projectId} dateRange={dateRange} />
       )}
+
+      <Trace at="ENDE-Render" />
 
       {/* Animation Styles */}
       <style jsx global>{`
