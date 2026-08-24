@@ -47,11 +47,15 @@ import {
   extractDashboardMetricValues,
 } from '@/lib/metric-metadata';
 import { persistMetricSnapshotsWithClient } from '@/lib/metric-snapshot-store';
-import { readDashboardSnapshot } from '@/lib/sync/dashboard-snapshot';
+import {
+  DASHBOARD_SNAPSHOT_VERSION,
+  readDashboardSnapshot,
+} from '@/lib/sync/dashboard-snapshot';
 import { isPaidSearchChannel } from '@/lib/ga4-metrics';
 import { getReportingWindow } from '@/lib/sync/cache-policy';
 import { classifyGoogleApiError } from '@/lib/sync/google-api-error';
 import { isDemoProject } from '@/lib/demo-project';
+import { GOOGLE_ADS_SHEET_DATA_VERSION } from '@/lib/google-ads-sheet';
 
 function getShortErrorMessage(error: unknown): string {
   const err = error as any;
@@ -93,7 +97,11 @@ const INITIAL_DATA: RawApiData = {
   paidSearch: { total: 0, daily: [] }
 };
 
-function createEmptyGoogleAdsSheetData(sheetId: string): GoogleAdsData {
+function createEmptyGoogleAdsSheetData(
+  sheetId: string,
+  startDate?: string,
+  endDate?: string,
+): GoogleAdsData {
   return {
     rows: [],
     landingPageRows: [],
@@ -114,6 +122,9 @@ function createEmptyGoogleAdsSheetData(sheetId: string): GoogleAdsData {
     searchQueryRows: [],
     source: 'sheet',
     configuredSheetId: sheetId,
+    sheetDataVersion: GOOGLE_ADS_SHEET_DATA_VERSION,
+    reportStartDate: startDate,
+    reportEndDate: endDate,
   };
 }
 
@@ -654,7 +665,7 @@ export async function getOrFetchGoogleData(
 
   if (user.google_ads_sheet_id) {
     const sheetId = user.google_ads_sheet_id.trim();
-    googleAdsData = createEmptyGoogleAdsSheetData(sheetId);
+    googleAdsData = createEmptyGoogleAdsSheetData(sheetId, startDateStr, endDateStr);
     try { googleAdsData = await getGoogleAdsFromSheet(sheetId, startDateStr, endDateStr); }
     catch (e: any) {
       const message = getShortErrorMessage(e);
@@ -716,7 +727,7 @@ export async function getOrFetchGoogleData(
     aiTraffic, countryData, channelData, deviceData,
     bingData, weatherData, googleAdsData, googleGenAi, promptTracking,
     apiErrors: Object.keys(apiErrors).length > 0 ? apiErrors : undefined,
-    snapshotVersion: 2,
+    snapshotVersion: DASHBOARD_SNAPSHOT_VERSION,
   };
 
   // ════════════════════════════════════════════════════════════════════

@@ -71,14 +71,14 @@ Für lokale Projekte kann DataPeak mehrere Standorte abbilden, z.B. Kanzlei Wien
 
 ### Betrieb und Datenbank
 
-- Eine vollständige Beschreibung der Aktualisierungswege für GSC, GA4, Sitemap/Indexierung und Google-Unternehmensprofile steht in [`docs/DATENAKTUALISIERUNG.md`](docs/DATENAKTUALISIERUNG.md).
+- Eine vollständige Beschreibung der Aktualisierungswege für GSC, GA4, Google Ads, Sitemap/Indexierung und Google-Unternehmensprofile steht in [`docs/DATENAKTUALISIERUNG.md`](docs/DATENAKTUALISIERUNG.md).
 - Datenbankänderungen liegen versioniert unter `migrations/` und werden vor dem Deployment einmalig mit `npm run db:migrate` angewendet. Der Vercel-Build führt bewusst keine Migration aus, damit Preview-Deployments niemals das Produktionsschema verändern.
 - Seiten, API-Routen und Cronjobs führen keine Schemaänderungen während eines Requests aus.
 - Projekt- und API-Aufrufe arbeiten nach dem Cache-first-/Stale-While-Revalidate-Prinzip: Ein vorhandener Snapshot wird sofort angezeigt, auch wenn seine Hintergrundaktualisierung bereits fällig ist.
-- Der Dispatcher `/api/cron/sync-project-data` aktualisiert automatisch nur den aktiven Standardzeitraum `30d` mit einer einheitlichen TTL von 24 Stunden. Andere Zeiträume werden nur nach tatsächlicher Nutzung aktualisiert (`7d`: 24 h, `3m`: 48 h, `6m`: 72 h, `12m` bis `24m`: 7 Tage).
-- Eine fehlende oder abgelaufene Ansicht reiht einen wiederverwendbaren Hintergrundauftrag ein; vorhandene Daten bleiben sofort sichtbar. Eine pro Quelle und Dashboard-Zeitraum getrennte, per Heartbeat verlängerte Datenquellen-Lease verhindert parallele Google-Aufrufe; nach einem Prozessabbruch heilt die Quellensperre spätestens nach 90 Sekunden selbst.
+- Der Dispatcher `/api/cron/sync-project-data` erzeugt und aktualisiert automatisch nur den Standardzeitraum `30d` mit einer TTL von 24 Stunden. Bereits vorhandene andere Zeiträume werden bei Nutzung nach ihrer jeweiligen TTL erneuert (`7d`: 24 h, `3m`: 48 h, `6m`: 72 h, `12m` bis `24m`: 7 Tage). Ein noch nie gespeicherter Sonderzeitraum wird vom normalen Projektaufruf derzeit nicht neu angelegt.
+- Eine abgelaufene Ansicht reiht beim Lesen einen wiederverwendbaren Hintergrundauftrag ein; vorhandene Daten bleiben sofort sichtbar. Fehlt der Snapshot vollständig, führt der Seitenaufruf bewusst keinen externen Google-Abruf aus: Der zentrale Cron erkennt den fehlenden `30d`-Stand und plant ihn spätestens im nächsten 10-Minuten-Zyklus ein. Eine pro Quelle und Dashboard-Zeitraum getrennte, alle 25 Sekunden verlängerte Datenquellen-Lease verhindert parallele Google-Aufrufe; nach einem Prozessabbruch läuft die Sperre spätestens nach 90 Sekunden aus.
 - Google-Unternehmensprofil-Vorschauen werden 24 Stunden projektbezogen gespeichert. Bei einem temporären Places-Ausfall bleibt der letzte erfolgreiche Stand sichtbar.
-- Interne Snapshot- oder Metadatenversionen erzwingen keinen erneuten Google-Abruf. Metadaten werden beim Lesen ergänzt und beim nächsten regulären Datenlauf persistiert.
+- Fehlende reine Kennzahlen-Metadaten werden beim Lesen ergänzt und beim nächsten regulären Datenlauf persistiert, ohne allein deshalb Google aufzurufen. Eine inkompatible Dashboard- oder Top-Queries-Datenversion markiert den Snapshot dagegen absichtlich als veraltet und reiht eine Hintergrundaktualisierung ein.
 - Wiederverwendbare Sync-Aufträge verhindern unbegrenztes Tabellenwachstum. Der Dispatcher verarbeitet höchstens neun Aufträge pro Lauf (Dashboard 3, GSC-Historie 2, Indexierung 4); seine Queue-Lease beträgt 240 Sekunden. Verschiebungen werden separat gezählt und nach zwölf erfolglosen Defers beendet, statt endlos zu pendeln.
 - Jede zentrale Kennzahl speichert Quelle, Aktualisierungszeit, Zeitraum, Abdeckungsstatus, Berechnungsmethode und Berechnungsversion in `project_metric_snapshots` und im Dashboard-Snapshot.
 - Ein vollständig abgeschlossener Indexierungslauf wird nach 48 Stunden erneut eingeplant; offene Chargen werden im nächsten geeigneten Dispatcher-Lauf fortgesetzt. Pro Auftrag werden höchstens 150 URL-Inspections reserviert. Ein persistentes Tagesbudget von 1.800 Abfragen je GSC-Property lässt Puffer zum Google-Limit und verhindert, dass parallele Läufe das Kontingent gemeinsam überschreiten.
@@ -115,7 +115,7 @@ DataPeak trennt lokale Daten bewusst nach Quelle:
 - **Sitemap-Erkennung:** DataPeak erkennt Sitemap-Indexdateien, lädt die enthaltenen Sitemaps rekursiv und filtert technische URLs wie Feeds, Kommentare und andere nicht relevante Systempfade heraus.
 - **Persistenter Abgleich:** Ergebnisse werden in Neon Postgres gespeichert. Neue oder geänderte URLs werden zuerst geprüft; stabile URLs folgen zyklisch, statt bei jedem Lauf vollständig neu abgefragt zu werden.
 - **Google URL Inspection:** Der offizielle Inspection-Status liefert Indexierung, Coverage, Canonical und Crawl-Informationen. Offene URLs werden innerhalb des verfügbaren API- und Laufzeitbudgets in späteren automatischen Läufen fortgesetzt.
-- **Transparenz:** Das Widget zeigt Live-Fortschritt, Statushinweise, Handlungsbedarf und einen CSV-Export. „Handlungsbedarf“ bezeichnet URLs mit einem konkreten Indexierungsproblem, nicht jede noch ungeprüfte URL.
+- **Transparenz:** Solange noch nicht jede relevante Sitemap-URL mindestens einmal erfolgreich klassifiziert wurde, kennzeichnet das Widget Indexiert-/Nicht-indexiert-Summen ausdrücklich als vorläufig und zeigt die Erstabdeckung getrennt von später fälligen Nachprüfungen. „Handlungsbedarf“ bezeichnet nur URLs mit einem konkreten Indexierungsproblem, nicht jede noch ungeprüfte oder lediglich erneut fällige URL. Live-Fortschritt, Statushinweise und CSV-Export bleiben verfügbar.
 
 ### Methodik: KI Content Studio
 
@@ -195,16 +195,16 @@ For local projects, DataPeak can represent multiple locations such as a main off
 
 ### Operations and Database
 
-- Detailed documentation of the GSC, GA4, sitemap/indexing, and Google Business Profile refresh flows is available in [`docs/DATENAKTUALISIERUNG.md`](docs/DATENAKTUALISIERUNG.md).
+- Detailed documentation of the GSC, GA4, Google Ads, sitemap/indexing, and Google Business Profile refresh flows is available in [`docs/DATENAKTUALISIERUNG.md`](docs/DATENAKTUALISIERUNG.md).
 - Database changes are versioned in `migrations/` and applied once before deployment with `npm run db:migrate`. Vercel builds intentionally do not run migrations, so preview deployments cannot mutate the production schema.
 - `ProjectDashboard` only orchestrates widget sections. Source normalization and rendering policy live outside the page component so UI changes do not alter measurement logic.
 - GSC, GA4, Google Ads, local SEO, and indexing expose independent dashboard data modules with shared availability/error contracts. Run their contract tests with `npm run test:data-modules`.
 - Pages, API routes, and cron jobs do not modify the schema during requests.
 - Project and API requests use a cache-first, stale-while-revalidate strategy: an existing snapshot is rendered immediately, even when a background refresh is already due.
-- The `/api/cron/sync-project-data` dispatcher automatically refreshes only the active default range `30d` with one consistent 24-hour TTL. Other ranges refresh only after actual use (`7d`: 24 hours, `3m`: 48 hours, `6m`: 72 hours, `12m` through `24m`: 7 days).
-- Missing or expired ranges enqueue a reusable background job while existing data remains immediately available. Source leases are separated by source and dashboard range, extended by heartbeat, and self-recover no later than 90 seconds after an interrupted process.
+- The `/api/cron/sync-project-data` dispatcher automatically creates and refreshes only the default `30d` range with a 24-hour TTL. Other ranges that already have a stored snapshot refresh on use according to their own TTL (`7d`: 24 hours, `3m`: 48 hours, `6m`: 72 hours, `12m` through `24m`: 7 days). A special range that has never been stored is currently not created by the normal project request.
+- An expired range enqueues a reusable background job when it is read, while the existing snapshot remains immediately available. If no snapshot exists at all, the page request deliberately performs no external Google fetch: the central cron detects the missing `30d` snapshot and schedules it no later than its next ten-minute cycle. Source leases are separated by source and dashboard range, extended every 25 seconds, and expire no later than 90 seconds after an interrupted process.
 - Google Business Profile previews are stored per project for 24 hours. A temporary Places failure falls back to the last successful preview.
-- Internal snapshot or metadata versions do not force another Google API request. Metadata is attached when a snapshot is read and persisted during the next regular data refresh.
+- Missing metric metadata is attached when a snapshot is read and persisted during the next regular refresh without triggering Google on its own. An incompatible dashboard or top-query data version intentionally marks the snapshot stale and enqueues a background refresh.
 - Reusable sync jobs prevent unbounded queue growth. The dispatcher processes at most nine jobs per run (dashboard 3, GSC history 2, indexing 4), uses a 240-second queue lease, and caps repeated deferrals at twelve.
 - Every central metric stores its source, refresh time, period, coverage, calculation method, and method version in `project_metric_snapshots` and the dashboard snapshot.
 - A completed indexing run is scheduled again after 48 hours. Unfinished batches continue in a later dispatcher cycle; each job reserves at most 150 inspections. A persistent daily budget of 1,800 requests per GSC property preserves headroom below Google's limit and coordinates concurrent workers.

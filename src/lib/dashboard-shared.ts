@@ -92,6 +92,11 @@ export interface GoogleAdsData {
   searchQueryRows?: GoogleAdsRow[];
   source?: 'ga4' | 'sheet';
   configuredSheetId?: string;
+  sheetDataVersion?: number;
+  reportStartDate?: string;
+  reportEndDate?: string;
+  latestDataDate?: string;
+  conversionFallbackUsed?: boolean;
 }
 
 export interface GoogleGenAiTrendPoint {

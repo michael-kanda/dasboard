@@ -51,6 +51,16 @@ function formatDateRange(dateRange?: DateRangeOption): string {
   return `${fmt.format(from)} – ${fmt.format(to)}`;
 }
 
+function formatStoredDateRange(startDate?: string, endDate?: string): string {
+  if (!startDate || !endDate) return '';
+  const fmt = new Intl.DateTimeFormat('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  const parse = (value: string) => new Date(`${value}T12:00:00`);
+  const start = parse(startDate);
+  const end = parse(endDate);
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return '';
+  return `${fmt.format(start)} – ${fmt.format(end)}`;
+}
+
 // ── Aggregations-Logik ──
 
 interface AggregatedRow {
@@ -151,7 +161,11 @@ export default function GoogleAdsWidget({ data, isLoading, dateRange }: GoogleAd
   const { totals } = data;
   const isSheet = data.source === 'sheet';
 
-  const dateRangeStr = formatDateRange(dateRange);
+  const dateRangeStr = formatStoredDateRange(data.reportStartDate, data.reportEndDate)
+    || formatDateRange(dateRange);
+  const latestDataDate = data.latestDataDate
+    ? new Intl.DateTimeFormat('de-DE').format(new Date(`${data.latestDataDate}T12:00:00`))
+    : null;
 
   const viewConfig: Record<ViewMode, { field: keyof GoogleAdsRow }> = {
     campaign:    { field: 'campaign' },
@@ -321,6 +335,7 @@ export default function GoogleAdsWidget({ data, isLoading, dateRange }: GoogleAd
         <p className="mt-2 text-xs text-muted">
           Quelle {isSheet ? 'Google Ads' : 'GA4'}
           {dateRangeStr && ` · ${dateRangeStr}`}
+          {isSheet && latestDataDate && ` · Sheet-Daten bis ${latestDataDate}`}
         </p>
       </div>
 

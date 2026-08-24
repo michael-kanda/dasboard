@@ -6,6 +6,7 @@ import { attachDashboardMetricMetadata } from '../metric-metadata';
 import { isDemoProject } from '../demo-project';
 import { enqueueProjectSyncJob } from './job-queue';
 import { isDashboardSnapshotStale } from './cache-policy';
+import { GOOGLE_ADS_SHEET_DATA_VERSION } from '../google-ads-sheet';
 
 export interface DashboardSnapshotResult {
   data: ProjectDashboardData | null;
@@ -14,12 +15,12 @@ export interface DashboardSnapshotResult {
   queued: boolean;
 }
 
-export const DASHBOARD_SNAPSHOT_VERSION = 2;
+export const DASHBOARD_SNAPSHOT_VERSION = 3;
 
 export { getDashboardCacheDurationHours } from './cache-policy';
 
 export async function readDashboardSnapshot(
-  user: Pick<User, 'id' | 'email' | 'domain' | 'is_demo'>,
+  user: Pick<User, 'id' | 'email' | 'domain' | 'is_demo' | 'google_ads_sheet_id'>,
   dateRange: string,
   options: {
     enqueueIfStale?: boolean;
@@ -49,9 +50,15 @@ export async function readDashboardSnapshot(
     ? new Date(String(row.last_fetched)).toISOString()
     : null;
   const cachedData = row?.data as ProjectDashboardData | undefined;
+  const configuredSheetId = user.google_ads_sheet_id?.trim() || null;
+  const adsSheetMismatch = Boolean(cachedData && configuredSheetId) && (
+    cachedData?.googleAdsData?.configuredSheetId !== configuredSheetId
+    || cachedData?.googleAdsData?.sheetDataVersion !== GOOGLE_ADS_SHEET_DATA_VERSION
+  );
   const versionMismatch = Boolean(cachedData) && (
     cachedData?.snapshotVersion !== DASHBOARD_SNAPSHOT_VERSION
     || cachedData?.topQueriesDataVersion !== TOP_QUERIES_DATA_VERSION
+    || adsSheetMismatch
   );
   const stale = versionMismatch || isDashboardSnapshotStale(dateRange, lastFetchedAt);
   let queued = false;

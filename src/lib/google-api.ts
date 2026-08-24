@@ -72,6 +72,13 @@ import {
   tryAcquireGa4RequestLock,
 } from '@/lib/ga4-request-lock';
 import { GA4_KEY_EVENTS_METRIC, parseGa4Metric } from '@/lib/ga4-metrics';
+import {
+  GOOGLE_ADS_SHEET_DATA_VERSION,
+  parseGoogleAdsSheetNumber,
+  readGoogleAdsConversions,
+  reconcileGoogleAdsCampaignConversions,
+  type GoogleAdsSheetRawRow,
+} from '@/lib/google-ads-sheet';
 
 // ── Postgres-Result-Cache für schwere GA4-Dashboard-Reports ──────────────
 // Property 337078709 (und vermutlich weitere große Properties) braucht für
@@ -1775,6 +1782,12 @@ export interface GoogleAdsData {
   source?: 'ga4' | 'sheet';
   /** Konfigurierte Sheet-ID, damit Dashboard-Caches bei ID-Wechsel sauber invalidieren. */
   configuredSheetId?: string;
+  /** Parser-Version, damit alte Sheet-Snapshots einmalig erneuert werden können. */
+  sheetDataVersion?: number;
+  reportStartDate?: string;
+  reportEndDate?: string;
+  latestDataDate?: string;
+  conversionFallbackUsed?: boolean;
 }
 
 /**
@@ -2176,20 +2189,7 @@ async function getGoogleAdsReportUncached(
 //   • Anzeigen-Ebene verfügbar
 // ═══════════════════════════════════════════════════════════════
 
-interface SheetRowRaw {
-  [key: string]: string;
-}
-
-function parseSheetNumber(val: string | undefined): number {
-  if (!val) return 0;
-  // Handles both "1.234,56" (DE) and "1234.56" (EN) formats
-  const cleaned = val.replace(/[^\d,.\-]/g, '');
-  // If contains comma as decimal separator (DE format)
-  if (cleaned.includes(',') && cleaned.indexOf(',') > cleaned.lastIndexOf('.')) {
-    return parseFloat(cleaned.replace(/\./g, '').replace(',', '.')) || 0;
-  }
-  return parseFloat(cleaned) || 0;
-}
+type SheetRowRaw = GoogleAdsSheetRawRow;
 
 function parseSheetDate(val: string | undefined): Date | null {
   if (!val) return null;
@@ -2245,9 +2245,9 @@ function sheetRowToAdsRow(
     searchQuery?: string;
   }
 ): GoogleAdsRow {
-  const impressions = parseSheetNumber(raw['Impressionen']);
-  const clicks = parseSheetNumber(raw['Klicks']);
-  const cost = parseSheetNumber(raw['Kosten']);
+  const impressions = parseGoogleAdsSheetNumber(raw['Impressionen']);
+  const clicks = parseGoogleAdsSheetNumber(raw['Klicks']);
+  const cost = parseGoogleAdsSheetNumber(raw['Kosten']);
   return {
     campaign: raw[mapping.campaign || 'Kampagne'] || '(not set)',
     adGroup: raw[mapping.adGroup || 'Anzeigengruppe'] || '–',
@@ -2260,7 +2260,7 @@ function sheetRowToAdsRow(
     impressions,
     cpc: clicks > 0 ? cost / clicks : 0,
     roas: 0,
-    conversions: parseSheetNumber(raw['Conversions']),
+    conversions: readGoogleAdsConversions(raw),
     sessions: 0,
     engagedSessions: 0,
   };
@@ -2293,7 +2293,7 @@ export async function getGoogleAdsFromSheet(
   console.log(`[Google Ads Sheet] Gefiltert → Kampagnen: ${filteredCampaigns.length} | AG: ${filteredAdGroups.length} | Anzeigen: ${filteredAds.length} | SQ: ${filteredQueries.length}`);
 
   // ── In GoogleAdsRow[] konvertieren ──
-  const campaignRows: GoogleAdsRow[] = filteredCampaigns.map((r) =>
+  const parsedCampaignRows: GoogleAdsRow[] = filteredCampaigns.map((r) =>
     sheetRowToAdsRow(r, { campaign: 'Kampagne' })
   );
 
@@ -2308,6 +2308,15 @@ export async function getGoogleAdsFromSheet(
   const searchQueryRows: GoogleAdsRow[] = filteredQueries.map((r) =>
     sheetRowToAdsRow(r, { campaign: 'Kampagne', adGroup: 'Anzeigengruppe', searchQuery: 'Suchanfrage' })
   );
+
+  // Einige Ads-Script-/Kontokonstellationen liefern Conversions auf der
+  // Kampagnenebene leer, obwohl sie auf der Anzeigengruppen- oder Anzeigenebene
+  // vorhanden sind. In diesem Fall genau eine vollständige Detailebene nutzen.
+  const conversionResult = reconcileGoogleAdsCampaignConversions(
+    parsedCampaignRows,
+    [adGroupRows, adRows, searchQueryRows],
+  );
+  const campaignRows = conversionResult.rows;
 
   // ── Totals aus Kampagnen-Tab berechnen (höchste Ebene = kein Doppelzählen) ──
   let totalCost = 0;
@@ -2335,8 +2344,15 @@ export async function getGoogleAdsFromSheet(
   };
 
   console.log(
-    `[Google Ads Sheet] Totals → Spend: €${totalCost.toFixed(2)} | Klicks: ${totalClicks} | Conv.: ${totalConversions}`
+    `[Google Ads Sheet] Totals → Spend: €${totalCost.toFixed(2)} | Klicks: ${totalClicks} | Conv.: ${totalConversions}` +
+    `${conversionResult.fallbackUsed ? ' (aus Detailebene rekonstruiert)' : ''}`
   );
+
+  const campaignDates = filteredCampaigns
+    .map((row) => row['Datum'])
+    .filter(Boolean)
+    .sort();
+  const latestDataDate = campaignDates[campaignDates.length - 1];
 
   // rows = adGroupRows als Fallback für Legacy-Kompatibilität (aggregateBy funktioniert damit)
   return {
@@ -2349,6 +2365,11 @@ export async function getGoogleAdsFromSheet(
     searchQueryRows,
     source: 'sheet',
     configuredSheetId: sheetId,
+    sheetDataVersion: GOOGLE_ADS_SHEET_DATA_VERSION,
+    reportStartDate: startDate,
+    reportEndDate: endDate,
+    latestDataDate,
+    conversionFallbackUsed: conversionResult.fallbackUsed,
   };
 }
 
