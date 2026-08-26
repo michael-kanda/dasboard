@@ -1,6 +1,6 @@
 # Datenaktualisierung im DataPeak-Dashboard
 
-Stand: 10. August 2026
+Stand: 26. August 2026
 
 Dieses Dokument beschreibt, wie DataPeak die Dashboard-Daten aus Google Search Console (GSC), Google Analytics 4 (GA4), Google Ads, Sitemaps und Google-Unternehmensprofilen aktualisiert. Es trennt dabei bewusst zwischen dauerhaft gespeicherten Dashboard-Snapshots, der URL-Indexierungsprüfung und den bei Bedarf geladenen, ebenfalls gespeicherten Profilvorschauen.
 
@@ -15,7 +15,7 @@ Ein Projektaufruf soll keine Kette externer Google-API-Anfragen auslösen. Desha
 5. Erst nach einem verwertbaren Abruf wird der alte Snapshot ersetzt.
 6. Bei Timeout- oder Quotenfehlern bleibt der letzte funktionierende Snapshot erhalten. Ein permanenter Berechtigungsfehler darf einen klar als teilweise abgedeckt markierten Snapshot der weiterhin funktionierenden Quelle nicht einfrieren.
 
-Fehlt ein Snapshot vollständig, startet der normale Projektaufruf bewusst **keinen** langen GSC-/GA4-Abruf. Das Dashboard zeigt den Vorbereitungszustand, während der alle zehn Minuten laufende Cron den fehlenden Standardzeitraum `30d` erkennt und als Queue-Auftrag einplant. Dadurch bleibt die Seitenantwort kurz und externe API-Last entsteht ausschließlich in kontrollierten Hintergrundläufen. Bereits vorhandene Sonderzeiträume werden bei Nutzung nach ihrer TTL erneuert; ein noch nie gespeicherter Sonderzeitraum wird vom aktuellen Projektaufruf nicht angelegt und vom Cron nicht vorab erzeugt.
+Fehlt ein Snapshot vollständig, startet der normale Projektaufruf bewusst **keinen** langen GSC-/GA4-Abruf. Das Dashboard zeigt den Vorbereitungszustand, während der alle zwölf Stunden laufende Cron den fehlenden Standardzeitraum `30d` erkennt und als Queue-Auftrag einplant. Dadurch bleibt die Seitenantwort kurz und externe API-Last entsteht ausschließlich in kontrollierten Hintergrundläufen. Bereits vorhandene Sonderzeiträume werden bei Nutzung nach ihrer TTL erneuert; ein noch nie gespeicherter Sonderzeitraum wird vom aktuellen Projektaufruf nicht angelegt und vom Cron nicht vorab erzeugt.
 
 ```mermaid
 flowchart LR
@@ -35,7 +35,7 @@ flowchart LR
 
 ### Zentraler Dispatcher
 
-Vercel ruft alle zehn Minuten `GET /api/cron/sync-project-data` auf. Der Endpunkt ist mit `CRON_SECRET` geschützt und verarbeitet drei Arten von Aufträgen:
+Vercel ruft `GET /api/cron/sync-project-data` alle zwölf Stunden um 00:00 und 12:00 UTC auf. Der Endpunkt ist mit `CRON_SECRET` geschützt und verarbeitet drei Arten von Aufträgen:
 
 | Auftrag | Aufgabe |
 | --- | --- |
@@ -70,19 +70,19 @@ Der normale Dashboard-Snapshot und die GSC-Historie verwenden dasselbe Berichtsf
 
 ### Aktualisierungsrhythmus
 
-Der Standardzeitraum `30d` wird automatisch als fällig markiert, sobald sein Snapshot 24 Stunden alt ist. Dieselbe zentrale Cache-Policy steuert sowohl die Anzeige als auch die Einplanung des Hintergrundauftrags:
+Der Standardzeitraum `30d` wird automatisch als fällig markiert, sobald sein Snapshot 48 Stunden alt ist. Dieselbe zentrale Cache-Policy steuert sowohl die Anzeige als auch die Einplanung des Hintergrundauftrags:
 
 | Zeitraum | Cache-Dauer |
 | --- | ---: |
-| 7 Tage | 24 Stunden |
-| 30 Tage | 24 Stunden |
+| 7 Tage | 48 Stunden |
+| 30 Tage | 48 Stunden |
 | 3 Monate | 48 Stunden |
 | 6 Monate | 72 Stunden |
 | 12, 18 und 24 Monate | 7 Tage |
 
 Nur der Standardzeitraum `30d` wird regelmäßig vorab synchronisiert und bei fehlendem Cache automatisch erzeugt. Andere Zeiträume werden entsprechend ihrer Cache-Dauer aktualisiert, sofern bereits ein Snapshot existiert. Ein noch nie gespeicherter Sonderzeitraum wird durch den normalen Projektaufruf derzeit nicht erzeugt; das ist eine dokumentierte Einschränkung der aktuellen Queue-Anbindung.
 
-Ein vorhandener, aber abgelaufener Snapshot wird beim Lesen sofort ausgeliefert und gleichzeitig zur Erneuerung eingereiht. Ein vollständig fehlender `30d`-Snapshot wird vom zentralen Cron spätestens im nächsten Zehn-Minuten-Zyklus erkannt. Der Projektaufruf selbst setzt für diesen Fall `enqueueIfMissing: false` und wartet nicht auf Google. Eine Änderung der internen Dashboard- oder Top-Queries-Datenversion markiert einen vorhandenen Snapshot ebenfalls als veraltet; fehlende reine Metadaten werden dagegen lokal ergänzt und lösen allein keinen API-Abruf aus.
+Ein vorhandener, aber abgelaufener Snapshot wird beim Lesen sofort ausgeliefert und gleichzeitig zur Erneuerung eingereiht. Ein vollständig fehlender `30d`-Snapshot wird vom zentralen Cron spätestens im nächsten Zwölf-Stunden-Zyklus erkannt. Der Projektaufruf selbst setzt für diesen Fall `enqueueIfMissing: false` und wartet nicht auf Google. Eine Änderung der internen Dashboard- oder Top-Queries-Datenversion markiert einen vorhandenen Snapshot ebenfalls als veraltet; fehlende reine Metadaten werden dagegen lokal ergänzt und lösen allein keinen API-Abruf aus. Da Fälligkeit und Dispatcher getrennt arbeiten, liegt die planmäßige Aktualisierung nach Ablauf der 48 Stunden im ungünstigsten Fall beim folgenden Dispatcher-Lauf.
 
 ### GSC-Historie
 
@@ -92,7 +92,7 @@ Neben dem Dashboard-Snapshot gibt es einen eigenen Historienlauf:
 - danach wird inkrementell ein überlappendes Sieben-Tage-Fenster aktualisiert;
 - der Zeitraum endet zwei Tage vor dem aktuellen Datum, weil GSC-Daten verzögert eintreffen können;
 - aktuelle und vorherige 30-Tage-Werte der gespeicherten Landingpages werden aktualisiert;
-- der nächste reguläre Lauf wird nach 20 Stunden geplant, bei einem Fehler nach sechs Stunden.
+- der nächste reguläre Lauf wird nach 48 Stunden geplant, bei einem Fehler weiterhin nach sechs Stunden.
 
 Die Historie liegt getrennt vom Dashboard-Snapshot in `gsc_daily_data`, `landingpages` und `project_data_sync_state`.
 
@@ -173,7 +173,7 @@ Der letzte bekannte Google-Indexierungsstatus bleibt erhalten, während eine neu
 
 ### Automatische Prüfung
 
-Der Dispatcher reserviert pro Indexierungsauftrag maximal 150 Kandidaten und gibt dem Auftrag höchstens etwa 90 Sekunden. Reicht eine Charge nicht aus, wird die Restmenge beim nächsten geeigneten 10-Minuten-Dispatcherlauf automatisch fortgesetzt. Der Benutzer muss nicht wiederholt auf **Jetzt prüfen** klicken.
+Der Dispatcher reserviert pro Indexierungsauftrag maximal 150 Kandidaten und gibt dem Auftrag höchstens etwa 90 Sekunden. Reicht eine Charge nicht aus, wird die Restmenge beim nächsten geeigneten 12-Stunden-Dispatcherlauf automatisch fortgesetzt. Der Benutzer muss nicht wiederholt auf **Jetzt prüfen** klicken.
 
 Die URL Inspection API wird zusätzlich durch `url_inspection_budget` koordiniert. DataPeak reserviert höchstens 1.800 Abfragen pro UTC-Tag und GSC-Property und lässt damit einen Sicherheitspuffer. Parallele Worker sperren den Budgetdatensatz transaktional, sodass sie das Tageslimit nicht gemeinsam überschreiten können. Nicht gestartete Reservierungen werden zurückgegeben. Ist das Budget ausgeschöpft, pausiert der Projektlauf für mindestens eine Stunde; die URLs bleiben unverändert und werden nicht fälschlich als fehlerhaft markiert.
 
@@ -237,9 +237,9 @@ Geladen werden insbesondere Name, Adresse, Kategorie, Bewertung, Anzahl der Bewe
 
 ### Cache-Verhalten
 
-- DataPeak liest zuerst `google_place_preview_cache`. Ein bis zu 24 Stunden alter Stand wird ohne neuen Google-Abruf verwendet.
-- Nach Ablauf der 24 Stunden wird das Profil beim nächsten Anzeigen erneut über Google Places geladen.
-- Die Browserantwort ist eine Stunde frisch und darf bis zu 24 Stunden im Hintergrund erneuert werden (`stale-while-revalidate`).
+- DataPeak liest zuerst `google_place_preview_cache`. Ein bis zu 48 Stunden alter Stand wird ohne neuen Google-Abruf verwendet.
+- Nach Ablauf der 48 Stunden wird das Profil beim nächsten Anzeigen erneut über Google Places geladen.
+- Die Browserantwort ist eine Stunde frisch und darf bis zu 48 Stunden im Hintergrund erneuert werden (`stale-while-revalidate`).
 - Profilfotos verwenden dieselbe 24-Stunden-Revalidierung.
 - Eine geänderte Place ID oder Standortsuche erzeugt beim nächsten Anzeigen einen neuen Cache-Schlüssel.
 - Scheitert der Google-Abruf, bleibt der letzte erfolgreiche Profilstand sichtbar und wird intern als veraltet gekennzeichnet. Ohne vorhandenen Profilstand liefert die API einen echten Fehlerstatus.
@@ -251,13 +251,13 @@ Die angezeigten Bewertungen sind reine Profildaten. Die GSC-Klicks, GA4-Nutzer u
 
 | Datenquelle | Automatischer Trigger | Typische Aktualität | Speicherort |
 | --- | --- | --- | --- |
-| GSC Dashboard | zentraler Dispatcher | Standardzeitraum etwa täglich | `google_data_cache` |
-| GSC Historie | zentraler Dispatcher | etwa alle 20 Stunden, mit GSC-Verzögerung | `gsc_daily_data`, `landingpages` |
-| GA4 Dashboard | gemeinsam mit Dashboard-Sync | Standardzeitraum etwa täglich | `google_data_cache` |
+| GSC Dashboard | zentraler Dispatcher | nach 48 Stunden fällig; Ausführung im nächsten 12-Stunden-Lauf | `google_data_cache` |
+| GSC Historie | zentraler Dispatcher | nach 48 Stunden fällig, mit GSC-Verzögerung | `gsc_daily_data`, `landingpages` |
+| GA4 Dashboard | gemeinsam mit Dashboard-Sync | nach 48 Stunden fällig; Ausführung im nächsten 12-Stunden-Lauf | `google_data_cache` |
 | Google Ads | gemeinsam mit Dashboard-Sync; Sheet bevorzugt, sonst GA4-Fallback | wie der gewählte Dashboard-Zeitraum | `google_data_cache` |
 | Sitemap | Indexierungsauftrag | bei vollständigem Lauf etwa alle 48 Stunden | `project_indexing_urls` |
 | URL Inspection | priorisierte Warteschlange | je URL 24 Stunden bis 30 Tage | `project_indexing_urls` |
-| Unternehmensprofil-Vorschau | Anzeigen des Local-SEO-Widgets | projektbezogener Snapshot bis 24 Stunden, danach Revalidierung | `google_place_preview_cache` und HTTP-Cache |
+| Unternehmensprofil-Vorschau | Anzeigen des Local-SEO-Widgets | projektbezogener Snapshot bis 48 Stunden, danach Revalidierung | `google_place_preview_cache` und HTTP-Cache |
 
 ## 8. Datenbankmigrationen
 

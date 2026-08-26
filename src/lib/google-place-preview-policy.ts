@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 
-export const GOOGLE_PLACE_PREVIEW_TTL_MS = 24 * 60 * 60 * 1000;
+export const GOOGLE_PLACE_PREVIEW_TTL_MS = 48 * 60 * 60 * 1000;
 
 export function createGooglePlaceLookupKey(placeId?: string | null, query?: string | null) {
   const normalized = [placeId?.trim() ?? '', query?.trim().toLocaleLowerCase('de-AT') ?? ''].join('|');

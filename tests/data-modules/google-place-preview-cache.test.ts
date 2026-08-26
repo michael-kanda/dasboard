@@ -15,7 +15,7 @@ test('Google Place lookup keys are stable and configuration-sensitive', () => {
   assert.notEqual(first, changed);
 });
 
-test('Google Place previews stay fresh for 24 hours', () => {
+test('Google Place previews stay fresh for 48 hours', () => {
   const now = Date.parse('2026-08-09T12:00:00.000Z');
   assert.equal(
     isGooglePlacePreviewFresh(new Date(now - GOOGLE_PLACE_PREVIEW_TTL_MS + 1), now),

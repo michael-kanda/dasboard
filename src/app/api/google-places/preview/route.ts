@@ -71,7 +71,7 @@ function normalizeTypeLabel(type?: string) {
 }
 
 const PREVIEW_CACHE_HEADERS = {
-  'Cache-Control': 'private, max-age=3600, stale-while-revalidate=86400',
+  'Cache-Control': 'private, max-age=3600, stale-while-revalidate=172800',
 };
 
 function normalizePlace(place: GooglePlace | null): GooglePlacePreviewPayload | null {

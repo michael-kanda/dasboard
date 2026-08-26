@@ -8,7 +8,7 @@
   "crons": [
     {
       "path": "/api/cron/sync-project-data",
-      "schedule": "*/10 * * * *"
+      "schedule": "0 */12 * * *"
     }
   ]
 }

@@ -1,6 +1,6 @@
 const CACHE_TTL_HOURS: Record<string, number> = {
-  '7d': 24,
-  '30d': 24,
+  '7d': 48,
+  '30d': 48,
   '3m': 48,
   '6m': 72,
   '12m': 168,
@@ -21,7 +21,7 @@ const RANGE_DAYS: Record<string, number> = {
 export const GSC_DATA_LAG_DAYS = 2;
 
 export function getDashboardCacheDurationHours(dateRange: string) {
-  return CACHE_TTL_HOURS[dateRange] ?? 24;
+  return CACHE_TTL_HOURS[dateRange] ?? 48;
 }
 
 export function getDateRangeDays(dateRange: string) {

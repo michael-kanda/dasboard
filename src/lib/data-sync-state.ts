@@ -35,13 +35,13 @@ export async function markDataSyncFinished(
       )
       VALUES (
         ${userId}::uuid, ${source}, 'ok', NOW(), NOW(),
-        NOW() + INTERVAL '20 hours', 0, NULL, NOW()
+        NOW() + INTERVAL '48 hours', 0, NULL, NOW()
       )
       ON CONFLICT (user_id, source)
       DO UPDATE SET
         status = 'ok',
         last_success_at = NOW(),
-        next_sync_at = NOW() + INTERVAL '20 hours',
+        next_sync_at = NOW() + INTERVAL '48 hours',
         consecutive_failures = 0,
         last_error = NULL,
         updated_at = NOW()
