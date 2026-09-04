@@ -15,6 +15,7 @@ import {
   withInfrastructureRetry,
 } from '@/lib/sync/retry';
 import { classifyGoogleApiError } from '@/lib/sync/google-api-error';
+import { pickNextProjectSyncJobType } from '@/lib/sync/dispatcher-policy';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300;
@@ -29,12 +30,6 @@ const JOB_TYPE_QUOTA: Record<ProjectSyncJob['jobType'], number> = {
   dashboard: 3,
   'gsc-history': 2,
 };
-const JOB_TYPE_RANK: Record<ProjectSyncJob['jobType'], number> = {
-  indexing: 0,
-  dashboard: 1,
-  'gsc-history': 2,
-};
-
 const JOB_TYPE_RESERVE_MS: Record<ProjectSyncJob['jobType'], number> = {
   indexing: 100_000,
   dashboard: 130_000,
@@ -123,13 +118,21 @@ export async function GET(request: NextRequest) {
       message: string;
     }> = [];
     const remainingQuota: Record<ProjectSyncJob['jobType'], number> = { ...JOB_TYPE_QUOTA };
+    const processedByType: Record<ProjectSyncJob['jobType'], number> = {
+      dashboard: 0,
+      'gsc-history': 0,
+      indexing: 0,
+    };
     const exhaustedTypes = new Set<ProjectSyncJob['jobType']>();
 
     const timeLeft = () => deadlineAt - Date.now();
     const fits = (type: ProjectSyncJob['jobType']) => JOB_TYPE_RESERVE_MS[type] <= timeLeft();
-    const pickNextType = () => (Object.keys(remainingQuota) as Array<ProjectSyncJob['jobType']>)
-      .filter((type) => remainingQuota[type] > 0 && !exhaustedTypes.has(type) && fits(type))
-      .sort((a, b) => remainingQuota[b] - remainingQuota[a] || JOB_TYPE_RANK[a] - JOB_TYPE_RANK[b])[0];
+    const pickNextType = () => pickNextProjectSyncJobType({
+      remainingQuota,
+      processedByType,
+      exhaustedTypes,
+      fits,
+    });
 
     const minReserve = Math.min(...Object.values(JOB_TYPE_RESERVE_MS));
     while (results.length < MAX_JOBS_PER_RUN && timeLeft() > minReserve) {
@@ -158,6 +161,7 @@ export async function GET(request: NextRequest) {
         break;
       }
       remainingQuota[job.jobType] = Math.max(0, remainingQuota[job.jobType] - 1);
+      processedByType[job.jobType] += 1;
       try {
         const outcome = await executeJob(job, deadlineAt);
         if (outcome.kind === 'defer') {

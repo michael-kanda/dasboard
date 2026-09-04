@@ -1,12 +1,12 @@
 import { sql } from '@vercel/postgres';
 import type { User } from '../schemas';
-import { TOP_QUERIES_DATA_VERSION, type ProjectDashboardData } from '../dashboard-shared';
+import type { ProjectDashboardData } from '../dashboard-shared';
 import { getDemoAnalyticsData } from '../demo-data';
 import { attachDashboardMetricMetadata } from '../metric-metadata';
 import { isDemoProject } from '../demo-project';
 import { enqueueProjectSyncJob } from './job-queue';
 import { isDashboardSnapshotStale } from './cache-policy';
-import { GOOGLE_ADS_SHEET_DATA_VERSION } from '../google-ads-sheet';
+import { isDashboardSnapshotCompatible } from './dashboard-snapshot-contract';
 
 export interface DashboardSnapshotResult {
   data: ProjectDashboardData | null;
@@ -15,7 +15,7 @@ export interface DashboardSnapshotResult {
   queued: boolean;
 }
 
-export const DASHBOARD_SNAPSHOT_VERSION = 3;
+export { DASHBOARD_SNAPSHOT_VERSION } from './dashboard-snapshot-contract';
 
 export { getDashboardCacheDurationHours } from './cache-policy';
 
@@ -51,15 +51,8 @@ export async function readDashboardSnapshot(
     : null;
   const cachedData = row?.data as ProjectDashboardData | undefined;
   const configuredSheetId = user.google_ads_sheet_id?.trim() || null;
-  const adsSheetMismatch = Boolean(cachedData && configuredSheetId) && (
-    cachedData?.googleAdsData?.configuredSheetId !== configuredSheetId
-    || cachedData?.googleAdsData?.sheetDataVersion !== GOOGLE_ADS_SHEET_DATA_VERSION
-  );
-  const versionMismatch = Boolean(cachedData) && (
-    cachedData?.snapshotVersion !== DASHBOARD_SNAPSHOT_VERSION
-    || cachedData?.topQueriesDataVersion !== TOP_QUERIES_DATA_VERSION
-    || adsSheetMismatch
-  );
+  const versionMismatch = Boolean(cachedData)
+    && !isDashboardSnapshotCompatible(cachedData, configuredSheetId);
   const stale = versionMismatch || isDashboardSnapshotStale(dateRange, lastFetchedAt);
   let queued = false;
 
@@ -89,7 +82,7 @@ export async function readDashboardSnapshot(
     : attachDashboardMetricMetadata(cachedData, dateRange, lastFetchedAt ?? new Date().toISOString());
 
   return {
-    data: { ...data, fromCache: true },
+    data: { ...data, fromCache: true, cacheStale: stale },
     lastFetchedAt,
     stale,
     queued,

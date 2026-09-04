@@ -244,6 +244,7 @@ export interface ProjectDashboardData {
   snapshotVersion?: number;
   metricMetadata?: Record<string, MetricMetadata>;
   fromCache?: boolean;
+  cacheStale?: boolean;
 }
 
 export interface LocalSeoLocationConfig {

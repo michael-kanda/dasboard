@@ -7,9 +7,11 @@ import DashboardLoadingOverlay from '@/components/dashboard/DashboardLoadingOver
 export default function DashboardSyncPending({
   projectId,
   dateRange,
+  backgroundOnly = false,
 }: {
   projectId: string;
   dateRange: string;
+  backgroundOnly?: boolean;
 }) {
   const router = useRouter();
 
@@ -34,10 +36,12 @@ export default function DashboardSyncPending({
           router.refresh();
           return;
         }
-        retryTimer = window.setTimeout(synchronize, errorRetryMs);
-        errorRetryMs = Math.min(errorRetryMs * 2, 60_000);
+        if (!backgroundOnly) {
+          retryTimer = window.setTimeout(synchronize, errorRetryMs);
+          errorRetryMs = Math.min(errorRetryMs * 2, 60_000);
+        }
       } catch {
-        if (!cancelled) {
+        if (!cancelled && !backgroundOnly) {
           retryTimer = window.setTimeout(synchronize, errorRetryMs);
           errorRetryMs = Math.min(errorRetryMs * 2, 60_000);
         }
@@ -49,7 +53,7 @@ export default function DashboardSyncPending({
       cancelled = true;
       if (retryTimer) window.clearTimeout(retryTimer);
     };
-  }, [dateRange, projectId, router]);
+  }, [backgroundOnly, dateRange, projectId, router]);
 
-  return <DashboardLoadingOverlay />;
+  return backgroundOnly ? null : <DashboardLoadingOverlay />;
 }

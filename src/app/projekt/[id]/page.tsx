@@ -151,10 +151,11 @@ export default async function ProjectPage({
         dataMaxEnabled={isDataMaxEnabled}
         indexingStatus={indexingStatus}
       />
-      {!dashboardData && (
+      {(!dashboardData || dashboardData.cacheStale) && (
         <DashboardSyncPending
           projectId={projectUser.id}
           dateRange={dateRange}
+          backgroundOnly={Boolean(dashboardData)}
         />
       )}
     </>

@@ -1,6 +1,6 @@
 # Datenaktualisierung im DataPeak-Dashboard
 
-Stand: 26. August 2026
+Stand: 4. September 2026
 
 Dieses Dokument beschreibt, wie DataPeak die Dashboard-Daten aus Google Search Console (GSC), Google Analytics 4 (GA4), Google Ads, Sitemaps und Google-Unternehmensprofilen aktualisiert. Es trennt dabei bewusst zwischen dauerhaft gespeicherten Dashboard-Snapshots, der URL-Indexierungsprüfung und den bei Bedarf geladenen, ebenfalls gespeicherten Profilvorschauen.
 
@@ -10,24 +10,26 @@ Ein Projektaufruf soll keine Kette externer Google-API-Anfragen auslösen. Desha
 
 1. DataPeak liest zuerst den letzten gespeicherten Snapshot aus Neon.
 2. Ein vorhandener Snapshot wird sofort angezeigt, auch wenn er bereits zur Aktualisierung fällig ist.
-3. Eine fällige Aktualisierung mit vorhandenem Snapshot wird beim Lesen als Hintergrundauftrag in `project_sync_jobs` eingereiht.
-4. Der zentrale Dispatcher verarbeitet diese Aufträge mit begrenzter Laufzeit und begrenzter Parallelität.
+3. Eine fällige Aktualisierung mit vorhandenem Snapshot wird beim Öffnen unsichtbar über `/api/projects/[id]/dashboard-sync` gestartet und zugleich als wiederverwendbarer Auftrag in `project_sync_jobs` abgesichert.
+4. Falls der direkte Hintergrundabruf nicht abgeschlossen werden kann, übernimmt der zentrale Dispatcher den Auftrag mit begrenzter Laufzeit und begrenzter Parallelität.
 5. Erst nach einem verwertbaren Abruf wird der alte Snapshot ersetzt.
 6. Bei Timeout- oder Quotenfehlern bleibt der letzte funktionierende Snapshot erhalten. Ein permanenter Berechtigungsfehler darf einen klar als teilweise abgedeckt markierten Snapshot der weiterhin funktionierenden Quelle nicht einfrieren.
 
-Fehlt ein Snapshot vollständig, startet der normale Projektaufruf bewusst **keinen** langen GSC-/GA4-Abruf. Das Dashboard zeigt den Vorbereitungszustand, während der alle zwölf Stunden laufende Cron den fehlenden Standardzeitraum `30d` erkennt und als Queue-Auftrag einplant. Dadurch bleibt die Seitenantwort kurz und externe API-Last entsteht ausschließlich in kontrollierten Hintergrundläufen. Bereits vorhandene Sonderzeiträume werden bei Nutzung nach ihrer TTL erneuert; ein noch nie gespeicherter Sonderzeitraum wird vom aktuellen Projektaufruf nicht angelegt und vom Cron nicht vorab erzeugt.
+Fehlt ein Snapshot vollständig, startet die Serverantwort bewusst **keinen** langen GSC-/GA4-Abruf. Das Dashboard zeigt die einheitliche Lade-Lightbox; anschließend übernimmt der Browser-Endpunkt den kontrollierten Erstabruf. Der alle zwölf Stunden laufende Cron bleibt als Rückfall bestehen und erkennt zusätzlich fehlende `30d`-Snapshots. Bereits vorhandene Sonderzeiträume werden bei Nutzung nach ihrer TTL erneuert; ein noch nie gespeicherter Sonderzeitraum wird erst beim ausdrücklichen Öffnen dieses Zeitraums angelegt.
 
 ```mermaid
 flowchart LR
     A[Projekt wird geöffnet] --> B{Snapshot vorhanden?}
     B -- Ja --> C[Snapshot sofort anzeigen]
     C --> D{Snapshot abgelaufen?}
-    D -- Ja --> E[Hintergrundauftrag einreihen]
+    D -- Ja --> E[Unsichtbar direkt aktualisieren und Queue absichern]
     D -- Nein --> F[Keine externe API-Anfrage]
-    B -- Nein --> G[Vorbereitungszustand anzeigen; Cron plant 30d]
-    E --> H[Zentraler Dispatcher]
-    G --> H
-    H --> I[GSC, GA4 und optional Ads abrufen]
+    B -- Nein --> G[Lade-Lightbox anzeigen und Erstabruf starten]
+    E --> I[GSC, GA4 und optional Ads abrufen]
+    G --> I
+    E -. Fehler oder Abbruch .-> H[Zentraler Dispatcher als Rückfall]
+    G -. Fehler oder Abbruch .-> H
+    H --> I
     I --> J{Kritische Quelle erfolgreich?}
     J -- Ja --> K[Neuen Snapshot speichern]
     J -- Nein --> L[Alten Snapshot behalten]
@@ -43,7 +45,7 @@ Vercel ruft `GET /api/cron/sync-project-data` alle zwölf Stunden um 00:00 und 1
 | `gsc-history` | Historische GSC-Tageswerte und gespeicherte Landingpage-Werte aktualisieren |
 | `indexing` | Sitemap einlesen und ausgewählte URLs mit der URL Inspection API prüfen |
 
-Pro Cronlauf werden maximal neun Aufträge innerhalb eines Zeitbudgets von 235 Sekunden verarbeitet: vier Indexierungs-, drei Dashboard- und zwei GSC-Historienaufträge. Vor jedem Start prüft der Dispatcher, ob das verbleibende Zeitbudget für den jeweiligen Auftragstyp reicht. Die Auftragstypen rotieren, damit eine große Indexierungswarteschlange die normalen Dashboard-Aktualisierungen nicht verdrängt.
+Pro Cronlauf werden maximal neun Aufträge innerhalb eines Zeitbudgets von 235 Sekunden verarbeitet: vier Indexierungs-, drei Dashboard- und zwei GSC-Historienaufträge. Vor jedem Start prüft der Dispatcher, ob das verbleibende Zeitbudget für den jeweiligen Auftragstyp reicht. Die faire Typauswahl beginnt mit Dashboard und gibt anschließend GSC-Historie und Indexierung jeweils einen Zug, bevor ein Typ wiederholt wird. So kann eine große Indexierungswarteschlange die normalen Dashboard-Aktualisierungen nicht mehr verdrängen.
 
 Die Queue-Lease eines reservierten Jobs beträgt 240 Sekunden. Zusätzlich verhindert eine 90 Sekunden lange, alle 25 Sekunden per Heartbeat verlängerte Quellen-Lease, dass mehrere Prozesse gleichzeitig dieselben Google-Daten abrufen; Dashboard-Leases sind nach Zeitraum getrennt, etwa `dashboard:30d`. Verschiebungen verbrauchen keinen Ausführungsversuch, werden aber separat gezählt und nach zwölf Wiederholungen beendet. Kurzlebige Neon-Verbindungsfehler bei Queue-Operationen werden bis zu dreimal direkt wiederholt; bleibt der Fehler bestehen, antwortet der Dispatcher mit HTTP 503.
 
@@ -80,9 +82,9 @@ Der Standardzeitraum `30d` wird automatisch als fällig markiert, sobald sein Sn
 | 6 Monate | 72 Stunden |
 | 12, 18 und 24 Monate | 7 Tage |
 
-Nur der Standardzeitraum `30d` wird regelmäßig vorab synchronisiert und bei fehlendem Cache automatisch erzeugt. Andere Zeiträume werden entsprechend ihrer Cache-Dauer aktualisiert, sofern bereits ein Snapshot existiert. Ein noch nie gespeicherter Sonderzeitraum wird durch den normalen Projektaufruf derzeit nicht erzeugt; das ist eine dokumentierte Einschränkung der aktuellen Queue-Anbindung.
+Nur der Standardzeitraum `30d` wird regelmäßig vorab synchronisiert und bei fehlendem Cache automatisch vom Dispatcher erzeugt. Andere Zeiträume werden beim ersten Öffnen über den Browser-Endpunkt erzeugt und anschließend entsprechend ihrer Cache-Dauer aktualisiert.
 
-Ein vorhandener, aber abgelaufener Snapshot wird beim Lesen sofort ausgeliefert und gleichzeitig zur Erneuerung eingereiht. Ein vollständig fehlender `30d`-Snapshot wird vom zentralen Cron spätestens im nächsten Zwölf-Stunden-Zyklus erkannt. Der Projektaufruf selbst setzt für diesen Fall `enqueueIfMissing: false` und wartet nicht auf Google. Eine Änderung der internen Dashboard- oder Top-Queries-Datenversion markiert einen vorhandenen Snapshot ebenfalls als veraltet; fehlende reine Metadaten werden dagegen lokal ergänzt und lösen allein keinen API-Abruf aus. Da Fälligkeit und Dispatcher getrennt arbeiten, liegt die planmäßige Aktualisierung nach Ablauf der 48 Stunden im ungünstigsten Fall beim folgenden Dispatcher-Lauf.
+Ein vorhandener, aber abgelaufener Snapshot wird sofort ausgeliefert und im Browser unsichtbar erneuert. Die API reserviert dafür denselben Queue-Auftrag, den sonst der Cron verarbeiten würde; Quellen-Lease und Queue-Lease verhindern Doppelabrufe. Bei einem transienten Fehler bleibt der alte Snapshot sichtbar und der Auftrag für den Dispatcher erhalten. Ein vollständig fehlender Snapshot verwendet denselben Ablauf mit sichtbarer Lade-Lightbox. Ein zentraler Snapshot-Vertrag stellt sicher, dass Schreiben und Lesen dieselbe Versionsnummer verwenden. Änderungen der Dashboard-, Top-Queries- oder Ads-Sheet-Version markieren einen vorhandenen Snapshot einmalig als veraltet; fehlende reine Metadaten lösen allein keinen API-Abruf aus.
 
 ### GSC-Historie
 
@@ -144,7 +146,9 @@ Google Ads wird innerhalb desselben `dashboard`-Auftrags wie GSC und GA4 geladen
 
 Der Sheet-Weg hat Vorrang und liefert Kampagnen, Anzeigengruppen, Anzeigen, Suchanfragen, Landingpages sowie aggregierte Kennzahlen, soweit die entsprechenden Tabellenblätter und Datumszeilen vorhanden sind. Ein konfiguriertes, aber leeres oder nicht lesbares Sheet wird nicht stillschweigend durch GA4 ersetzt; das Widget erhält stattdessen einen klaren Ads-Fehler beziehungsweise einen leeren konfigurierten Stand. So bleibt sichtbar, dass die vorgesehene Datenquelle nicht funktioniert.
 
-Google Ads ist eine optionale Detailquelle. Ein Ads-Fehler wird in `apiErrors.googleAds` dokumentiert, blockiert aber keinen ansonsten verwertbaren GSC-/GA4-Snapshot. Ads-Daten verwenden dasselbe Berichtsfenster und dieselbe Cache-Dauer wie der jeweilige Dashboard-Zeitraum. Es gibt keinen separaten Ads-Cron und keinen Google-Ads-Abruf beim normalen Seitenrendering.
+Google Ads ist eine optionale Detailquelle. Ein Ads-Fehler wird in `apiErrors.googleAds` dokumentiert, blockiert aber keinen ansonsten verwertbaren GSC-/GA4-Snapshot. Ads-Daten verwenden dasselbe Berichtsfenster und dieselbe Cache-Dauer wie der jeweilige Dashboard-Zeitraum. Es gibt keinen separaten Ads-Cron und keinen Google-Ads-Abruf innerhalb des Server-Renderings; bei einem fälligen Snapshot startet danach der gemeinsame unsichtbare Hintergrundabruf.
+
+Der Sheet-Import speichert zusätzlich den tatsächlich angeforderten Berichtszeitraum und das jüngste in den Kampagnenzeilen vorhandene Datum. Das Widget zeigt deshalb `Sheet-Daten bis ...`, wenn der Export hinter dem Berichtsende liegt. Eine im `_meta`-Tab eingetragene Ausführungszeit ersetzt nicht das Datum der letzten echten Datenzeile.
 
 ## 5. Sitemap und Indexierungsstatus
 

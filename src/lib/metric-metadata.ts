@@ -1,7 +1,8 @@
 import type { ProjectDashboardData } from './dashboard-shared';
 import type { ProjectIndexingStatus } from './indexing-status';
+import { DASHBOARD_SNAPSHOT_VERSION } from './sync/dashboard-snapshot-contract.ts';
 
-export const DASHBOARD_SNAPSHOT_VERSION = 1;
+export { DASHBOARD_SNAPSHOT_VERSION } from './sync/dashboard-snapshot-contract.ts';
 
 export type MetricSource = 'gsc' | 'ga4' | 'google-ads' | 'local-seo' | 'indexing';
 export type MetricUnit = 'count' | 'percent' | 'seconds' | 'currency';
