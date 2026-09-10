@@ -67,7 +67,7 @@ export async function readDashboardSnapshot(
         dateRange,
         payload: { dateRange },
         priority: options.priority ?? (row ? 20 : 100),
-        restartFailed: versionMismatch,
+        restartFailed: false,
         preservePending: true,
       });
       queued = true;

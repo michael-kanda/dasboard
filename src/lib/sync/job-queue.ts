@@ -245,10 +245,39 @@ export async function seedDueProjectSyncJobs() {
   };
 }
 
+export async function getQueueSourceStates() {
+  const { rows } = await sql<{
+    job_type: ProjectSyncJobType;
+    oldest_due_at: string | null;
+    last_started_at: string | null;
+    due_count: number;
+  }>`
+    SELECT job_type,
+      MIN(CASE WHEN status = 'running' THEN lease_until ELSE run_after END) FILTER (
+        WHERE attempts < max_attempts AND defer_count < ${MAX_JOB_DEFERRALS}
+          AND ((status = 'pending' AND run_after <= NOW())
+            OR (status = 'running' AND lease_until <= NOW()))
+      )::text AS oldest_due_at,
+      MAX(started_at)::text AS last_started_at,
+      COUNT(*) FILTER (
+        WHERE attempts < max_attempts AND defer_count < ${MAX_JOB_DEFERRALS}
+          AND ((status = 'pending' AND run_after <= NOW())
+            OR (status = 'running' AND lease_until <= NOW()))
+      )::int AS due_count
+    FROM project_sync_jobs
+    GROUP BY job_type
+  `;
+  return Object.fromEntries(rows.map((row) => [row.job_type, {
+    oldestDueAt: row.oldest_due_at,
+    lastStartedAt: row.last_started_at,
+    dueCount: row.due_count,
+  }]));
+}
+
 export async function claimNextProjectSyncJob(
-  preferredType?: ProjectSyncJobType,
+  preferredType: ProjectSyncJobType,
 ): Promise<ProjectSyncJob | null> {
-  const query = preferredType ? sql`
+  const { rows } = await sql`
     WITH candidate AS (
       SELECT id
       FROM project_sync_jobs
@@ -259,7 +288,7 @@ export async function claimNextProjectSyncJob(
           (status = 'pending' AND run_after <= NOW())
           OR (status = 'running' AND lease_until <= NOW())
         )
-      ORDER BY priority DESC, run_after ASC, updated_at ASC
+      ORDER BY run_after ASC, priority DESC, updated_at ASC, id ASC
       FOR UPDATE SKIP LOCKED
       LIMIT 1
     )
@@ -272,32 +301,7 @@ export async function claimNextProjectSyncJob(
     FROM candidate
     WHERE job.id = candidate.id
     RETURNING job.*
-  ` : sql`
-    WITH candidate AS (
-      SELECT id
-      FROM project_sync_jobs
-      WHERE attempts < max_attempts
-        AND defer_count < ${MAX_JOB_DEFERRALS}
-        AND (
-          (status = 'pending' AND run_after <= NOW())
-          OR (status = 'running' AND lease_until <= NOW())
-        )
-      ORDER BY priority DESC, run_after ASC, updated_at ASC
-      FOR UPDATE SKIP LOCKED
-      LIMIT 1
-    )
-    UPDATE project_sync_jobs job
-    SET
-      status = 'running',
-      attempts = job.attempts + 1,
-      started_at = NOW(),
-      lease_until = NOW() + (${JOB_LEASE_SECONDS} * INTERVAL '1 second'),
-      updated_at = NOW()
-    FROM candidate
-    WHERE job.id = candidate.id
-    RETURNING job.*
   `;
-  const { rows } = await query;
   return rows[0] ? mapJob(rows[0]) : null;
 }
 

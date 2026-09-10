@@ -20,6 +20,27 @@ export const maxDuration = 300;
 
 const DATE_RANGES = new Set(['7d', '30d', '3m', '6m', '12m', '18m', '24m']);
 
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const session = await auth();
+  if (!session?.user) return NextResponse.json({}, { status: 401 });
+  if (session.user.id !== id && !['ADMIN', 'SUPERADMIN'].includes(session.user.role)) {
+    return NextResponse.json({}, { status: 403 });
+  }
+  const dateRange = request.nextUrl.searchParams.get('dateRange') ?? '';
+  if (!DATE_RANGES.has(dateRange)) return NextResponse.json({}, { status: 400 });
+  const { rows } = await sql`
+    SELECT status, run_after, lease_until FROM project_sync_jobs
+    WHERE user_id = ${id}::uuid AND job_type = 'dashboard' AND date_range = ${dateRange}
+  `;
+  const job = rows[0];
+  const running = job?.status === 'running' && new Date(job.lease_until).getTime() > Date.now();
+  return NextResponse.json({
+    status: running ? 'running' : job?.status === 'completed' ? 'ready' : 'scheduled',
+    nextAttemptAt: job?.run_after ?? null,
+  }, { headers: { 'Cache-Control': 'no-store' } });
+}
+
 function classifyJobFailure(error: unknown): ProjectSyncFailureKind {
   if (error instanceof DashboardSourceError) return error.kind;
   return classifyGoogleApiError(error).kind === 'permanent' ? 'permanent' : 'transient';
@@ -85,7 +106,7 @@ export async function POST(
     dateRange,
     payload: { dateRange },
     priority: 100,
-    restartFailed: true,
+    restartFailed: false,
     preservePending: true,
   });
   const job = await claimProjectSyncJob(id, 'dashboard', dateRange);
@@ -101,7 +122,7 @@ export async function POST(
   }
 
   try {
-    const result = await trySyncDashboardProjectSnapshot(id, dateRange);
+    const result = await trySyncDashboardProjectSnapshot(id, dateRange, { deadlineAt: Date.now() + 220_000 });
     if (!result.acquired) {
       await deferProjectSyncJob(job, 30, 'Dashboard-Quelle wird bereits aktualisiert');
       return NextResponse.json({

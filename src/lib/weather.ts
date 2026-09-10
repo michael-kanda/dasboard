@@ -1,4 +1,5 @@
 // src/lib/weather.ts
+import { requestBudgetOptions } from './sync/request-budget';
 
 // =============================================
 // TLD → Koordinaten Mapping (erweiterbar)
@@ -112,7 +113,8 @@ export async function fetchWeatherData(
     url.searchParams.set('daily', 'weather_code,temperature_2m_max,temperature_2m_min');
     url.searchParams.set('timezone', 'Europe/Berlin');
 
-    const response = await fetch(url.toString(), { 
+    const response = await fetch(url.toString(), {
+      ...requestBudgetOptions(),
       next: { revalidate: 86400 } // 24h Cache auf Fetch-Ebene
     });
 

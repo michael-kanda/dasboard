@@ -1,5 +1,6 @@
 // src/lib/bing-api.ts
 import axios from 'axios';
+import { requestBudgetOptions } from './sync/request-budget';
 
 const BING_API_BASE = 'https://ssl.bing.com/webmaster/api.svc/json';
 
@@ -29,6 +30,7 @@ export async function getBingData(
     console.log('[BING] Fetching data for:', cleanUrl);
 
     const response = await axios.get(`${BING_API_BASE}/GetQueryStats`, {
+      ...requestBudgetOptions(),
       params: {
         apikey: apiKey,
         siteUrl: cleanUrl,

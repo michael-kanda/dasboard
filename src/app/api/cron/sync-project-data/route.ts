@@ -7,6 +7,7 @@ import {
   deferProjectSyncJob,
   finishProjectSyncJob,
   seedDueProjectSyncJobs,
+  getQueueSourceStates,
   type ProjectSyncFailureKind,
   type ProjectSyncJob,
 } from '@/lib/sync/job-queue';
@@ -109,6 +110,8 @@ export async function GET(request: NextRequest) {
   const deadlineAt = startedAt + DISPATCH_DEADLINE_MS;
   try {
     const seeded = await retryDatabaseOperation('Jobs einplanen', seedDueProjectSyncJobs);
+    const sourceStates = await retryDatabaseOperation('Queue-Zustand lesen', getQueueSourceStates);
+    const jobTimings: Array<{ type: string; jobId: string; durationMs: number }> = [];
     const results: Array<{
       jobId: string;
       type: string;
@@ -132,6 +135,7 @@ export async function GET(request: NextRequest) {
       processedByType,
       exhaustedTypes,
       fits,
+      sourceStates,
     });
 
     const minReserve = Math.min(...Object.values(JOB_TYPE_RESERVE_MS));
@@ -148,10 +152,8 @@ export async function GET(request: NextRequest) {
         exhaustedTypes.add(preferredType);
         if (pickNextType()) continue;
       }
-      const job = preferredJob ?? await retryDatabaseOperation(
-        'Nächsten Job reservieren',
-        () => claimNextProjectSyncJob(),
-      );
+      // Never claim a type that the remaining runtime cannot accommodate.
+      const job = preferredJob;
       if (!job) break;
       if (!fits(job.jobType)) {
         await retryDatabaseOperation(
@@ -162,6 +164,7 @@ export async function GET(request: NextRequest) {
       }
       remainingQuota[job.jobType] = Math.max(0, remainingQuota[job.jobType] - 1);
       processedByType[job.jobType] += 1;
+      const jobStartedAt = Date.now();
       try {
         const outcome = await executeJob(job, deadlineAt);
         if (outcome.kind === 'defer') {
@@ -207,9 +210,13 @@ export async function GET(request: NextRequest) {
           failureKind,
           message,
         });
+      } finally {
+        jobTimings.push({ type: job.jobType, jobId: job.id, durationMs: Date.now() - jobStartedAt });
       }
     }
 
+    const queueAfter = await retryDatabaseOperation('Queue-Rueckstau lesen', getQueueSourceStates);
+    console.info('[Sync Dispatcher] Kapazitaet', JSON.stringify({ sourceStates, queueAfter, jobTimings }));
     const failures = results.filter((result) => !result.success);
     const transientFailures = failures.filter((result) => result.failureKind !== 'permanent');
     const permanentFailures = failures.length - transientFailures.length;
@@ -223,6 +230,9 @@ export async function GET(request: NextRequest) {
       failedTransient: transientFailures.length,
       failedPermanent: permanentFailures,
       durationSeconds: Math.round((Date.now() - startedAt) / 100) / 10,
+      queueBefore: sourceStates,
+      queueAfter,
+      jobTimings,
       results,
     }, {
       status: transientFailures.length > 0 ? 500 : 200,

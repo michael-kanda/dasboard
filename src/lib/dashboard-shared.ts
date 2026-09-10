@@ -96,6 +96,7 @@ export interface GoogleAdsData {
   reportStartDate?: string;
   reportEndDate?: string;
   latestDataDate?: string;
+  fetchedAt?: string;
   conversionFallbackUsed?: boolean;
 }
 
@@ -199,6 +200,7 @@ export interface PromptTrackingResult {
 export const TOP_QUERIES_DATA_VERSION = 1;
 
 export interface ProjectDashboardData {
+  reportingPeriod?: { from: string; to: string };
   kpis?: {
     clicks?: KpiDatum;
     impressions?: KpiDatum;

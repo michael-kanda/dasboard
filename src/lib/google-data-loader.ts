@@ -56,6 +56,7 @@ import { getReportingWindow } from '@/lib/sync/cache-policy';
 import { classifyGoogleApiError } from '@/lib/sync/google-api-error';
 import { isDemoProject } from '@/lib/demo-project';
 import { GOOGLE_ADS_SHEET_DATA_VERSION } from '@/lib/google-ads-sheet';
+import { requestBudgetOptions, withRequestBudget } from './sync/request-budget';
 
 function getShortErrorMessage(error: unknown): string {
   const err = error as any;
@@ -397,6 +398,17 @@ export async function getOrFetchGoogleData(
   forceRefresh = false,
   options: { enqueueIfMissing?: boolean; deadlineAt?: number } = {},
 ): Promise<ProjectDashboardData | null> {
+  if (!forceRefresh) return loadGoogleData(user, dateRange, false, options);
+  const deadline = Math.min(options.deadlineAt ?? Infinity, Date.now() + 220_000) - 10_000;
+  return withRequestBudget(deadline, () => loadGoogleData(user, dateRange, true, options));
+}
+
+async function loadGoogleData(
+  user: User,
+  dateRange: string,
+  forceRefresh = false,
+  options: { enqueueIfMissing?: boolean; deadlineAt?: number } = {},
+): Promise<ProjectDashboardData | null> {
   if (!user.id) return null;
   const userId = user.id;
 
@@ -654,7 +666,7 @@ export async function getOrFetchGoogleData(
 
       if (!user.google_ads_sheet_id) {
         try { googleAdsData = await getGoogleAdsReport(propertyId, startDateStr, endDateStr); }
-        catch (e) { console.warn('[Google Ads] Keine GA4-Ads-Daten verfügbar (ignoriert):', e); }
+        catch (e) { apiErrors.googleAds = getShortErrorMessage(e); }
       }
     } catch (e: any) {
       const message = getShortErrorMessage(e);
@@ -674,6 +686,23 @@ export async function getOrFetchGoogleData(
     }
   }
 
+  if (apiErrors.googleAds) {
+    const { rows } = await sql`
+      SELECT data->'googleAdsData' AS ads, last_fetched FROM google_data_cache
+      WHERE user_id = ${userId}::uuid AND date_range = ${dateRange} LIMIT 1
+    `;
+    const previous = rows[0]?.ads as GoogleAdsData | undefined;
+    const sameSource = user.google_ads_sheet_id
+      ? previous?.source === 'sheet' && previous.configuredSheetId === user.google_ads_sheet_id.trim()
+      : previous && previous.source !== 'sheet';
+    googleAdsData = previous && sameSource
+      ? { ...previous, fetchedAt: previous.fetchedAt ?? new Date(rows[0].last_fetched).toISOString() }
+      : undefined;
+  } else if (googleAdsData) {
+    googleAdsData = { ...googleAdsData, reportStartDate: startDateStr, reportEndDate: endDateStr,
+      fetchedAt: googleAdsData.fetchedAt ?? new Date().toISOString() };
+  }
+
   if (user.gsc_site_url) {
     try { bingData = await getBingData(user.gsc_site_url); }
     catch (e: any) { console.warn('[Bing] Fetch fehlgeschlagen:', e); apiErrors.bing = e.message || 'Bing Fehler'; }
@@ -689,6 +718,7 @@ export async function getOrFetchGoogleData(
     ? (aiTraffic.totalSessions / currentData.sessions.total) * 100 : 0;
 
   const freshData: ProjectDashboardData = {
+    reportingPeriod: { from: startDateStr, to: endDateStr },
     kpis: {
       clicks: { value: currentData.clicks.total, change: calculateChange(currentData.clicks.total, prevData.clicks.total) },
       impressions: { value: currentData.impressions.total, change: calculateChange(currentData.impressions.total, prevData.impressions.total) },
@@ -746,6 +776,7 @@ export async function getOrFetchGoogleData(
   const hasCriticalErrors = blockingSources.length > 0;
 
   if (!hasCriticalErrors) {
+    requestBudgetOptions();
     const client = await sql.connect();
     try {
       await client.query('BEGIN');

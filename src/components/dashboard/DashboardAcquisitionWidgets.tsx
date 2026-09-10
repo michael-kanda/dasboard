@@ -70,6 +70,7 @@ export default function DashboardAcquisitionWidgets({
         <div id="section-google-ads" className="mt-8 scroll-mt-20 transition-all duration-300">
           <GoogleAdsWidget
             data={model.modules.googleAds.data.report}
+            error={model.modules.googleAds.meta.issues[0]?.message}
             isLoading={isLoading}
             dateRange={dateRange}
           />

@@ -1,6 +1,6 @@
 # Datenaktualisierung im DataPeak-Dashboard
 
-Stand: 4. September 2026
+Stand: 10. September 2026
 
 Dieses Dokument beschreibt, wie DataPeak die Dashboard-Daten aus Google Search Console (GSC), Google Analytics 4 (GA4), Google Ads, Sitemaps und Google-Unternehmensprofilen aktualisiert. Es trennt dabei bewusst zwischen dauerhaft gespeicherten Dashboard-Snapshots, der URL-Indexierungsprüfung und den bei Bedarf geladenen, ebenfalls gespeicherten Profilvorschauen.
 
@@ -35,6 +35,12 @@ flowchart LR
     J -- Nein --> L[Alten Snapshot behalten]
 ```
 
+### Begrenzte Statusabfragen und Laufzeit
+
+Der Browser startet einen Auftrag einmal per POST. Nach HTTP 202 folgen ausschließlich lesende GET-Statusabfragen, höchstens achtmal mit Abständen von 10, 20, 40 und dann 60 Sekunden. In inaktiven Tabs pausieren diese Abfragen. Bei vorgemerkter Wiederholung oder Ablauf des Limits endet das Polling; bei fehlendem Snapshot zeigt die vorhandene Lightbox einen Wartezustand ohne endlosen Fortschrittsbalken. Erneutes Öffnen setzt fehlgeschlagene Jobs nicht zurück. Ihr regulärer Cooldown bleibt Sache des Dispatchers.
+
+Der Datenloader begrenzt Abrufe auf die frühere Grenze aus Dispatcher-Deadline und 220 Sekunden, mit zehn Sekunden Reserve für Abschlussarbeiten. Ein auf den Lauf begrenztes AbortSignal wird an Google-, Bing- und Wetteranfragen weitergegeben. Nach Ablauf werden neue Quellenabrufe und das Schreiben des Dashboard-Snapshots verhindert. Kennzahlen verwenden das beim Abruf gespeicherte reportingPeriod; bei erhaltenen Ads-Berichten gelten deren ursprüngliche Datumsgrenzen und Abrufzeitpunkte.
+
 ### Zentraler Dispatcher
 
 Vercel ruft `GET /api/cron/sync-project-data` alle zwölf Stunden um 00:00 und 12:00 UTC auf. Der Endpunkt ist mit `CRON_SECRET` geschützt und verarbeitet drei Arten von Aufträgen:
@@ -45,7 +51,11 @@ Vercel ruft `GET /api/cron/sync-project-data` alle zwölf Stunden um 00:00 und 1
 | `gsc-history` | Historische GSC-Tageswerte und gespeicherte Landingpage-Werte aktualisieren |
 | `indexing` | Sitemap einlesen und ausgewählte URLs mit der URL Inspection API prüfen |
 
-Pro Cronlauf werden maximal neun Aufträge innerhalb eines Zeitbudgets von 235 Sekunden verarbeitet: vier Indexierungs-, drei Dashboard- und zwei GSC-Historienaufträge. Vor jedem Start prüft der Dispatcher, ob das verbleibende Zeitbudget für den jeweiligen Auftragstyp reicht. Die faire Typauswahl beginnt mit Dashboard und gibt anschließend GSC-Historie und Indexierung jeweils einen Zug, bevor ein Typ wiederholt wird. So kann eine große Indexierungswarteschlange die normalen Dashboard-Aktualisierungen nicht mehr verdrängen.
+Pro Cronlauf werden maximal neun Aufträge innerhalb eines Zeitbudgets von 235 Sekunden verarbeitet: vier Indexierungs-, drei Dashboard- und zwei GSC-Historienaufträge. Vor jedem Start prüft der Dispatcher, ob das verbleibende Zeitbudget für den jeweiligen Auftragstyp reicht. Nicht passende Typen werden nicht reserviert und verbrauchen deshalb keinen Versuch oder Defer.
+
+Die Auswahl berücksichtigt zuerst, wie viele Aufträge jeder Typ im aktuellen Lauf bereits erhalten hat. Bei Gleichstand zählt die früheste Wartezeit seit dem späteren Zeitpunkt aus ältestem fälligen Auftrag und letztem gespeicherten Start dieses Typs. Dadurch beginnt ein neuer Cronlauf nicht grundsätzlich wieder mit Dashboard, selbst wenn im vorigen Lauf nur ein Auftrag ausgeführt werden konnte. Ein fehlgeschlagener oder verschobener Versuch zählt ebenfalls als erhaltener Zug. Innerhalb eines Typs werden ältere Fälligkeiten zuerst bedient; bei gleichem Termin entscheidet die Priorität. Die benötigten Zeitstempel stammen aus `project_sync_jobs`; es gibt keine zusätzliche Scheduler-Tabelle und keine neue Migration.
+
+Zur Kapazitätsprüfung liefert die Cron-Antwort `queueBefore`, `queueAfter` und `jobTimings` und protokolliert sie unter `[Sync Dispatcher] Kapazitaet`. Enthalten sind fällige Aufträge je Quelle, älteste Fälligkeit, letzter Start und die Laufzeit jedes ausgeführten Auftrags in Millisekunden. Die Queue wird dafür zweimal aggregiert gelesen, nicht laufend gepollt. Wächst der Rückstau über mehrere Läufe oder werden Fälligkeiten dauerhaft älter, reicht die verfügbare Kapazität nicht aus. 48 Stunden sind weiterhin die reguläre Fälligkeit, keine garantierte Fertigstellungsfrist; der Dispatcher bleibt bei zwölf Stunden. Ob dies für alle Projekte ausreicht, muss anhand mehrerer echter Produktionsläufe geprüft werden.
 
 Die Queue-Lease eines reservierten Jobs beträgt 240 Sekunden. Zusätzlich verhindert eine 90 Sekunden lange, alle 25 Sekunden per Heartbeat verlängerte Quellen-Lease, dass mehrere Prozesse gleichzeitig dieselben Google-Daten abrufen; Dashboard-Leases sind nach Zeitraum getrennt, etwa `dashboard:30d`. Verschiebungen verbrauchen keinen Ausführungsversuch, werden aber separat gezählt und nach zwölf Wiederholungen beendet. Kurzlebige Neon-Verbindungsfehler bei Queue-Operationen werden bis zu dreimal direkt wiederholt; bleibt der Fehler bestehen, antwortet der Dispatcher mit HTTP 503.
 
@@ -145,6 +155,8 @@ Google Ads wird innerhalb desselben `dashboard`-Auftrags wie GSC und GA4 geladen
 2. Ist kein Ads-Sheet konfiguriert, aber GA4 verfügbar, versucht DataPeak Ads-Signale aus GA4 zu laden.
 
 Der Sheet-Weg hat Vorrang und liefert Kampagnen, Anzeigengruppen, Anzeigen, Suchanfragen, Landingpages sowie aggregierte Kennzahlen, soweit die entsprechenden Tabellenblätter und Datumszeilen vorhanden sind. Ein konfiguriertes, aber leeres oder nicht lesbares Sheet wird nicht stillschweigend durch GA4 ersetzt; das Widget erhält stattdessen einen klaren Ads-Fehler beziehungsweise einen leeren konfigurierten Stand. So bleibt sichtbar, dass die vorgesehene Datenquelle nicht funktioniert.
+
+Nicht lesbare Ads-Tabellen lösen einen Abruffehler aus; eine erfolgreich gelesene leere Tabelle bleibt ein gültiger leerer Bericht. Bei einem Fehler übernimmt DataPeak den letzten erfolgreichen Ads-Bericht derselben konfigurierten Quelle und desselben Dashboard-Zeitraums. Zeitraum und Abrufzeitpunkt dieses Berichts bleiben erhalten. Ohne vorherigen Bericht werden keine gemessenen Nullwerte erzeugt.
 
 Google Ads ist eine optionale Detailquelle. Ein Ads-Fehler wird in `apiErrors.googleAds` dokumentiert, blockiert aber keinen ansonsten verwertbaren GSC-/GA4-Snapshot. Ads-Daten verwenden dasselbe Berichtsfenster und dieselbe Cache-Dauer wie der jeweilige Dashboard-Zeitraum. Es gibt keinen separaten Ads-Cron und keinen Google-Ads-Abruf innerhalb des Server-Renderings; bei einem fälligen Snapshot startet danach der gemeinsame unsichtbare Hintergrundabruf.
 
@@ -285,6 +297,20 @@ WHERE name = '005_sync_hardening.sql';
 `IF NOT EXISTS`-Hinweise zu bereits vorhandenen Spalten oder Indizes sind bei einer wiederholten manuellen Ausführung keine Fehler. Entscheidend ist, dass die Transaktion erfolgreich abgeschlossen wurde und der Eintrag in `schema_migrations` vorhanden ist.
 
 ## 9. Relevante Implementierungsdateien
+
+Die bisherigen Einstiegspunkte `google-api.ts` und `indexing-status.ts` exportieren weiterhin dieselben öffentlichen Funktionen und Typen. Die Implementierung ist nach Quellen und Aufgaben getrennt:
+
+- `src/lib/google/gsc.ts`: Search Console, GenAI-Auswertung und Prompt-Suchanfragen.
+- `src/lib/google/ga4.ts`: Analytics-Berichte; `ga4-runtime.ts` enthält den gemeinsam genutzten Cache, Sperren und Request-Begrenzungen.
+- `src/lib/google/ads.ts`: Ads-Berichte aus GA4 und Google Sheets; `sheets.ts` enthält den allgemeinen Sheet-Abruf.
+- `src/lib/google/client.ts`, `dates.ts`, `types.ts`: gemeinsame Authentifizierung, Datumshelfer und Verträge.
+- `src/lib/indexing/sitemap.ts`: Sitemap-Erkennung, rekursives Einlesen, Property-Grenzen und technische Ausschlüsse.
+- `src/lib/indexing/candidates.ts`: Auswahl fälliger Prüfkandidaten mit unveränderter Priorisierung.
+- `src/lib/indexing/sitemap-repository.ts` und `inspection-repository.ts`: Speicherung von Sitemap-Bestand und erfolgreichen Inspection-Ergebnissen.
+- `src/lib/indexing/repository.ts`: Lesen von Status und Fortschritt; `sync.ts` koordiniert Sperren, Quoten, Abrufe und Fehlerbehandlung.
+- `src/lib/indexing/inspection.ts`, `request-budget.ts`, `types.ts`: Inspection-Helfer, Zeitbudget und gemeinsame Typen.
+
+Die Aufteilung ändert weder die Berechnung der Kennzahlen noch die Cache-Schlüssel, Tabellen oder Prüfintervalle. Regressionstests decken unter anderem die Queue-Fairness über mehrere Läufe und das Lesen verschachtelter Sitemaps ab.
 
 - `vercel.json`
 - `src/app/api/cron/sync-project-data/route.ts`

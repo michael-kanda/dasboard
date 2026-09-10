@@ -15,6 +15,7 @@ import type { DateRangeOption } from '@/components/DateRangeSelector';
 import GoogleCleanUnderline from '@/components/ui/GoogleCleanUnderline';
 
 interface GoogleAdsWidgetProps {
+  error?: string;
   data: GoogleAdsData;
   isLoading?: boolean;
   dateRange?: DateRangeOption;
@@ -38,18 +39,6 @@ function formatNumber(value: number): string {
   return new Intl.NumberFormat('de-DE').format(value);
 }
 
-/**
- * Zeitraum aus DateRangeOption berechnen.
- */
-function formatDateRange(dateRange?: DateRangeOption): string {
-  if (!dateRange) return '';
-  const fmt = new Intl.DateTimeFormat('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
-  const to = new Date();
-  const from = new Date();
-  if (dateRange.endsWith('d')) from.setDate(from.getDate() - parseInt(dateRange, 10));
-  else if (dateRange.endsWith('m')) from.setMonth(from.getMonth() - parseInt(dateRange, 10));
-  return `${fmt.format(from)} – ${fmt.format(to)}`;
-}
 
 function formatStoredDateRange(startDate?: string, endDate?: string): string {
   if (!startDate || !endDate) return '';
@@ -146,7 +135,7 @@ function getNextDimension(viewMode: ViewMode): { field: keyof GoogleAdsRow; labe
 
 // ── Hauptkomponente ──
 
-export default function GoogleAdsWidget({ data, isLoading, dateRange }: GoogleAdsWidgetProps) {
+export default function GoogleAdsWidget({ data, isLoading, dateRange, error }: GoogleAdsWidgetProps) {
   const [viewMode, setViewMode] = useState<ViewMode>('campaign');
   const [sortField, setSortField] = useState<SortField>('cost');
   const [sortAsc, setSortAsc] = useState(false);
@@ -161,8 +150,7 @@ export default function GoogleAdsWidget({ data, isLoading, dateRange }: GoogleAd
   const { totals } = data;
   const isSheet = data.source === 'sheet';
 
-  const dateRangeStr = formatStoredDateRange(data.reportStartDate, data.reportEndDate)
-    || formatDateRange(dateRange);
+  const dateRangeStr = formatStoredDateRange(data.reportStartDate, data.reportEndDate);
   const latestDataDate = data.latestDataDate
     ? new Intl.DateTimeFormat('de-DE').format(new Date(`${data.latestDataDate}T12:00:00`))
     : null;
@@ -336,6 +324,7 @@ export default function GoogleAdsWidget({ data, isLoading, dateRange }: GoogleAd
           Quelle {isSheet ? 'Google Ads' : 'GA4'}
           {dateRangeStr && ` · ${dateRangeStr}`}
           {isSheet && latestDataDate && ` · Sheet-Daten bis ${latestDataDate}`}
+          {error && ' · Aktualisierung fehlgeschlagen; letzter verfügbarer Stand'}
         </p>
       </div>
 

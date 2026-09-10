@@ -1,6 +1,7 @@
 import type { ProjectDashboardData } from './dashboard-shared';
 import type { ProjectIndexingStatus } from './indexing-status';
 import { DASHBOARD_SNAPSHOT_VERSION } from './sync/dashboard-snapshot-contract.ts';
+import { getReportingWindow } from './sync/cache-policy.ts';
 
 export { DASHBOARD_SNAPSHOT_VERSION } from './sync/dashboard-snapshot-contract.ts';
 
@@ -79,27 +80,12 @@ function formatDate(date: Date) {
 }
 
 export function resolveMetricPeriod(dateRange: string, referenceDate = new Date()) {
-  const end = new Date(referenceDate);
-  end.setUTCHours(12, 0, 0, 0);
-  end.setUTCDate(end.getUTCDate() - 1);
   if (dateRange === 'snapshot') {
-    const snapshotDate = formatDate(referenceDate);
-    return { from: snapshotDate, to: snapshotDate };
+    const date = formatDate(referenceDate);
+    return { from: date, to: date };
   }
-  const daysByRange: Record<string, number> = {
-    '7d': 7,
-    '30d': 30,
-    '90d': 90,
-    '3m': 90,
-    '6m': 180,
-    '12m': 365,
-    '18m': 548,
-    '24m': 730,
-  };
-  const days = daysByRange[dateRange] ?? 30;
-  const start = new Date(end);
-  start.setUTCDate(start.getUTCDate() - (days - 1));
-  return { from: formatDate(start), to: formatDate(end) };
+  const window = getReportingWindow(dateRange === '90d' ? '3m' : dateRange, referenceDate);
+  return { from: window.startDate, to: window.endDate };
 }
 
 export function createMetricMetadata(
@@ -197,7 +183,13 @@ export function attachDashboardMetricMetadata(
   const metricMetadata = Object.fromEntries(
     Object.keys(values).map((key) => [
       key,
-      createMetricMetadata(key, dateRange, updatedAt, resolveCoverageOverride(data, key)),
+      {
+        ...createMetricMetadata(key, dateRange, updatedAt, resolveCoverageOverride(data, key)),
+        period: key.startsWith('googleAds.') && data.googleAdsData?.reportStartDate && data.googleAdsData?.reportEndDate
+          ? { from: data.googleAdsData.reportStartDate, to: data.googleAdsData.reportEndDate }
+          : data.reportingPeriod ?? resolveMetricPeriod(dateRange, new Date(updatedAt)),
+        updatedAt: key.startsWith('googleAds.') ? data.googleAdsData?.fetchedAt ?? updatedAt : updatedAt,
+      },
     ]),
   );
   return {

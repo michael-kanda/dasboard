@@ -26,7 +26,7 @@ export function createGoogleAdsDataModule(
   const report = input.googleAdsData ?? null;
   const error = input.apiErrors?.googleAds ?? null;
   const issues = createDataIssue('google_ads_request_failed', error);
-  const configured = Boolean(report?.configuredSheetId || report);
+  const configured = Boolean(report?.configuredSheetId || report || error);
   const hasRows = hasGoogleAdsRows(report);
   const hasRenderableData = hasRows || report?.source === 'sheet';
 

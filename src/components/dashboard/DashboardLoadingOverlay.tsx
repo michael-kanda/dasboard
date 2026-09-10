@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 
-export default function DashboardLoadingOverlay() {
+export default function DashboardLoadingOverlay({ waiting = false }: { waiting?: boolean }) {
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-surface/70 backdrop-blur-md transition-all animate-in fade-in duration-300">
       <div className="bg-surface p-8 rounded-3xl shadow-2xl border border-theme-border-subtle flex flex-col items-center gap-6 max-w-md w-full text-center transform scale-100 animate-in zoom-in-95 duration-300">
@@ -17,14 +17,14 @@ export default function DashboardLoadingOverlay() {
           />
         </div>
         <div>
-          <h3 className="text-xl font-bold text-strong mb-1">Dashboard wird geladen</h3>
+          <h3 className="text-xl font-bold text-strong mb-1">{waiting ? 'Daten noch nicht verfügbar' : 'Dashboard wird geladen'}</h3>
           <p className="text-muted text-sm leading-relaxed">
-            Die verfügbaren Daten werden vorbereitet. Das Dashboard öffnet sich automatisch.
+            {waiting ? 'Die automatische Synchronisierung übernimmt die weitere Verarbeitung. Bitte öffnen Sie das Projekt später erneut.' : 'Die verfügbaren Daten werden vorbereitet. Das Dashboard öffnet sich automatisch.'}
           </p>
         </div>
-        <div className="w-full h-1.5 bg-surface-tertiary rounded-full overflow-hidden">
+        {!waiting && <div className="w-full h-1.5 bg-surface-tertiary rounded-full overflow-hidden">
           <div className="h-full bg-indigo-500 w-1/3 rounded-full animate-indeterminate-bar" />
-        </div>
+        </div>}
       </div>
     </div>
   );

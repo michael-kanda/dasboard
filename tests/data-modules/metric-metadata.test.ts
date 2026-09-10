@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { getReportingWindow } from '../../src/lib/sync/cache-policy.ts';
 import {
   attachDashboardMetricMetadata,
   createMetricMetadata,
@@ -10,12 +11,38 @@ import {
 
 test('Metric periods are deterministic for a dashboard range', () => {
   const period = resolveMetricPeriod('30d', new Date('2026-08-05T12:00:00.000Z'));
-  assert.deepEqual(period, { from: '2026-07-06', to: '2026-08-04' });
+  assert.deepEqual(period, { from: '2026-07-05', to: '2026-08-03' });
 });
 
 test('Indexing metrics use a point-in-time period', () => {
   const period = resolveMetricPeriod('snapshot', new Date('2026-08-05T12:00:00.000Z'));
   assert.deepEqual(period, { from: '2026-08-05', to: '2026-08-05' });
+});
+
+test('all reporting ranges use the exact source window', () => {
+  for (const range of ['7d', '30d', '3m', '6m', '12m', '18m', '24m']) {
+    const now = new Date('2026-03-30T00:30:00Z');
+    const source = getReportingWindow(range, now);
+    assert.deepEqual(resolveMetricPeriod(range, now), { from: source.startDate, to: source.endDate });
+  }
+});
+
+test('new dashboard metadata preserves the date and period of retained Ads data', () => {
+  const data = attachDashboardMetricMetadata({
+    reportingPeriod: { from: '2026-08-10', to: '2026-09-08' },
+    kpis: { clicks: { value: 10, change: 0 } },
+    apiErrors: { googleAds: 'Sheet nicht erreichbar' },
+    googleAdsData: {
+      rows: [], landingPageRows: [], source: 'sheet', configuredSheetId: 'sheet',
+      fetchedAt: '2026-09-04T12:00:00Z', reportStartDate: '2026-08-04', reportEndDate: '2026-09-02',
+      totals: { cost: 498.61, clicks: 750, conversions: 2, avgCpc: 0.66, roas: 0, sessions: 0, engagedSessions: 0 },
+    },
+  }, '30d', '2026-09-10T12:00:00Z');
+  assert.deepEqual(data.metricMetadata['gsc.clicks'].period, { from: '2026-08-10', to: '2026-09-08' });
+  assert.deepEqual(data.metricMetadata['googleAds.cost'].period, { from: '2026-08-04', to: '2026-09-02' });
+  assert.equal(data.metricMetadata['googleAds.cost'].updatedAt, '2026-09-04T12:00:00Z');
+  assert.equal(data.metricMetadata['googleAds.cost'].coverage.status, 'partial');
+  assert.equal(data.googleAdsData?.totals.conversions, 2);
 });
 
 test('Metric metadata records source, coverage and calculation version', () => {
