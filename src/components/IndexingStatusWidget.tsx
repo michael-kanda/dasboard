@@ -20,6 +20,7 @@ import type {
   ProjectIndexingProgress,
   ProjectIndexingStatus,
 } from '@/lib/indexing-status';
+import { readIndexingStatusResponse } from '@/lib/indexing-response';
 
 type FilterValue = 'all' | IndexingUrlStatus | 'canonical' | 'action' | 'intentional' | 'stale';
 
@@ -233,9 +234,19 @@ export default function IndexingStatusWidget({
       const response = await fetch(`/api/projects/${projectId}/indexing-status`, {
         method: 'POST',
       });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.message || 'Abgleich fehlgeschlagen');
-      setData(result);
+      const result = await response.json() as unknown;
+      if (!response.ok) {
+        const message = result && typeof result === 'object' && 'message' in result
+          && typeof result.message === 'string' ? result.message : 'Abgleich fehlgeschlagen';
+        throw new Error(message);
+      }
+      // Accept the former wrapped response during rolling deployments, but
+      // never put an incomplete payload into component state.
+      const nextData = readIndexingStatusResponse(result);
+      if (!nextData) {
+        throw new Error('Der Indexierungsstatus konnte nicht gelesen werden.');
+      }
+      setData(nextData);
     } catch (error) {
       setSyncError(error instanceof Error ? error.message : 'Abgleich fehlgeschlagen');
       setData((current) => ({ ...current, status: 'error', progressStage: 'error' }));

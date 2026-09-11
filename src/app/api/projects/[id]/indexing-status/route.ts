@@ -11,6 +11,7 @@ import {
   getProjectSyncJob,
 } from '@/lib/sync/job-queue';
 import { syncIndexingProjectSnapshot } from '@/lib/sync/indexing';
+import { createIndexingStatusResponse } from '@/lib/indexing-response';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -105,7 +106,7 @@ export async function POST(
         deadlineAt: Date.now() + MANUAL_SYNC_DEADLINE_MS,
       });
       await finishProjectSyncJob(job, { success: true });
-      return NextResponse.json(result);
+      return NextResponse.json(createIndexingStatusResponse(result.status, result.skipped));
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Indexierungsabgleich fehlgeschlagen';
       await finishProjectSyncJob(job, { success: false, error: message });
